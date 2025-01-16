@@ -1,0 +1,98 @@
+const { conn_sql } = require("../../config/connection");
+const bcrypt = require("bcrypt");
+
+//job seeker login
+const userlogin = (req, res) => {
+  const { email, password, role } = req.body;
+  const sqluserlogin =
+    "SELECT * FROM `user_accounts` WHERE `email`= ? AND `password`= ? AND `role`=?";
+  conn_sql.query(sqluserlogin, [email, role], (err, result) => {
+    if (err) throw err;
+    if (data.length > 0) {
+      let user = data[0];
+      bcrypt.compare(password, user.password, function (err, result) {
+        if (result) {
+          return res.json({ msg: "Login Successfully !...", result });
+        } else {
+          return res.json({ msg: "Invalid User" });
+        }
+      });
+    } else {
+      return res.json({ msg: "User not exist!!!" });
+    }
+  });
+};
+
+// Job seeker Update Profile
+const UserProfile = (req, res) => {
+  const { id } = req.params;
+  const { username, image, email, password, phone, qualification, location } =
+    req.body;
+  const sqladmin =
+    "UPDATE `user_accounts` SET `username`= ?,`image`= ?, `email`= ? , `password`= ?, `phone`= ?, `qualification`=? , `location`=? WHERE id=?";
+  conn_sql.query(
+    sqladmin,
+    [username, image, email, password, phone, qualification, location, id],
+    (err, result) => {
+      if (err) {
+        return res.json(err);
+      } else {
+        return res.json({ msg: "Your Profile is Updated now.", result });
+      }
+    }
+  );
+};
+
+// job_seeker see job post on the basis of their skillset
+const showjobs = (req, res) => {
+  const { id } = req.params;  // jobseeker_id
+
+  // First query: get the skillset ids of the jobseeker
+  const sql = `
+    SELECT skillset.id 
+    FROM skillset 
+    JOIN jobseeker_skills ON jobseeker_skills.skillset_id = skillset.id 
+    WHERE jobseeker_skills.job_seeker_id = ?
+  `;
+  conn_sql.query(sql, [id], (err, skillResult) => {
+    if (err) return res.status(500).json(err);
+
+    if (skillResult.length > 0) {
+      // Collect all the skillset ids of the jobseeker
+      const skillIds = skillResult.map(skill => skill.id);
+
+      // Second query: find jobs that require those skills
+      const query = `
+        SELECT DISTINCT job_required_skills.job_id
+        FROM job_required_skills
+        WHERE job_required_skills.skillset_id IN (?)
+      `;
+      conn_sql.query(query, [skillIds], (err, jobResult) => {
+        if (err) return res.status(500).json(err);
+
+        if (jobResult.length > 0) {
+          const jobIds = jobResult.map(job => job.job_id);
+
+          // Third query: get the job details for those jobs
+          const querySolve = `
+            SELECT * 
+            FROM jobs 
+            WHERE id IN (?)
+          `;
+          conn_sql.query(querySolve, [jobIds], (err, finalResult) => {
+            if (err) return res.status(500).json(err);
+
+            return res.json(finalResult);
+          });
+        } else {
+          return res.json([]);  // No jobs found
+        }
+      });
+    } else {
+      return res.json([]);  // No skills found for this job seeker
+    }
+  });
+};
+ 
+
+module.exports = { userlogin, UserProfile, showjobs };
