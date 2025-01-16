@@ -1,0 +1,53 @@
+.tablePage {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  min-height: 100vh;
+  width: 100%;
+
+  /* background: yellow; */
+}
+@media (width <= 992px) {
+  .tablePage.full .page-sidebar {
+    display: none;
+  }
+  .tablePage.half .page-sidebar {
+    display: none;
+  }
+}
+.tablePage.full .page-sidebar {
+  width: 246px;
+}
+.tablePage.half .page-sidebar {
+  width: 55px;
+}
+.page-sidebar {
+  grid-column: 1/2;
+
+  /* background: purple; */
+}
+.page-content {
+  grid-column: 2/3;
+  width: 100% !important;
+  /* background: pink; */
+}
+.tablePage.full .page-content {
+  width: calc(100% - 246px);
+}
+.tablePage.half .page-content {
+  width: calc(100% - 55px);
+}
+@media (width <= 454px) {
+  .selectFull {
+    width: 100%;
+  }
+}
+.title-jobs-dashboard .icon {
+  width: 2rem;
+  height: 2.6rem;
+  margin-right: 0.8rem;
+
+  & img {
+    width: 100%;
+    height: 100%;
+  }
+}
