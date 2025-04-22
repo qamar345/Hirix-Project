@@ -26,6 +26,8 @@ import CanReview from "./pages/CanReviews";
 import CanSetting from "./pages/CanSettings";
 import Candidate from "./pages/Candidate";
 import CanSideMenu from "./components/CanSideMenu";
+import {Pagination} from "./components/Pagination";
+
 
 import AddEducation from "./profile/AddEducation";
 
@@ -44,6 +46,7 @@ export {
   PageList,
   JobPost,
   Footer,
+  Pagination,
   MobileNavBar,
   CanFooter,
   CanHeader,

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { RiUploadLine } from "react-icons/ri";
 import { IoCloseSharp } from "react-icons/io5";
@@ -6,8 +6,16 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
 import { CanFooter } from "../index.js";
+import axios from "axios";
+
 const CanSettings = () => {
-  const [value, setValue] = useState();
+  const check = sessionStorage.getItem("isLoggedIn");
+  const id = sessionStorage.getItem("id");
+  const [editPasswordData, setEditPasswordData] = useState({
+    currentPass: "",
+    newPass: "",
+    confirmPass: "",
+  });
   const [isActive, setIsActive] = useState("personalInfo");
   const [payGroup, setPayGroup] = useState({
     payPal: false,
@@ -40,6 +48,10 @@ const CanSettings = () => {
   };
   const [uploadedImage, setUploadedImage] = useState(null);
 
+   useEffect(() => {
+      if (!check) navigate("/");
+    });
+
   const handleLogoUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -53,6 +65,41 @@ const CanSettings = () => {
   const handleCancelUpload = () => {
     setUploadedImage(null);
   };
+  const handlePasswordChange = (e) => {
+    setEditPasswordData({
+      ...editPasswordData,
+      [e.target.name]: e.target.value,
+    });
+  };
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+
+    if (
+      !editPasswordData.currentPass ||
+      !editPasswordData.newPass ||
+      !editPasswordData.confirmPass
+    ) {
+      alert("All fields are required.");
+      return;
+    }
+
+    if (editPasswordData.newPass !== editPasswordData.confirmPass) {
+      alert("New password and confirm password do not match.");
+      return;
+    }
+    try {
+      const response = await axios.put(`http://localhost:9000/Employer-password/${id}`, {
+        editPasswordData,
+      });
+
+      alert(response.data.msg);
+      setEditPasswordData({ currentPass: "", newPass: "", confirmPass: "" });
+      console.log(setEditPasswordData);
+    } catch (error) {
+      alert("Error updating password: ", error);
+    }
+  };
+
   return (
     <>
       <div className="dashboardWrapper">
@@ -86,89 +133,103 @@ const CanSettings = () => {
               }`}
             >
               <div className="row block-from mt12">
-                <div className="entryGroup col-md-12 ">
-                  <h6 className="block-heading">Change password</h6>
-                </div>
+                <form onSubmit={handlePasswordSubmit}>
+                  <div className="entryGroup col-md-12 ">
+                    <h6 className="block-heading">Change password</h6>
+                  </div>
 
-                <div className="passwordFields">
-                  {/* Current Password */}
-                  <div className="entryGroup col-md-12">
-                    <label htmlFor="currentPass">Current password</label>
-                    <div className="inputGrout">
-                      <input
-                        className="inputControl"
-                        type={passwordVisibility.current ? "text" : "password"}
-                        id="currentPass"
-                        name="currentPass"
-                        placeholder="Enter current password"
-                      />
-                      <span
-                        onClick={() => togglePasswordVisibility("current")}
-                        style={{ cursor: "pointer" }}
-                      >
-                        {passwordVisibility.current ? (
-                          <FaEyeSlash className="d-block" />
-                        ) : (
-                          <FaEye className="d-block" />
-                        )}
-                      </span>
+                  <div className="passwordFields">
+                    {/* Current Password */}
+                    <div className="entryGroup col-md-12">
+                      <label htmlFor="currentPass">Current password</label>
+                      <div className="inputGrout">
+                        <input
+                          className="inputControl"
+                          type={
+                            passwordVisibility.current ? "text" : "password"
+                          }
+                          id="currentPass"
+                          name="currentPass"
+                          placeholder="Enter current password"
+                          value={editPasswordData.currentPass}
+                          onChange={handlePasswordChange}
+                        />
+                        <span
+                          onClick={() => togglePasswordVisibility("current")}
+                          style={{ cursor: "pointer" }}
+                        >
+                          {passwordVisibility.current ? (
+                            <FaEyeSlash className="d-block" />
+                          ) : (
+                            <FaEye className="d-block" />
+                          )}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* New Password */}
+                    <div className="entryGroup col-md-12">
+                      <label htmlFor="newPass">New password</label>
+                      <div className="inputGrout">
+                        <input
+                          className="inputControl"
+                          type={passwordVisibility.new ? "text" : "password"}
+                          id="newPass"
+                          name="newPass"
+                          placeholder="Enter new password"
+                          value={editPasswordData.newPass}
+                          onChange={handlePasswordChange}
+                        />
+                        <span
+                          onClick={() => togglePasswordVisibility("new")}
+                          style={{ cursor: "pointer" }}
+                        >
+                          {passwordVisibility.new ? (
+                            <FaEyeSlash className="d-block" />
+                          ) : (
+                            <FaEye className="d-block" />
+                          )}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Confirm Password */}
+                    <div className="entryGroup col-md-12">
+                      <label htmlFor="confirmPass">Confirm password</label>
+                      <div className="inputGrout">
+                        <input
+                          className="inputControl"
+                          type={
+                            passwordVisibility.confirm ? "text" : "password"
+                          }
+                          id="confirmPass"
+                          name="confirmPass"
+                          placeholder="Confirm your password"
+                          value={editPasswordData.confirmPass}
+                          onChange={handlePasswordChange}
+                        />
+                        <span
+                          onClick={() => togglePasswordVisibility("confirm")}
+                          style={{ cursor: "pointer" }}
+                        >
+                          {passwordVisibility.confirm ? (
+                            <FaEyeSlash className="d-block" />
+                          ) : (
+                            <FaEye className="d-block" />
+                          )}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* New Password */}
                   <div className="entryGroup col-md-12">
-                    <label htmlFor="newPass">New password</label>
-                    <div className="inputGrout">
-                      <input
-                        className="inputControl"
-                        type={passwordVisibility.new ? "text" : "password"}
-                        id="newPass"
-                        name="newPass"
-                        placeholder="Enter new password"
-                      />
-                      <span
-                        onClick={() => togglePasswordVisibility("new")}
-                        style={{ cursor: "pointer" }}
-                      >
-                        {passwordVisibility.new ? (
-                          <FaEyeSlash className="d-block" />
-                        ) : (
-                          <FaEye className="d-block" />
-                        )}
-                      </span>
-                    </div>
+                    <button type="submit" className="civi-button">
+                      Save changes
+                    </button>
                   </div>
-
-                  {/* Confirm Password */}
-                  <div className="entryGroup col-md-12">
-                    <label htmlFor="confirmPass">Confirm password</label>
-                    <div className="inputGrout">
-                      <input
-                        className="inputControl"
-                        type={passwordVisibility.confirm ? "text" : "password"}
-                        id="confirmPass"
-                        name="confirmPass"
-                        placeholder="Confirm your password"
-                      />
-                      <span
-                        onClick={() => togglePasswordVisibility("confirm")}
-                        style={{ cursor: "pointer" }}
-                      >
-                        {passwordVisibility.confirm ? (
-                          <FaEyeSlash className="d-block" />
-                        ) : (
-                          <FaEye className="d-block" />
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="entryGroup col-md-12">
-                  <Link className="civi-button">Save changes</Link>
-                </div>
+                </form>
               </div>
-              <Link className="btn-deactivate mb-5">Deactivate account</Link>
+              {/* <Link className="btn-deactivate mb-5" onClick={Deactivate}>Deactivate account</Link> */}
             </div>
 
             <div

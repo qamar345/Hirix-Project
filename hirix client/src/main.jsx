@@ -34,6 +34,8 @@ import {
   EmpSettings,
   AddCompany,
   PostJob,
+  EmpJobEdit,
+  EmpEditCompany,
 } from "./employer/index.js";
 
 // Admin
@@ -46,6 +48,10 @@ import {
   AdSettings,
   AdManagement,
   AddManager,
+  AdEmployee,
+  JobList,
+  ApplicantList,
+  EmployeeList,
 } from "./Admin/index.js";
 
 import {
@@ -86,12 +92,16 @@ const router = createBrowserRouter(
         <Route path="settings" element={<EmpSettings />} />
         <Route path="add-company" element={<AddCompany />} />
         <Route path="post-job" element={<PostJob />} />
+        <Route path ="Edit_job" element ={< EmpJobEdit/>}/>
+        <Route path ="Edit_Company" element ={< EmpEditCompany/>}/>
       </Route>
       <Route path="employer/jobs" element={<EmpJobs />} />
+      <Route path="employer/jobs/list" element={<JobList />} />
       <Route path="employer/applicants" element={<EmpApplicants />} />
+      <Route path="/employer/applicants/list" element={<ApplicantList />} />
       <Route path="employer/company" element={<EmpCompany />} />
       {/* Admin */}
-      <Route path="admin-login" element={<HomePage />} />
+      <Route path="/admin-login" element={<HomePage />} />
       <Route path="/admin" element={<Admin />}>
         <Route path="/admin/dashboard" element={<AdDashboard />} />
 
@@ -99,9 +109,13 @@ const router = createBrowserRouter(
         <Route path="/admin/add-manager" element={<AddManager />} />
       </Route>
       <Route path="/admin/jobs" element={<AdJobs />} />
+      <Route path="/admin/jobs/list" element={<JobList />} />
       <Route path="/admin/company" element={<AdCompany />} />
-      <Route path="/admin/candidates" element={<AdCandidates />} />`
-      <Route path="/admin/user-management" element={<AdManagement />} />`
+      <Route path="/admin/candidates" element={<AdCandidates />} />
+      <Route path="/admin/candidates/list" element={<ApplicantList />} />
+      <Route path="/admin/employees" element={<AdEmployee />} />
+      <Route path="/admin/employees/list" element={<EmployeeList/>} />
+      <Route path="/admin/user-management" element={<AdManagement />} />
     </>
   )
 );

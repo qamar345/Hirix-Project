@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaSpinner, FaRegMoneyBillAlt } from "react-icons/fa";
 import { PiMapPin } from "react-icons/pi";
 import { hirixText } from "../assets/icons/index.js";
@@ -8,27 +8,141 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { EmpFooter } from "../index.js";
 import PhoneInput from "react-phone-number-input";
+import axios from "axios";
+
 const PostJob = () => {
+  const navigate = useNavigate();
+  const id = sessionStorage.getItem("id");
+  const check = sessionStorage.getItem("isLoggedIn");
+  useEffect(() => {
+    if (!check) navigate("/");
+  });
+  const [title, setTitle] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
-  const [selectedSalary, setSelectedSalary] = useState("range");
-  const [appliedType, setAppliedType] = useState("email");
-  const [currencyType, setCurrencyType] = useState("pkr");
-  const [rateType, setRateType] = useState("none");
-  const [value, setValue] = useState();
-  const handleSalaryChange = (selectedOption) => {
-    setSelectedSalary(selectedOption?.value || null);
-  };
+  const [category, setCategory] = useState("");
+  const [jobtype, setJobType] = useState("");
+  const [workPlaceType, setWorkPlaceType] = useState("");
+  const [des, setDes] = useState("");
+  const [skill, setSkills] = useState([]);
+  const [qual, setQualification] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [Gender, setGender] = useState("");
+  const [experiences, setExperience] = useState("");
+  const [careerLevel, setCareerLevel] = useState("");
+  const [expirydate, setExpiryDate] = useState("");
+  const [Salary, setSalary] = useState("");
+  const [selectedSalary, setSelectedSalary] = useState("");
+  const [appliedType, setAppliedType] = useState("");
+  const [curr, setCurrency] = useState("");
+  const [rateType, setRateType] = useState("");
+  const [minValue, setMinValue] = useState("");
+  const [maxValue, setMaxValue] = useState("");
+  const [email, setEmail] = useState("");
+  const [url, setURL] = useState("");
+  const [phone, setPhone] = useState("");
+  const [Company, setCompany] = useState("");
+  const [Province, setProvince] = useState("");
+  const [City, setCity] = useState("");
+  const [CompanyData, setCompanyData] = useState([]);
 
-  const handleAppliedType = (selectedOption) => {
-    setAppliedType(selectedOption?.value || null);
-  };
+  // useEffect(() => {
+  //   if (editId && editId !== "new") {
+  //     axios
+  //       .get(`http://localhost:9000/getjobPost/${editId}`)
+  //       .then((res) => {
+  //         console.log("Full API Response:", res.data); // ✅ Check the structure
 
-  const handleCurrencyType = (selectedOption) => {
-    setCurrencyType(selectedOption?.value || null);
-  };
+  //         if (Array.isArray(res.data) && res.data.length > 0) {
+  //           const data = res.data[0]; // 👈 First object extract karo
+  //           console.log("Extracted Data:", data);
 
-  const handleRateType = (selectedOption) => {
-    setRateType(selectedOption?.value || null);
+  //           setTitle(data.title || "");
+  //           setCategory(data.job_category || "");
+  //           setJobType(data.job_type || "");
+  //           setWorkPlaceType(data.workplaceType || "");
+  //           setDes(data.description || "");
+  //           setSkills(data.required_skills || []);
+  //           setQualification(data.qualification || "");
+  //           setQuantity(data.available_seats || "");
+  //           setGender(data.gender || "");
+  //           setExperience(data.Experience || "");
+  //           setCareerLevel(data.career_level || "");
+  //           setSalary(data.salary || "");
+  //           setCurrency(data.currency || "");
+  //           setMinValue(data.minimum_currency || "");
+  //           setMaxValue(data.maximum_currency || "");
+  //           setEmail(data.Email || "");
+  //           setURL(data.Url || "");
+  //           setPhone(data.Phone || "");
+  //           setCompany(data.company_name || "");
+  //           setCity(data.city || "");
+  //           setProvince(data.province || "");
+  //         } else {
+  //           console.warn("⚠️ No data found for this ID!");
+  //         }
+  //       })
+  //       .catch((err) => console.error("Error fetching job data:", err));
+  //   }
+  // }, [editId]);
+  useEffect(() => {
+    const fetchCompany = async () => {
+      try {
+        const res = await axios.get(`http://localhost:9000/GetCompanies/${id}`);
+        const formattedCompanies = res.data.map((company) => ({
+          label: company.name,
+          value: company.id,
+        }));
+        setCompanyData(formattedCompanies);
+      } catch (err) {
+        console.error("Error fetching companies:", err);
+      }
+    };
+
+    fetchCompany();
+  }, []);
+
+  const submit = async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      title: title?.trim(),
+      Email: email?.trim(),
+      job_category: category?.trim(),
+      job_type: jobtype?.trim(),
+      workplace_type: workPlaceType?.trim(),
+      description: des?.trim(),
+      required_skills: skill.map((s) => s.value).join(","),
+      career_level: careerLevel?.trim(),
+      Experience: experiences?.trim(),
+      qualification: qual?.trim(),
+      available_seats: quantity?.trim(),
+      gender: Gender?.trim(),
+      expiry_date: expirydate,
+      salary: Salary?.trim(),
+      currency: curr?.trim(),
+      minimum_currency: minValue?.trim(),
+      maximum_currency: maxValue?.trim(),
+      Rate: rateType?.trim(),
+      Url: url?.trim(),
+      Phone: phone?.trim(),
+      ApplyType: appliedType?.trim(),
+      company_name: Company,
+      city: City?.trim(),
+      province: Province?.trim(),
+    };
+
+    try {
+      console.log(Company);
+      await axios
+        .post(`http://localhost:9000/postbyEmployee/${id}`, payload)
+        .then((res) => {
+          alert(res.data.msg);
+          navigate(`/employer/jobs`);
+        })
+        .catch((err) => console.error(err));
+    } catch (error) {
+      console.error("Error:", error.message);
+    }
   };
 
   useEffect(() => {
@@ -48,80 +162,6 @@ const PostJob = () => {
     };
   }, []);
 
-  const [companyData, setCompanyData] = useState({
-    title: "",
-    city: null,
-    province: null,
-    company: null,
-    description: "",
-    minValue: 0,
-    maxValue: 0,
-    logo: null,
-    category: null,
-    jobType: null,
-  });
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setCompanyData((prevData) => ({ ...prevData, [name]: value }));
-  };
-
-  const handleInputCompany = (selectedOption) => {
-    setCompanyData((prevData) => ({
-      ...prevData,
-      company: selectedOption,
-    }));
-  };
-
-  const handleInputJobType = (selectedOption) => {
-    setCompanyData((prevData) => ({
-      ...prevData,
-      jobType: selectedOption,
-    }));
-  };
-
-  const handleInputCategory = (selectedOption) => {
-    setCompanyData((prevData) => ({
-      ...prevData,
-      category: selectedOption,
-    }));
-  };
-
-  const handleInputCity = (selectedOption) => {
-    setCompanyData((prevData) => ({
-      ...prevData,
-      city: selectedOption,
-    }));
-  };
-
-  const handleInputProvince = (selectedOption) => {
-    setCompanyData((prevData) => ({
-      ...prevData,
-      province: selectedOption,
-    }));
-  };
-
-  const handleQuillChange = (value) => {
-    setCompanyData((prevData) => ({
-      ...prevData,
-      description: value,
-    }));
-  };
-
-  const handleMinChange = (e) => {
-    setCompanyData((prevData) => ({
-      ...prevData,
-      minValue: e.target.value,
-    }));
-  };
-
-  const handleMaxChange = (e) => {
-    setCompanyData((prevData) => ({
-      ...prevData,
-      maxValue: e.target.value,
-    }));
-  };
-
   const cats = [
     { value: "analytics", label: "Analytics" },
     { value: "customerService", label: "Customer Service" },
@@ -131,9 +171,18 @@ const PostJob = () => {
 
   const type = [
     { value: "full", label: "Full Time" },
-    { value: "intern", label: "Internship" },
     { value: "part", label: "Part Time" },
+    { value: "intern", label: "Internship" },
+    { value: "contract", label: "Contract" },
+    { value: "temporary", label: "Temporary" },
+    { value: "volunteer", label: "Volunteer" },
+    { value: "other", label: "Other" },
+  ];
+
+  const workType = [
+    { value: "onsite", label: "On-site" },
     { value: "remote", label: "Remote" },
+    { value: "hybrid", label: "Hybird" },
   ];
 
   const skills = [
@@ -151,11 +200,11 @@ const PostJob = () => {
   ];
 
   const experience = [
-    { value: "1", label: "No Experience" },
+    { value: "0", label: "No Experience" },
     { value: "2", label: "1-2 Years" },
-    { value: "3", label: "3-5 Years" },
-    { value: "4", label: "6-9 Years" },
-    { value: "5", label: "10+ Years" },
+    { value: "5", label: "3-5 Years" },
+    { value: "9", label: "6-9 Years" },
+    { value: "10", label: "10+ Years" },
   ];
 
   const qualification = [
@@ -177,7 +226,7 @@ const PostJob = () => {
   const gender = [
     { value: "female", label: "Female" },
     { value: "male", label: "Male" },
-    { value: "other", label: "Other" },
+    { value: "both", label: "Both" },
   ];
 
   const salary = [
@@ -186,6 +235,7 @@ const PostJob = () => {
     { value: "maximum", label: "Maximum Amount" },
     { value: "negotiable", label: "Negotiable Price" },
   ];
+  
 
   const currency = [
     { value: "usd", label: "($) - USD" },
@@ -206,18 +256,13 @@ const PostJob = () => {
     { value: "internal", label: "Internal Apply" },
     { value: "call", label: "Call To Apply" },
   ];
-
-  const company = [
-    { value: "none", label: "None" },
-    { value: "hirix", label: "Hirix" },
-  ];
-  const city = [
+  const cityName = [
     { value: "lhr", label: "Lahore" },
     { value: "rwp", label: "Rawalpindi" },
     { value: "khi", label: "Karachi" },
     { value: "isb", label: "Islamabad" },
   ];
-  const province = [
+  const provinceName = [
     { value: "kpk", label: "Khyber Pakhtunkhwa" },
     { value: "punjab", label: "Punjab" },
     { value: "sindh", label: "Sindh" },
@@ -227,7 +272,7 @@ const PostJob = () => {
   return (
     <div className="dashboardWrapper addCompany">
       <div className="entry-my-page submit-company-dashboard">
-        <form action="#" className="form-dashboard">
+        <form onSubmit={submit} className="form-dashboard">
           <div className="content-company">
             <div className="row ">
               <div className="col-lg-8 col-md-7 entry-section ">
@@ -239,10 +284,7 @@ const PostJob = () => {
                   <h4 className=" d-none d-xl-block">Create a job post</h4>
 
                   <div className="btn-wrapper d-flex gap-4 align-items-center">
-                    <Link
-                      to="/employer/employer-dashboard"
-                      className="btn-text"
-                    >
+                    <Link to="/employer/dashboard" className="btn-text">
                       Cancel
                     </Link>
                     <Link
@@ -251,16 +293,12 @@ const PostJob = () => {
                     >
                       Save As Draft
                     </Link>
-                    <Link
-                      to="/employer/employer-company"
-                      type="submit"
-                      className="btn-normal"
-                    >
+                    <button type="submit" className="btn-normal">
                       <span>Publish</span>
                       <span className="btn-loading">
                         <FaSpinner />
                       </span>
-                    </Link>
+                    </button>
                   </div>
                 </div>
                 <div className="companyData">
@@ -275,9 +313,9 @@ const PostJob = () => {
                           type="text"
                           id="company_title"
                           name="title"
-                          value={companyData.title}
-                          onChange={handleInputChange}
+                          value={title}
                           placeholder="Name"
+                          onChange={(e) => setTitle(e.target.value)}
                         />
                       </div>
 
@@ -291,12 +329,16 @@ const PostJob = () => {
                           styles={customStyles}
                           className="border p-1 rounded-2"
                           name="category"
-                          value={companyData.category}
-                          onChange={handleInputCategory}
                           id="category"
-                          defaultValue={cats.find(
-                            (option) => option.value === "developmentIT"
-                          )}
+                          value={
+                            cats.find((option) => option.value === category) ||
+                            null
+                          }
+                          onChange={(selectedOption) =>
+                            setCategory(
+                              selectedOption ? selectedOption.value : ""
+                            )
+                          }
                         />
                       </div>
 
@@ -306,17 +348,39 @@ const PostJob = () => {
                         </label>
 
                         <Select
-                          isMulti
                           options={type}
                           styles={customStyles}
                           className="border p-1 rounded-2"
-                          name="jobType"
-                          defaultValue={type.find(
-                            (option) => option.value === "full"
+                          name="jobtype"
+                          value={type.find(
+                            (option) => option.value === jobtype || null
                           )}
-                          value={companyData.jobType}
-                          onChange={handleInputJobType}
-                          id="jobType"
+                          onChange={(selectedOption) =>
+                            setJobType(
+                              selectedOption ? selectedOption.value : ""
+                            )
+                          }
+                        />
+                      </div>
+
+                      <div className="entryGroup col-lg-6">
+                        <label>
+                          WorkPlace type <sup>*</sup>
+                        </label>
+
+                        <Select
+                          options={workType}
+                          styles={customStyles}
+                          className="border p-1 rounded-2"
+                          name="workplace"
+                          value={workType.find(
+                            (option) => option.value === workPlaceType || null
+                          )}
+                          onChange={(selectedOption) =>
+                            setWorkPlaceType(
+                              selectedOption ? selectedOption.value : ""
+                            )
+                          }
                         />
                       </div>
 
@@ -327,14 +391,14 @@ const PostJob = () => {
 
                         <Select
                           isMulti
+                          name="skill"
                           options={skills}
-                          styles={customStyles}
+                          value={skill}
+                          onChange={(selectedOptions) =>
+                            setSkills(selectedOptions || [])
+                          }
                           className="border p-1 rounded-2"
-                          name="skills"
-                          id="skills"
-                          defaultValue={skills.find(
-                            (option) => option.value === "webDesign"
-                          )}
+                          styles={customStyles}
                         />
                       </div>
 
@@ -344,8 +408,8 @@ const PostJob = () => {
                         </label>
 
                         <ReactQuill
-                          value={companyData.description}
-                          onChange={handleQuillChange}
+                          value={des}
+                          onChange={(value) => setDes(value)}
                           placeholder="Enter Job Details..."
                         />
                       </div>
@@ -359,9 +423,14 @@ const PostJob = () => {
                           options={career}
                           styles={customStyles}
                           className="border p-1 rounded-2"
-                          defaultValue={career.find(
-                            (option) => option.value === "fresher"
+                          value={career.find(
+                            (option) => option.value === careerLevel || null
                           )}
+                          onChange={(selectedOption) =>
+                            setCareerLevel(
+                              selectedOption ? selectedOption.value : ""
+                            )
+                          }
                         />
                       </div>
 
@@ -374,9 +443,14 @@ const PostJob = () => {
                           options={experience}
                           styles={customStyles}
                           className="border p-1 rounded-2"
-                          defaultValue={experience.find(
-                            (option) => option.value === "1"
+                          value={experience.find(
+                            (option) => option.value === experiences || null
                           )}
+                          onChange={(selectedOption) =>
+                            setExperience(
+                              selectedOption ? selectedOption.value : ""
+                            )
+                          }
                         />
                       </div>
 
@@ -389,9 +463,14 @@ const PostJob = () => {
                           options={qualification}
                           styles={customStyles}
                           className="border p-1 rounded-2"
-                          defaultValue={qualification.find(
-                            (option) => option.value === "associate"
+                          value={qualification.find(
+                            (option) => option.value === qual || null
                           )}
+                          onChange={(selectedOption) =>
+                            setQualification(
+                              selectedOption ? selectedOption.value : ""
+                            )
+                          }
                         />
                       </div>
 
@@ -404,9 +483,14 @@ const PostJob = () => {
                           options={qty}
                           styles={customStyles}
                           className="border p-1 rounded-2"
-                          defaultValue={qty.find(
-                            (option) => option.value === "1"
+                          value={qty.find(
+                            (option) => option.value === quantity || null
                           )}
+                          onChange={(selectedOption) =>
+                            setQuantity(
+                              selectedOption ? selectedOption.value : ""
+                            )
+                          }
                         />
                       </div>
 
@@ -419,22 +503,29 @@ const PostJob = () => {
                           options={gender}
                           styles={customStyles}
                           className="border p-1 rounded-2"
-                          defaultValue={gender.find(
-                            (option) => option.value === "male"
+                          value={gender.find(
+                            (option) => option.value === Gender || null
                           )}
+                          onChange={(selectedOption) =>
+                            setGender(
+                              selectedOption ? selectedOption.value : ""
+                            )
+                          }
                         />
                       </div>
 
                       <div className="entryGroup col-lg-6">
                         <label>
-                          Closing days <sup>*</sup>
+                          Closing date <sup>*</sup>
                         </label>
 
                         <input
-                          type="text"
-                          id="text"
-                          name="text"
-                          placeholder="30"
+                          type="date"
+                          id="expiryDate"
+                          name="expiryDate"
+                          value={expirydate}
+                          onChange={(e) => setExpiryDate(e.target.value)}
+                          min={new Date().toISOString().split("T")[0]}
                         />
                       </div>
                     </div>
@@ -453,10 +544,14 @@ const PostJob = () => {
                           options={salary}
                           styles={customStyles}
                           className="border p-1 rounded-2"
-                          onChange={handleSalaryChange}
-                          defaultValue={salary.find(
-                            (option) => option.value === "range"
+                          value={salary.find(
+                            (option) => option.value === Salary || null
                           )}
+                          onChange={(selectedOption) =>
+                            setSalary(
+                              selectedOption ? selectedOption.value : ""
+                            )
+                          }
                         />
                       </div>
 
@@ -469,15 +564,19 @@ const PostJob = () => {
                           options={currency}
                           styles={customStyles}
                           className="border p-1 rounded-2"
-                          defaultValue={currency.find(
-                            (option) => option.value === "pkr"
+                          value={currency.find(
+                            (option) => option.value === curr || null
                           )}
-                          onChange={handleCurrencyType}
+                          onChange={(selectedOption) =>
+                            setCurrency(
+                              selectedOption ? selectedOption.value : ""
+                            )
+                          }
                         />
                       </div>
 
                       {/* Conditionally Rendered Fields */}
-                      {selectedSalary === "range" && (
+                      {Salary === "range" && (
                         <>
                           <div className="entryGroup col-md-6">
                             <label>
@@ -485,10 +584,9 @@ const PostJob = () => {
                             </label>
                             <input
                               type="number"
-                              id="min"
-                              name="min"
-                              value={companyData.minValue}
-                              onChange={handleMinChange}
+                              name="minValue"
+                              value={minValue}
+                              onChange={(e) => setMinValue(e.target.value)}
                             />
                           </div>
                           <div className="entryGroup col-md-6">
@@ -497,10 +595,9 @@ const PostJob = () => {
                             </label>
                             <input
                               type="number"
-                              id="max"
-                              name="max"
-                              value={companyData.maxValue}
-                              onChange={handleMaxChange}
+                              name="maxValue"
+                              value={maxValue}
+                              onChange={(e) => setMaxValue(e.target.value)}
                             />
                           </div>
                           <div className="entryGroup col-md-6">
@@ -512,16 +609,20 @@ const PostJob = () => {
                               options={rate}
                               styles={customStyles}
                               className="border p-1 rounded-2"
-                              onChange={handleRateType}
-                              defaultValue={rate.find(
-                                (option) => option.value === "none"
+                              value={rate.find(
+                                (option) => option.value === rateType || null
                               )}
+                              onChange={(selectedOption) =>
+                                setRateType(
+                                  selectedOption ? selectedOption.value : ""
+                                )
+                              }
                             />
                           </div>
                         </>
                       )}
 
-                      {selectedSalary === "starting" && (
+                      {Salary === "starting" && (
                         <>
                           <div className="entryGroup col-md-6">
                             <label>
@@ -529,10 +630,9 @@ const PostJob = () => {
                             </label>
                             <input
                               type="number"
-                              id="min"
-                              name="min"
-                              value={companyData.minValue}
-                              onChange={handleMinChange}
+                              name="minValue"
+                              value={minValue}
+                              onChange={(e) => setMinValue(e.target.value)}
                             />
                           </div>
                           <div className="entryGroup col-md-6">
@@ -544,16 +644,20 @@ const PostJob = () => {
                               options={rate}
                               styles={customStyles}
                               className="border p-1 rounded-2"
-                              defaultValue={rate.find(
-                                (option) => option.value === "none"
+                              value={rate.find(
+                                (option) => option.value === rateType || null
                               )}
-                              onChange={handleRateType}
+                              onChange={(selectedOption) =>
+                                setRateType(
+                                  selectedOption ? selectedOption.value : ""
+                                )
+                              }
                             />
                           </div>
                         </>
                       )}
 
-                      {selectedSalary === "maximum" && (
+                      {Salary === "maximum" && (
                         <>
                           <div className="entryGroup col-md-6">
                             <label>
@@ -561,10 +665,9 @@ const PostJob = () => {
                             </label>
                             <input
                               type="number"
-                              id="max"
-                              name="max"
-                              value={companyData.maxValue}
-                              onChange={handleMaxChange}
+                              name="maxValue"
+                              value={maxValue}
+                              onChange={(e) => setMaxValue(e.target.value)}
                             />
                           </div>
                           <div className="entryGroup col-md-6">
@@ -576,16 +679,20 @@ const PostJob = () => {
                               options={rate}
                               styles={customStyles}
                               className="border p-1 rounded-2"
-                              onChange={handleRateType}
-                              defaultValue={rate.find(
-                                (option) => option.value === "none"
+                              value={rate.find(
+                                (option) => option.value === rateType || null
                               )}
+                              onChange={(selectedOption) =>
+                                setRateType(
+                                  selectedOption ? selectedOption.value : ""
+                                )
+                              }
                             />
                           </div>
                         </>
                       )}
 
-                      {selectedSalary === "negotiable" && null}
+                      {Salary === "negotiable" && null}
                     </div>
                   </div>
 
@@ -602,10 +709,14 @@ const PostJob = () => {
                           options={applyType}
                           styles={customStyles}
                           className="border p-1 rounded-2"
-                          onChange={handleAppliedType}
-                          defaultValue={applyType.find(
-                            (option) => option.value === "email"
+                          value={applyType.find(
+                            (option) => option.value === appliedType || null
                           )}
+                          onChange={(selectedOption) =>
+                            setAppliedType(
+                              selectedOption ? selectedOption.value : ""
+                            )
+                          }
                         />
                       </div>
 
@@ -617,9 +728,10 @@ const PostJob = () => {
 
                           <input
                             type="email"
-                            id="email"
                             name="email"
                             placeholder="Enter email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                           />
                         </div>
                       )}
@@ -631,9 +743,10 @@ const PostJob = () => {
 
                           <input
                             type="text"
-                            id="text"
                             name="text"
                             placeholder="Enter url"
+                            value={url}
+                            onChange={(e) => setURL(e.target.value)}
                           />
                         </div>
                       )}
@@ -645,8 +758,8 @@ const PostJob = () => {
                           </label>
                           <PhoneInput
                             className="mt-1"
-                            value={value}
-                            onChange={setValue}
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
                             defaultCountry="PK"
                           />
                         </div>
@@ -664,13 +777,18 @@ const PostJob = () => {
                         </label>
 
                         <Select
-                          options={company}
+                          options={CompanyData}
                           styles={customStyles}
                           className="border p-1 rounded-2"
-                          name="company"
-                          value={companyData.company}
-                          onChange={handleInputCompany}
-                          id="company"
+                          name="Company"
+                          value={CompanyData.find(
+                            (option) => option.value === Company
+                          )}
+                          onChange={(selectedOption) =>
+                            setCompany(
+                              selectedOption ? selectedOption.value : ""
+                            )
+                          }
                         />
                       </div>
 
@@ -688,13 +806,18 @@ const PostJob = () => {
                       <div className="entryGroup col-lg-6">
                         <label>Province</label>
                         <Select
-                          name="province"
-                          options={province}
+                          name="Province"
+                          options={provinceName}
                           styles={customStyles}
                           className="border p-1 rounded-2"
-                          value={companyData.province}
-                          onChange={handleInputProvince}
-                          id="province"
+                          value={provinceName.find(
+                            (option) => option.value === Province || null
+                          )}
+                          onChange={(selectedOption) =>
+                            setProvince(
+                              selectedOption ? selectedOption.value : ""
+                            )
+                          }
                           menuPlacement="top"
                         />
                       </div>
@@ -702,13 +825,16 @@ const PostJob = () => {
                       <div className="entryGroup col-lg-6">
                         <label>City</label>
                         <Select
-                          options={city}
+                          options={cityName}
                           styles={customStyles}
-                          id="city"
-                          name="city"
+                          name="City"
                           className="border p-1 rounded-2"
-                          value={companyData.city}
-                          onChange={handleInputCity}
+                          value={cityName.find(
+                            (option) => option.value === City || null
+                          )}
+                          onChange={(selectedOption) =>
+                            setCity(selectedOption ? selectedOption.value : "")
+                          }
                           menuPlacement="top"
                         />
                       </div>
@@ -717,7 +843,7 @@ const PostJob = () => {
                 </div>
               </div>
 
-              <div className="col-lg-4 col-md-5  text-wrap">
+              {/* <div className="col-lg-4 col-md-5  text-wrap">
                 <div
                   className={`widget-area-init  ${
                     isScrolled ? "preview-section" : ""
@@ -730,30 +856,30 @@ const PostJob = () => {
                         <img src={hirixText} alt="Hirix" />
                       </div>
                       <h4 className="title-about">
-                        {companyData.title || "Job Title "}
+                        {CompanyData.title || "Job Title "}
                       </h4>
 
                       <div className="info-jobs-warpper ">
                         <div className="mb-5">
                           <span>by </span>
                           <span className="name-company">
-                            {companyData.company
-                              ? companyData.company.label
+                            {CompanyData.company_name
+                              ? CompanyData.company.label
                               : "Company "}
                           </span>
                           <span> in </span>
                           <span className="cate-about" data-cate="Category">
-                            {companyData.category
-                              ? companyData.category.label
+                            {CompanyData.category
+                              ? CompanyData.job_category.label
                               : "Category "}
                           </span>
                         </div>
 
                         <div className="label-warpper mb-2 d-flex flex-column">
                           <div className="label-type-inner d-inline-block">
-                            {companyData.jobType &&
-                            companyData.jobType.length > 0 ? (
-                              companyData.jobType.map((option, index) => (
+                            {CompanyData.jobType &&
+                            CompanyData.jobType.length > 0 ? (
+                              CompanyData.jobType.map((option, index) => (
                                 <div key={index} className="label label-type">
                                   {option.label}
                                 </div>
@@ -767,33 +893,33 @@ const PostJob = () => {
                             <div className="label label-location">
                               <PiMapPin className="me-2  mb-1" />
                               <span className="location-about ">
-                                {companyData.province
-                                  ? companyData.province.label
+                                {CompanyData.province
+                                  ? CompanyData.province.label
                                   : "Province "}
                               </span>
                               <span> , </span>
                               <span className="location-about">
-                                {companyData.city
-                                  ? companyData.city.label
+                                {CompanyData.city
+                                  ? CompanyData.city.label
                                   : "City"}
                               </span>
                             </div>
                           </span>
                         </div>
                         {/* Salary Range */}
-                        {selectedSalary === "range" && (
+              {/* {selectedSalary === "range" && (
                           <div className="label label-price">
                             <FaRegMoneyBillAlt />{" "}
-                            {currencyType === "pkr" && <span>PKR </span>}
-                            {currencyType === "usd" && <span>$</span>}
+                            {currency === "pkr" && <span>PKR </span>}
+                            {currency === "usd" && <span>$</span>}
                             <span className="price-minimum">
-                              {companyData.minValue}
-                              </span>
-                              {" - "}
-                              {currencyType === "pkr" && <span>PKR </span>}
-                            {currencyType === "usd" && <span>$</span>}
+                              {CompanyData.minValue}
+                            </span>
+                            {" - "}
+                            {currency === "pkr" && <span>PKR </span>}
+                            {currency === "usd" && <span>$</span>}
                             <span className="price-minimum">
-                              {companyData.maxValue}
+                              {CompanyData.maxValue}
                             </span>
                             {" / "}
                             {rateType === "none" && null}
@@ -808,10 +934,10 @@ const PostJob = () => {
                           <div className="label label-price">
                             <FaRegMoneyBillAlt />
                             {" Minimum: "}
-                            {currencyType === "pkr" && <span>PKR </span>}
-                            {currencyType === "usd" && <span>$</span>}
+                            {currency === "pkr" && <span>PKR </span>}
+                            {currency === "usd" && <span>$</span>}
                             <span className="price-minimum">
-                              {companyData.minValue}
+                              {CompanyData.minValue}
                             </span>
                             {" / "}
                             {rateType === "none" && null}
@@ -826,10 +952,10 @@ const PostJob = () => {
                           <div className="label label-price">
                             <FaRegMoneyBillAlt />
                             {" Maximum: "}
-                            {currencyType === "pkr" && <span>PKR </span>}
-                            {currencyType === "usd" && <span>$</span>}
+                            {currency === "pkr" && <span>PKR </span>}
+                            {currency === "usd" && <span>$</span>}
                             <span className="price-minimum">
-                              {companyData.maxValue}
+                              {CompanyData.maxValue}
                             </span>
                             {" / "}
                             {rateType === "none" && null}
@@ -838,9 +964,9 @@ const PostJob = () => {
                             {rateType === "week" && <span>week</span>}
                             {rateType === "month" && <span>month</span>}
                           </div>
-                        )}
+                        )} */}
 
-                        {selectedSalary === "negotiable" && (
+              {/* {selectedSalary === "negotiable" && (
                           <div className="label label-price">
                             Negotiable Price
                           </div>
@@ -848,8 +974,8 @@ const PostJob = () => {
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                </div> */}
+              {/* </div> */}
             </div>
           </div>
         </form>

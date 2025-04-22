@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   appliedJobs,
   review,
@@ -7,15 +7,78 @@ import {
   meeting,
 } from "../assets/icons/index.js";
 import { FaExternalLinkAlt } from "react-icons/fa";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import Select from "react-select";
 import { CanFooter, VisitChart } from "../index.js";
+import axios from "axios";
+
 const CanDashboard = () => {
-  const jobAge = [
-    { value: "newest", label: "07 days" },
-    { value: "oldest", label: "15 days" },
-    { value: "featured", label: "30 days" },
+   const [selectedDays, setSelectedDays] = useState(7);
+    const navigate = useNavigate();
+    useEffect(() => {
+      const check = sessionStorage.getItem("isLoggedIn");
+      if (!check) {
+        navigate("/");
+      }
+    }, []);
+    const [data, setData] = useState([]);
+    const [ColData, setColData] = useState([]);
+    const id = sessionStorage.getItem("id");
+    useEffect(() => {
+      const GetData = async () => {
+        if (!id) {
+          console.error("User ID not found in session storage");
+          return;
+        }
+        try {
+          const res = await axios.get(`http://localhost:9000/DasboardJobseeker/${id}`);
+          setData(res.data.data);
+        } catch (err) {
+          console.error("Error fetching data:", err);
+        }
+      };
+  
+      GetData();
+    }, []);
+    // useEffect(() => {
+    //   const Data = async () => {
+    //     try {
+    //       const res = await axios.get(
+    //         `http://localhost:9000//${id}`
+    //       );
+    //       console.log("Backend Response:", res.data);
+    //       setColData(res.data.data || []);
+    //     } catch (err) {
+    //       console.error("Error fetching data:", err);
+    //     }
+    //   };
+  
+    //   Data();
+    // }, []);
+  const days = [
+    { value: 7, label: "07 days" },
+    { value: 15, label: "15 days" },
+    { value: 30, label: "30 days" },
   ];
+
+  const cardAssets = {
+    "Applied jobs": {
+      src: appliedJobs,
+      color: "#b3e5fb",
+    },
+    "Expired jobs": {
+      src: meeting,
+      color: "#fdd9c3",
+    },
+    "reviews": {
+      src: review,
+      color: "#febc9c",
+    },
+    "Selected/Hired": {
+      src: text,
+      color: "#cabffd",
+    },
+  };
 
   return (
     <>
@@ -24,27 +87,11 @@ const CanDashboard = () => {
           <h2 className="heading">Welcome back! Candidate</h2>
 
           <ul className="row">
-            {[
-              {
-                src: appliedJobs,
-                num: "47",
-                label: "applied jobs",
-                color: "#b3e5fb",
-              },
-              {
-                src: text,
-                num: "6",
-                label: "my following",
-                color: "#cabffd",
-              },
-              { src: review, num: "6", label: "my reviews ", color: "#febc9c" },
-              {
-                src: meeting,
-                num: "7",
-                label: "meetings",
-                color: "#b7e4cb",
-              },
-            ].map((item, index) => (
+            {data?.map((item, index) => {
+              const matchedCard = cardAssets[item.label] || {};
+              const src = matchedCard.src
+              const color = matchedCard.color
+              return (
               <li className="col-xl-3 p-3 col-sm-6" key={index}>
                 <div className="entryCard d-flex   justify-content-between">
                   <div className="entryDetail">
@@ -57,13 +104,14 @@ const CanDashboard = () => {
                   </div>
                   <div
                     className="entryImg"
-                    style={{ background: `${item.color}` }}
+                    style={{ background: `${color}` }}
                   >
-                    <img src={item.src} alt={item.label} />
+                    <img src={src} alt={item.label} />
                   </div>
                 </div>
               </li>
-            ))}
+              )
+})}
           </ul>
 
           <div className="notification-dashboard">
@@ -71,25 +119,25 @@ const CanDashboard = () => {
               <div className="col-md-7 p-3">
                 <div className="civi-chart-warpper civi-chart-employer">
                   <div className="chart-header">
-                    <h4 className="title-chart">Your Profile Views</h4>
+                    <h4 className="title-chart">Your Applied Data</h4>
                     <div className="form-chart">
                       <Select
-                        options={jobAge}
+                        options={days}
                         styles={customStyles}
                         className="border rounded-3"
-                        defaultValue={jobAge.find(
-                          (option) => option.value === "newest"
+                        defaultValue={days.find(
+                          (option) => option.value === 7
                         )}
                       />
                     </div>
                   </div>
                   <div>
-                    <VisitChart />
+                    <VisitChart days={selectedDays}/>
                   </div>
                 </div>
               </div>
 
-              <div className="col-md-5 p-3">
+              {/* <div className="col-md-5 p-3">
                 <div className="applicants-wrap">
                   <h4 className="title-applicants">Recently Applied jobs</h4>
 
@@ -141,7 +189,7 @@ const CanDashboard = () => {
                     All Applied
                   </NavLink>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

@@ -11,6 +11,7 @@ import dashboard from "./dashboard.svg";
 import job from "./job.svg";
 import applicant from "./applicant.svg";
 import candidate from "./candidate.svg";
+import employee from "./employee.svg";
 import packages from "./package.svg";
 import message from "./message.svg";
 import meeting from "./meeting.svg";
@@ -35,6 +36,7 @@ export {
   job,
   applicant,
   candidate,
+  employee,
   packages,
   message,
   meeting,

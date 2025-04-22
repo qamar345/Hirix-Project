@@ -12,12 +12,18 @@ import {
   setting,
   logout,
 } from "../assets/icons/index.js";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
 import ProgressBar from "react-bootstrap/ProgressBar";
 
 const CanSidebar = ({ isCollapsed, handleSidebarToggle }) => {
-  const now = 78;
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    sessionStorage.clear();
+    alert("LoggedOut Successfully");
+    navigate("/");
+  };
+  const now = sessionStorage.getItem("Percent");
   return (
     <aside
       className={` ${isCollapsed ? "asideWrapperCollapsed" : "asideWrapper"}`}
@@ -101,7 +107,7 @@ const CanSidebar = ({ isCollapsed, handleSidebarToggle }) => {
             { src: logout, alt: "Logout", label: "Logout", link: "/" },
           ].map((item, index) => (
             <li className="nav-item" key={index}>
-              <NavLink className="civi-icon-items" to={item.link}>
+              <NavLink className="civi-icon-items" onClick={item.label === "Logout" ? handleLogout : null} to={item.link}>
                 <span className="image">
                   <img src={item.src} alt={item.alt} />
                 </span>

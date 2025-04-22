@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import PhoneInput from "react-phone-number-input";
 import Select from "react-select";
 import ReactQuill from "react-quill";
@@ -17,14 +17,69 @@ import { CircularProgressbarWithChildren } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import "react-tooltip/dist/react-tooltip.css";
 import { Tooltip } from "react-tooltip";
+import axios from "axios";
+
 const CanProfile = () => {
+  const navigate = useNavigate();
+  const id = sessionStorage.getItem("id");
+  const check = sessionStorage.getItem("isLoggedIn");
+  useEffect(() => {
+    if (!check) navigate("/");
+  });
+  const [selectedFile, setSelectedFile] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [value, setValue] = useState();
   const [activeTab, setActiveTab] = useState("basicInfoTab");
   const [uploadedImage, setUploadedImage] = useState(null);
+  const [firstName, setfirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setemail] = useState("");
+  const [phone, setphone] = useState("");
+  const [currentPosition, setcurrentPosition] = useState("");
+  const [categories, setcategories] = useState("");
+  const [des, setdes] = useState("");
+  const [dop, setdop] = useState("");
+  const [age, setage] = useState("");
+  const [GenderIs, setGenderIs] = useState("");
+  const [languages, setlanguages] = useState("");
+  const [Qualification, setQualification] = useState("");
+  const [Experience, setExperience] = useState("");
+  const [salary, setsalary] = useState("");
+  const [salaryType, setsalaryType] = useState("");
+  const [Currency, setCurrency] = useState("");
+  const [Province, setProvince] = useState("");
+  const [City, setCity] = useState("");
+  const [linkedin, setlinkedIn] = useState("");
+  const [title, setTitle] = useState("");
+  const [EduLevel, setEduLevel] = useState("");
+  const [EduFrom, setEduFrom] = useState("");
+  const [EduTo, setEduTo] = useState("");
+  const [EduDes, setEduDes] = useState("");
+  const [jobtitle, setjobTitle] = useState("");
+  const [ExpCompany, setExpCompany] = useState("");
+  const [ExpFrom, setExpFrom] = useState("");
+  const [ExpTo, setExpTo] = useState("");
+  const [ExpDes, setExpDes] = useState("");
+  const [selectedSkills, setSelectedSkills] = useState([]);
+  const [ProjectTitle, setProjectTitle] = useState("");
+  const [link, setLink] = useState("");
+  const [ProjectDes, setProjectDes] = useState("");
+  const [AwardTitle, setAwardTitle] = useState("");
+  const [dateAwarded, setdateAwarded] = useState("");
+  const [AwardDes, setAwardDes] = useState("");
+  const [percentage, setPercentage] = useState(0);
+  const [checkStatus, setCheckStatus] = useState({
+    info: false,
+    education: false,
+    experience: false,
+    skills: false,
+    projects: false,
+    awards: false,
+  });
+  sessionStorage.setItem("Percent", percentage);
   const handleActiveTab = (tab) => {
     setActiveTab(tab);
   };
+
   const handleQuillChange = (value) => {
     setCompanyData((prevData) => ({
       ...prevData,
@@ -50,6 +105,7 @@ const CanProfile = () => {
   const handleLogoUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = () => {
         setUploadedImage(reader.result);
@@ -60,6 +116,251 @@ const CanProfile = () => {
   const handleCancelUpload = () => {
     setUploadedImage(null);
   };
+  const submit = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+
+    formData.append("first_name", firstName?.trim());
+    formData.append("last_name", lastName?.trim());
+    formData.append("email", email?.trim());
+    formData.append("phone", phone?.trim());
+    formData.append("qualification", Qualification?.trim());
+    formData.append("CurrentPosition", currentPosition?.trim());
+    formData.append("Category", categories?.trim());
+    formData.append("Description", des?.trim());
+    formData.append("DOP", dop?.trim());
+    formData.append("Age", age?.trim());
+    formData.append("Gender", GenderIs?.trim());
+    formData.append("Language", languages?.trim());
+    formData.append("Experience", Experience?.trim());
+    formData.append("offer_salary", salary?.trim());
+    formData.append("Salary_type", salaryType?.trim());
+    formData.append("Currency", Currency?.trim());
+    formData.append("province", Province);
+    formData.append("location", City);
+    formData.append("LinkedIn", linkedin?.trim());
+
+    if (selectedFile) {
+      formData.append("image", selectedFile);
+    }
+    try {
+      const res = await axios.post(
+        `http://localhost:9000/postProfile/${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      alert(res.data.msg);
+      navigate(`/candidate/dashboard`);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const EduSubmit = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+
+    formData.append("Title", title?.trim());
+    formData.append("Level", EduLevel?.trim());
+    formData.append("From", EduFrom?.trim());
+    formData.append("To", EduTo?.trim());
+    formData.append("Description", EduDes?.trim());
+    console.log(formData);
+    try {
+      const res = await axios.post(
+        `http://localhost:9000/AddEducation/${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      alert(res.data.msg);
+      navigate(`/candidate/dashboard`);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const ExperienceSumit = async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      Title: jobtitle?.trim(),
+      Company: ExpCompany?.trim(),
+      From: ExpFrom?.trim(),
+      To: ExpTo?.trim(),
+      Description: ExpDes?.trim(),
+    };
+
+    try {
+      const res = await axios.post(
+        `http://localhost:9000/AddExperience/${id}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      alert(res.data.msg);
+      navigate(`/candidate/dashboard`);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const skillsSubmit = async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      skills: selectedSkills.map((skill) => skill.label),
+    };
+
+    try {
+      const res = await axios.post(
+        `http://localhost:9000/add-skillset/${id}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      alert(res.data.msg);
+      navigate(`/candidate/dashboard`);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const ProjectSubmit = async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      Title: ProjectTitle?.trim(),
+      Link: link?.trim(),
+      Description: ProjectDes?.trim(),
+    };
+
+    try {
+      const res = await axios.post(
+        `http://localhost:9000/AddProject/${id}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      alert(res.data.msg);
+      navigate(`/candidate/dashboard`);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const AwardSubmit = async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      Title: AwardTitle?.trim(),
+      date_awarded: dateAwarded?.trim(),
+      Description: AwardDes?.trim(),
+    };
+
+    try {
+      const res = await axios.post(
+        `http://localhost:9000/AddAward/${id}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      alert(res.data.msg);
+      navigate(`/candidate/dashboard`);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:9000/profile-status/${id}`
+        );
+        const { info, education, experience, skills, projects, awards } =
+          res.data.status;
+
+        const newStatus = {
+          info: info,
+          education: education,
+          experience: experience,
+          skills: skills,
+          projects: projects,
+          awards: awards,
+        };
+
+        console.log(newStatus)
+
+        setCheckStatus(newStatus);
+
+        // Calculate percentage based on how many sections have data
+        const completedSections =
+          Object.values(newStatus).filter(Boolean).length;
+        const totalSections = Object.keys(newStatus).length;
+        const newPercentage =
+          totalSections > 0
+            ? ((completedSections / totalSections) * 100).toFixed(1)
+            : "0.0";
+
+        setPercentage(newPercentage);
+        console.log(completedSections);
+      } catch (error) {
+        console.error("Error fetching profile data", error);
+      }
+    };
+
+    fetchProfileData();
+  }, [id]);
+
+  // const toggleCheck = (key) => {
+  //   setCheckStatus((prevStatus) => {
+  //     const updatedStatus = {
+  //       ...prevStatus,
+  //       [key]: !prevStatus[key],
+  //     };
+
+  //     // Debugging: Log updated status
+  //     console.log("Updated Status:", updatedStatus);
+
+  //     // Recalculate percentage after updating checkStatus
+  //     const total = Object.keys(updatedStatus).length;
+  //     const checked = Object.values(updatedStatus).filter((val) => val).length;
+
+  //     // Debugging: Log total and checked counts
+  //     console.log("Total sections:", total);
+  //     console.log("Checked sections:", checked);
+
+  //     const newPercentage = Math.round((checked / total) * 100);
+  //     console.log("New Percentage:", newPercentage);  // Log calculated percentage
+
+  //     setPercentage(newPercentage);
+
+  //     return updatedStatus;
+  //   });
+  // };
+
   const cats = [
     { value: "analytics", label: "Analytics" },
     { value: "customerService", label: "Customer Service" },
@@ -67,11 +368,11 @@ const CanProfile = () => {
     { value: "developmentIT", label: "Development & IT" },
   ];
   const canAge = [
-    { value: "`1`", label: "18 - 25" },
-    { value: "2", label: "25 - 30" },
-    { value: "3", label: "30 - 35" },
-    { value: "4", label: "35 - 40" },
-    { value: "5", label: "40+" },
+    { value: "18_25", label: "18 - 25" },
+    { value: "25_30", label: "25 - 30" },
+    { value: "30_35", label: "30 - 35" },
+    { value: "35_40", label: "35 - 40" },
+    { value: "40+", label: "40+" },
   ];
   const gender = [
     { value: "female", label: "Female" },
@@ -79,9 +380,9 @@ const CanProfile = () => {
     { value: "other", label: "Other" },
   ];
   const language = [
-    { value: "1", label: "Urdu" },
-    { value: "2", label: "English" },
-    { value: "3", label: "Punjabi" },
+    { value: "Urdu", label: "Urdu" },
+    { value: "English", label: "English" },
+    { value: "Punjabi", label: "Punjabi" },
   ];
   const qualification = [
     { value: "associate", label: "Associate" },
@@ -92,10 +393,10 @@ const CanProfile = () => {
     { value: "master", label: "Master's Degree" },
   ];
   const experience = [
-    { value: "1", label: "1-2 Years" },
-    { value: "2", label: "3-5 Years" },
-    { value: "3", label: "6-9 Years" },
-    { value: "4", label: "10+ Years" },
+    { value: "1_2", label: "1-2 Years" },
+    { value: "3_5", label: "3-5 Years" },
+    { value: "6_9", label: "6-9 Years" },
+    { value: "10+", label: "10+ Years" },
   ];
   const currency = [
     { value: "usd", label: "($) - USD" },
@@ -111,7 +412,7 @@ const CanProfile = () => {
   const city = [
     { value: "lhr", label: "Lahore" },
     { value: "rwp", label: "Rawalpindi" },
-    { value: "khi", label: "Karachi" },
+    { value: "karachi", label: "Karachi" },
     { value: "isb", label: "Islamabad" },
   ];
   const province = [
@@ -126,23 +427,16 @@ const CanProfile = () => {
     { value: "webDesign", label: "Web Design" },
     { value: "responsiveDesign", label: "Responsive Design" },
   ];
-  const percentage = 78;
+  // const percentage = 78;
 
-  const [checkStatus, setCheckStatus] = useState({
-    info: true,
-    education: true,
-    experience: true,
-    skills: true,
-    projects: false,
-    awards: true,
-  });
-
-  const toggleCheck = (key) => {
-    setCheckStatus((prevStatus) => ({
-      ...prevStatus,
-      [key]: !prevStatus[key],
-    }));
-  };
+  // const [checkStatus, setCheckStatus] = useState({
+  //   info: true,
+  //   education: true,
+  //   experience: true,
+  //   skills: true,
+  //   projects: true,
+  //   awards: true,
+  // });
 
   const listItems = [
     { id: "info", label: "Basic Info" },
@@ -152,6 +446,7 @@ const CanProfile = () => {
     { id: "projects", label: "Projects" },
     { id: "awards", label: "Awards" },
   ];
+  console.log("listItems:", listItems);
   return (
     <div id="candidate-profile" className="dashboardWrapper addCompany">
       <div className="entry-my-page candidate-profile-dashboard">
@@ -215,16 +510,22 @@ const CanProfile = () => {
 
           <div className="tab-content row">
             {/* Input */}
-            <form
+            {/* <form 
               className={`candidate-profile-form form-dashboard  col-lg-8 col-md-7  ${
                 isScrolled ? "companyData" : ""
               }`}
+            > */}
+            {/* Basic Info */}
+            <div
+              id="basicInfoTab"
+              className={`tab-info ${
+                activeTab === "basicInfoTab" ? "active" : ""
+              }`}
             >
-              {/* Basic Info */}
-              <div
-                id="basicInfoTab"
-                className={`tab-info ${
-                  activeTab === "basicInfoTab" ? "active" : ""
+              <form
+                onSubmit={submit}
+                className={`candidate-profile-form form-dashboard  col-lg-8 col-md-7  ${
+                  isScrolled ? "companyData" : ""
                 }`}
               >
                 <div className=" block-from">
@@ -278,8 +579,8 @@ const CanProfile = () => {
                         type="text"
                         id="user_firstname"
                         name="candidate_first_name"
-                        placeholder="First name"
-                        defaultValue="Candidate"
+                        value={firstName}
+                        onChange={(e) => setfirstName(e.target.value)}
                       />
                     </div>
                     <div className="entryGroup col-md-6">
@@ -289,8 +590,8 @@ const CanProfile = () => {
                         type="text"
                         id="user_lastname"
                         name="candidate_last_name"
-                        placeholder="Last name"
-                        defaultValue="Demo"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
                       />
                     </div>
                     <div className="entryGroup col-md-6">
@@ -300,17 +601,19 @@ const CanProfile = () => {
                         type="email"
                         id="user_email"
                         name="candidate_email"
-                        placeholder="Email"
-                        defaultValue="candidate@demo.com"
+                        placeholder="candidate@demo.com"
+                        value={email}
+                        onChange={(e) => setemail(e.target.value)}
                       />
                     </div>
                     <div className="entryGroup col-md-6">
                       <label htmlFor="candidate_phone">Phone number</label>
 
-                      <PhoneInput
+                      <input
+                      type="number"
                         className="candidate-phone"
-                        value={value}
-                        onChange={setValue}
+                        value={phone}
+                        onChange={(e) => setphone(e.target.value)}
                         defaultCountry="PK"
                       />
                     </div>
@@ -323,8 +626,9 @@ const CanProfile = () => {
                         type="text"
                         id="candidate_current_position"
                         name="candidate_current_position"
-                        defaultValue="React Developer"
-                        placeholder="Select your current position"
+                        placeholder="React Developer"
+                        value={currentPosition}
+                        onChange={(e) => setcurrentPosition(e.target.value)}
                       />
                     </div>
                     <div className="entryGroup col-md-6">
@@ -335,16 +639,20 @@ const CanProfile = () => {
                         className="border p-1 rounded-2"
                         name="category"
                         id="category"
-                        defaultValue={cats.find(
-                          (option) => option.value === "designCreative"
+                        value={cats.find(
+                          (option) => option.value === categories
                         )}
+                        onChange={(selectedOption) =>
+                          setcategories(selectedOption.value)
+                        }
                       />
                     </div>
                     <div className="entryGroup col-md-12">
                       <label htmlFor="candidate_des">Description</label>
                       <ReactQuill
-                        onChange={handleQuillChange}
-                        // placeholder="Enter Job Details..."
+                        value={des}
+                        onChange={setdes}
+                        placeholder="Enter Job Details..."
                       />
                     </div>
                     <div className="entryGroup col-md-6">
@@ -352,10 +660,11 @@ const CanProfile = () => {
                       <input
                         className="point-mark datepicker point-active hasDatepicker"
                         type="text"
-                        placeholder="Date of birth"
+                        placeholder="1998-01-01"
                         id="candidate_dob"
                         name="candidate_dob"
-                        defaultValue="1989-01-01"
+                        value={dop}
+                        onChange={(e) => setdop(e.target.value)}
                       />
                     </div>
                     <div className="entryGroup col-md-6">
@@ -366,9 +675,10 @@ const CanProfile = () => {
                         className="border p-1 rounded-2"
                         name="age"
                         id="age"
-                        defaultValue={canAge.find(
-                          (option) => option.value === "2"
-                        )}
+                        value={canAge.find((option) => option.value === age)}
+                        onChange={(selectedOption) =>
+                          setage(selectedOption.value)
+                        }
                       />
                     </div>
                     <div className="entryGroup col-md-6">
@@ -379,9 +689,12 @@ const CanProfile = () => {
                         className="border p-1 rounded-2"
                         name="gender"
                         id="gender"
-                        defaultValue={gender.find(
-                          (option) => option.value === "male"
+                        value={gender.find(
+                          (option) => option.value === GenderIs
                         )}
+                        onChange={(selectedOption) =>
+                          setGenderIs(selectedOption.value)
+                        }
                       />
                     </div>
                     <div className="entryGroup col-md-6">
@@ -392,9 +705,12 @@ const CanProfile = () => {
                         className="border p-1 rounded-2"
                         name="language"
                         id="language"
-                        defaultValue={language.find(
-                          (option) => option.value === "2"
+                        value={language.find(
+                          (option) => option.value === languages
                         )}
+                        onChange={(selectedOption) =>
+                          setlanguages(selectedOption.value)
+                        }
                       />
                     </div>
                     <div className="entryGroup col-md-6">
@@ -407,9 +723,12 @@ const CanProfile = () => {
                         className="border p-1 rounded-2"
                         name="qualification"
                         id="qualification"
-                        defaultValue={qualification.find(
-                          (option) => option.value === "master"
+                        value={qualification.find(
+                          (option) => option.value === Qualification
                         )}
+                        onChange={(selectedOption) =>
+                          setQualification(selectedOption.value)
+                        }
                       />
                     </div>
                     <div className="entryGroup col-md-6">
@@ -420,9 +739,12 @@ const CanProfile = () => {
                         className="border p-1 rounded-2"
                         name="experience"
                         id="experience"
-                        defaultValue={experience.find(
-                          (option) => option.value === "1"
+                        value={experience.find(
+                          (option) => option.value === Experience
                         )}
+                        onChange={(selectedOption) =>
+                          setExperience(selectedOption.value)
+                        }
                       />
                     </div>
                     <div className="entryGroup col-md-6">
@@ -434,8 +756,8 @@ const CanProfile = () => {
                         type="number"
                         id="candidate_offer_salary"
                         name="candidate_offer_salary"
-                        defaultValue={100000}
-                        placeholder="80000"
+                        value={salary}
+                        onChange={(e) => setsalary(e.target.value)}
                       />
                     </div>
                     <div className="entryGroup col-md-6">
@@ -446,9 +768,12 @@ const CanProfile = () => {
                         className="border p-1 rounded-2"
                         name="rate"
                         id="rate"
-                        defaultValue={rate.find(
-                          (option) => option.value === "none"
+                        value={rate.find(
+                          (option) => option.value === salaryType
                         )}
+                        onChange={(selectedOption) =>
+                          setsalaryType(selectedOption.value)
+                        }
                       />
                     </div>
                     <div className="entryGroup col-md-6">
@@ -459,9 +784,12 @@ const CanProfile = () => {
                         className="border p-1 rounded-2"
                         name="currency"
                         id="currency"
-                        defaultValue={currency.find(
-                          (option) => option.value === "pkr"
+                        value={currency.find(
+                          (option) => option.value === Currency
                         )}
+                        onChange={(selectedOption) =>
+                          setCurrency(selectedOption.value)
+                        }
                       />
                     </div>
                   </div>
@@ -477,9 +805,10 @@ const CanProfile = () => {
                         className="border p-1 rounded-2"
                         name="province"
                         id="province"
-                        defaultValue={province.find(
-                          (option) => option.value === "punjab"
+                        value={province.find(
+                          (option) => option.value === Province
                         )}
+                        onChange={setProvince}
                       />
                     </div>
 
@@ -491,9 +820,8 @@ const CanProfile = () => {
                         className="border p-1 rounded-2"
                         name="city"
                         id="city"
-                        defaultValue={city.find(
-                          (option) => option.value === "rwo"
-                        )}
+                        value={city.find((option) => option.value === City)}
+                        onChange={setCity}
                       />
                     </div>
                   </div>
@@ -509,16 +837,40 @@ const CanProfile = () => {
                         name="candidate_linkedin"
                         className="point-mark point-active"
                         placeholder="linkedin.com/candidate"
+                        value={linkedin}
+                        onChange={(e) => setlinkedIn(e.target.value)}
                       />
                     </div>
                   </div>
                 </div>
-              </div>
-              {/* Education */}
-              <div
-                id="educationTab"
-                className={`tab-info ${
-                  activeTab === "educationTab" ? "active" : ""
+                {/* Control Buttons */}
+                <div className="control-btn">
+                  <Link
+                    to="/candidate/dashboard"
+                    className="civi-button button-outline"
+                  >
+                    Cancel
+                  </Link>
+                  <button
+                    type="submit"
+                    className="civi-button btn-add-to-message"
+                  >
+                    Publish
+                  </button>
+                </div>
+              </form>
+            </div>
+            {/* Education */}
+            <div
+              id="educationTab"
+              className={`tab-info ${
+                activeTab === "educationTab" ? "active" : ""
+              }`}
+            >
+              <form
+                onSubmit={EduSubmit}
+                className={`candidate-profile-form form-dashboard  col-lg-8 col-md-7  ${
+                  isScrolled ? "companyData" : ""
                 }`}
               >
                 <div className="education-info block-from">
@@ -529,20 +881,21 @@ const CanProfile = () => {
 
                   <div className="info-wrapper">
                     <div className="row">
-                      <div className="col-md-12 d-flex gap-2 mb-2 border-bottom pb-3 mb-5">
-                        <FaTimes />
-                        <h6 className="education flex-grow-1">
-                          Education <span>1</span>
-                        </h6>
-                        <FaChevronUp className="" />
-                      </div>
+                      {/* <div className="col-md-12 d-flex gap-2 mb-2 border-bottom pb-3 mb-5">
+                          <FaTimes />
+                          <h6 className="education flex-grow-1">
+                            Education <span>1</span>
+                          </h6>
+                          <FaChevronUp className="" />
+                        </div> */}
                       <div className="entryGroup col-md-6">
                         <label>Title</label>
                         <input
                           type="text"
-                          name="candidate_education_title"
+                          name="title"
                           placeholder="Enter Title"
-                          defaultValue="New York University"
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
                           className="point-mark point-active"
                         />
                       </div>
@@ -550,31 +903,33 @@ const CanProfile = () => {
                         <label>Level of Education</label>
                         <input
                           type="text"
-                          name="candidate_education_level"
+                          name="EduLevel"
                           placeholder="Enter Level"
-                          defaultValue="Master's"
+                          value={EduLevel}
+                          onChange={(e) => setEduLevel(e.target.value)}
                           className="point-mark point-active"
                         />
                       </div>
-                      <div className="entryGroup col-md-12">
-                        <input
-                          type="checkbox"
-                          className="custom-checkbox input-control point-mark point-active"
-                          name="candidate_education_check[]"
-                          defaultValue="present"
-                        />
-                        <label className="label-present ms-3">
-                          Choose at the present time
-                        </label>
-                      </div>
+                      {/* <div className="entryGroup col-md-12">
+                          <input
+                            type="checkbox"
+                            className="custom-checkbox input-control point-mark point-active"
+                            name="candidate_education_check[]"
+                            defaultValue="present"
+                          />
+                          <label className="label-present ms-3">
+                            Choose at the present time
+                          </label>
+                        </div> */}
                       <div className="entryGroup col-md-6">
                         <label>From</label>
                         <input
                           type="text"
                           className="datepicker point-mark point-active hasDatepicker"
                           placeholder="Starting Date"
-                          name="candidate_education_from"
-                          defaultValue="2020-06-01"
+                          name="EduFrom"
+                          value={EduFrom}
+                          onChange={(e) => setEduFrom(e.target.value)}
                           id="fromId"
                         />
                       </div>
@@ -584,19 +939,28 @@ const CanProfile = () => {
                           type="text"
                           className="datepicker point-mark point-active hasDatepicker"
                           placeholder="Ending Date"
-                          name="candidate_education_to"
-                          defaultValue="2022-01-01"
+                          name="EduTo"
+                          value={EduTo}
+                          onChange={(e) => setEduTo(e.target.value)}
                           id="toId"
                         />
                       </div>
+                      {/* <div className="entryGroup col-md-12">
+                          <label>Description</label>
+                          <textarea
+                            name="candidate_education_description"
+                            cols={30}
+                            placeholder="Short description"
+                            rows={7}
+                            className="point-mark point-active"
+                          />
+                        </div> */}
                       <div className="entryGroup col-md-12">
-                        <label>Description</label>
-                        <textarea
-                          name="candidate_education_description"
-                          cols={30}
-                          placeholder="Short description"
-                          rows={7}
-                          className="point-mark point-active"
+                        <label htmlFor="candidate_des">Description</label>
+                        <ReactQuill
+                          value={EduDes}
+                          onChange={setEduDes}
+                          placeholder="Enter Job Details..."
                         />
                       </div>
                     </div>
@@ -611,12 +975,34 @@ const CanProfile = () => {
                     </Link>
                   </div>
                 </div>
-              </div>
-              {/* Experience */}
-              <div
-                id="experienceTab"
-                className={`tab-info ${
-                  activeTab === "experienceTab" ? "active" : ""
+                {/* Control Buttons */}
+                <div className="control-btn">
+                  <Link
+                    to="/candidate/dashboard"
+                    className="civi-button button-outline"
+                  >
+                    Cancel
+                  </Link>
+                  <button
+                    type="submit"
+                    className="civi-button btn-add-to-message"
+                  >
+                    Publish
+                  </button>
+                </div>
+              </form>
+            </div>
+            {/* Experience */}
+            <div
+              id="experienceTab"
+              className={`tab-info ${
+                activeTab === "experienceTab" ? "active" : ""
+              }`}
+            >
+              <form
+                onSubmit={ExperienceSumit}
+                className={`candidate-profile-form form-dashboard  col-lg-8 col-md-7  ${
+                  isScrolled ? "companyData" : ""
                 }`}
               >
                 <div className="experience-info block-from">
@@ -626,20 +1012,21 @@ const CanProfile = () => {
                   </div>
                   <div className="info-wrapper">
                     <div className="row">
-                      <div className="col-md-12 d-flex gap-2 mb-2 border-bottom pb-3 mb-5">
-                        <FaTimes />
-                        <h6 className="education flex-grow-1">
-                          Experience <span>1</span>
-                        </h6>
-                        <FaChevronUp className="" />
-                      </div>
+                      {/* <div className="col-md-12 d-flex gap-2 mb-2 border-bottom pb-3 mb-5">
+                          <FaTimes />
+                          <h6 className="education flex-grow-1">
+                            Experience <span>1</span>
+                          </h6>
+                          <FaChevronUp className="" />
+                        </div> */}
                       <div className="entryGroup col-md-6">
                         <label>Job Title</label>
                         <input
                           type="text"
                           name="candidate_experience_job"
                           placeholder="Enter Job Title"
-                          defaultValue="Web Designer"
+                          value={jobtitle}
+                          onChange={(e) => setjobTitle(e.target.value)}
                           className="point-mark point-active"
                         />
                       </div>
@@ -649,7 +1036,8 @@ const CanProfile = () => {
                           type="text"
                           name="candidate_experience_company"
                           placeholder="Enter Company"
-                          defaultValue="Alpabe Corporation"
+                          value={ExpCompany}
+                          onChange={(e) => setExpCompany(e.target.value)}
                           className="point-mark point-active"
                         />
                       </div>
@@ -671,7 +1059,8 @@ const CanProfile = () => {
                           className="datepicker point-mark point-active hasDatepicker"
                           placeholder="Start Date"
                           name="candidate_experience_from"
-                          defaultValue="2020-06-06"
+                          value={ExpFrom}
+                          onChange={(e) => setExpFrom(e.target.value)}
                           id="fromId"
                         />
                       </div>
@@ -682,18 +1071,17 @@ const CanProfile = () => {
                           className="datepicker point-mark point-active hasDatepicker"
                           placeholder="End Date"
                           name="candidate_experience_to"
-                          defaultValue="2023-12-01"
+                          value={ExpTo}
+                          onChange={(e) => setExpTo(e.target.value)}
                           id="toId"
                         />
                       </div>
                       <div className="entryGroup col-md-12">
-                        <label>Description</label>
-                        <textarea
-                          name="candidate_experience_description"
-                          cols={30}
-                          placeholder="Short description"
-                          rows={7}
-                          className="point-mark point-active"
+                        <label htmlFor="candidate_des">Description</label>
+                        <ReactQuill
+                          value={ExpDes}
+                          onChange={setExpDes}
+                          placeholder="Enter Experience Details..."
                         />
                       </div>
                     </div>
@@ -704,12 +1092,34 @@ const CanProfile = () => {
                     </Link>
                   </div>
                 </div>
-              </div>
-              {/* Skills */}
-              <div
-                id="skillsTab"
-                className={`tab-info ${
-                  activeTab === "skillsTab" ? "active" : ""
+                {/* Control Buttons */}
+                <div className="control-btn">
+                  <Link
+                    to="/candidate/dashboard"
+                    className="civi-button button-outline"
+                  >
+                    Cancel
+                  </Link>
+                  <button
+                    type="submit"
+                    className="civi-button btn-add-to-message"
+                  >
+                    Publish
+                  </button>
+                </div>
+              </form>
+            </div>
+            {/* Skills */}
+            <div
+              id="skillsTab"
+              className={`tab-info ${
+                activeTab === "skillsTab" ? "active" : ""
+              }`}
+            >
+              <form
+                onSubmit={skillsSubmit}
+                className={`candidate-profile-form form-dashboard  col-lg-8 col-md-7  ${
+                  isScrolled ? "companyData" : ""
                 }`}
               >
                 <div className="skills-info block-from">
@@ -727,16 +1137,41 @@ const CanProfile = () => {
                         className="border p-1 rounded-2"
                         name="skills"
                         id="skills"
+                        value={selectedSkills}
+                        onChange={(selectedOptions) =>
+                          setSelectedSkills(selectedOptions)
+                        }
                       />
                     </div>
                   </div>
                 </div>
-              </div>
-              {/* Projects */}
-              <div
-                id="projectsTab"
-                className={`tab-info ${
-                  activeTab === "projectsTab" ? "active" : ""
+                <div className="control-btn">
+                  <Link
+                    to="/candidate/dashboard"
+                    className="civi-button button-outline"
+                  >
+                    Cancel
+                  </Link>
+                  <button
+                    type="submit"
+                    className="civi-button btn-add-to-message"
+                  >
+                    Publish
+                  </button>
+                </div>
+              </form>
+            </div>
+            {/* Projects */}
+            <div
+              id="projectsTab"
+              className={`tab-info ${
+                activeTab === "projectsTab" ? "active" : ""
+              }`}
+            >
+              <form
+                onSubmit={ProjectSubmit}
+                className={`candidate-profile-form form-dashboard  col-lg-8 col-md-7  ${
+                  isScrolled ? "companyData" : ""
                 }`}
               >
                 <div className="project-info block-from">
@@ -746,13 +1181,13 @@ const CanProfile = () => {
                   </div>
                   <div className="info-wrapper">
                     <div className="row">
-                      <div className="col-md-12 d-flex gap-2 mb-2 border-bottom pb-3 mb-5">
-                        <FaTimes />
-                        <h6 className="education flex-grow-1">
-                          Project <span>1</span>
-                        </h6>
-                        <FaChevronUp className="" />
-                      </div>
+                      {/* <div className="col-md-12 d-flex gap-2 mb-2 border-bottom pb-3 mb-5">
+                          <FaTimes />
+                          <h6 className="education flex-grow-1">
+                            Project <span>1</span>
+                          </h6>
+                          <FaChevronUp className="" />
+                        </div> */}
 
                       <div className="entryGroup col-md-6">
                         <label>Title</label>
@@ -760,7 +1195,8 @@ const CanProfile = () => {
                           type="text"
                           name="candidate_project_title"
                           placeholder="Name of project"
-                          defaultValue="Shopify Ecommerce Theme"
+                          value={ProjectTitle}
+                          onChange={(e) => setProjectTitle(e.target.value)}
                           className="point-mark point-active"
                         />
                       </div>
@@ -770,18 +1206,17 @@ const CanProfile = () => {
                           type="url"
                           name="candidate_project_link"
                           placeholder="https://yourlink"
-                          defaultValue="https://github.com"
+                          value={link}
+                          onChange={(e) => setLink(e.target.value)}
                           className="point-mark point-active"
                         />
                       </div>
                       <div className="entryGroup col-md-12">
-                        <label>Description</label>
-                        <textarea
-                          name="candidate_project_description"
-                          cols={30}
-                          placeholder="Short description"
-                          rows={7}
-                          className="point-mark point-active"
+                        <label htmlFor="candidate_des">Description</label>
+                        <ReactQuill
+                          value={ProjectDes}
+                          onChange={setProjectDes}
+                          placeholder="Enter Experience Details..."
                         />
                       </div>
                     </div>
@@ -791,12 +1226,33 @@ const CanProfile = () => {
                     </Link>
                   </div>
                 </div>
-              </div>
-              {/* Awards */}
-              <div
-                id="awardsTab"
-                className={`tab-info ${
-                  activeTab === "awardsTab" ? "active" : ""
+                <div className="control-btn">
+                  <Link
+                    to="/candidate/dashboard"
+                    className="civi-button button-outline"
+                  >
+                    Cancel
+                  </Link>
+                  <button
+                    type="submit"
+                    className="civi-button btn-add-to-message"
+                  >
+                    Publish
+                  </button>
+                </div>
+              </form>
+            </div>
+            {/* Awards */}
+            <div
+              id="awardsTab"
+              className={`tab-info ${
+                activeTab === "awardsTab" ? "active" : ""
+              }`}
+            >
+              <form
+                onSubmit={AwardSubmit}
+                className={`candidate-profile-form form-dashboard  col-lg-8 col-md-7  ${
+                  isScrolled ? "companyData" : ""
                 }`}
               >
                 <div className="awards-info block-from">
@@ -806,20 +1262,21 @@ const CanProfile = () => {
                   </div>
                   <div className="info-wrapper">
                     <div className="row">
-                      <div className="col-md-12 d-flex gap-2 mb-2 border-bottom pb-3 mb-5">
-                        <FaTimes />
-                        <h6 className="education flex-grow-1">
-                          Award <span>1</span>
-                        </h6>
-                        <FaChevronUp className="" />
-                      </div>
+                      {/* <div className="col-md-12 d-flex gap-2 mb-2 border-bottom pb-3 mb-5">
+                          <FaTimes />
+                          <h6 className="education flex-grow-1">
+                            Award <span>1</span>
+                          </h6>
+                          <FaChevronUp className="" />
+                        </div> */}
                       <div className="entryGroup col-md-6">
                         <label>Title</label>
                         <input
                           type="text"
                           name="candidate_award_title"
                           placeholder="Name of award"
-                          defaultValue="First Prize Winner of the U.S"
+                          value={AwardTitle}
+                          onChange={(e) => setAwardTitle(e.target.value)}
                           className="point-mark point-active"
                         />
                       </div>
@@ -830,18 +1287,17 @@ const CanProfile = () => {
                           className="datepicker point-mark point-active hasDatepicker"
                           placeholder="Award Date"
                           name="candidate_award_date"
-                          defaultValue="2020-01-01"
+                          value={dateAwarded}
+                          onChange={(e) => setdateAwarded(e.target.value)}
                           id="awardDate"
                         />
                       </div>
                       <div className="entryGroup col-md-12">
-                        <label>Description</label>
-                        <textarea
-                          name="candidate_award_description"
-                          cols={30}
-                          rows={7}
-                          placeholder="Short description"
-                          className="point-mark point-active"
+                        <label htmlFor="candidate_des">Description</label>
+                        <ReactQuill
+                          value={AwardDes}
+                          onChange={setAwardDes}
+                          placeholder="Enter Experience Details..."
                         />
                       </div>
                     </div>
@@ -851,70 +1307,83 @@ const CanProfile = () => {
                     </Link>
                   </div>
                 </div>
-              </div>
-              {/* Control Buttons */}
-              <div className="control-btn">
-                <Link to="" className="civi-button button-outline">
-                  Cancel
-                </Link>
-                <Link className="civi-button btn-add-to-message">Publish</Link>
+                <div className="control-btn">
+                  <Link
+                    to="/candidate/dashboard"
+                    className="civi-button button-outline"
+                  >
+                    Cancel
+                  </Link>
+                  <button
+                    type="submit"
+                    className="civi-button btn-add-to-message"
+                  >
+                    Publish
+                  </button>
+                </div>
+              </form>
+            </div>
+            {/* Strength */}
+            <form
+              className={`candidate-profile-form form-dashboard  col-lg-8 col-md-7  ${
+                isScrolled ? "companyData" : ""
+              }`}
+            >
+              <div className="candidate-profile-strength col-lg-4 col-md-5 d-none d-md-block">
+                <div
+                  className="preview-section"
+                  data-tooltip-id="progressTooltip"
+                >
+                  <div className="progress-index">
+                    <CircularProgressbarWithChildren
+                      className="progressIcon"
+                      value={percentage}
+                      maxValue={100}
+                      strokeWidth={2}
+                      styles={{ path: { strokeLinecap: "butt" } }}
+                    >
+                      <h1>
+                        <span>{percentage}</span>
+                        <span>%</span>
+                      </h1>
+                      <div>Profile Strength</div>
+                    </CircularProgressbarWithChildren>
+                  </div>
+                  <Tooltip
+                    id="progressTooltip"
+                    place="bottom"
+                    // content="Hello world! I'm a Tooltip"
+                  >
+                    <ul className="profile-list-check">
+                      {listItems.map((item) => (
+                        <li
+                          key={item.id}
+                          className="profile-check-item"
+                          onClick={() => toggleCheck(item.id)} // Toggle state on click
+                        >
+                          <FaCheckCircle
+                            className="progressCheck"
+                            style={{
+                              color: checkStatus[item.id]
+                                ? "var(--civi-color-accent)"
+                                : "gray",
+                              backgroundColor: "white",
+                              borderRadius: "50%",
+                              padding: "0",
+                            }}
+                          />
+                          <span>
+                            {checkStatus[item.id]
+                              ? `${item.label} has enough information`
+                              : `${item.label} not enough information`}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </Tooltip>
+                </div>
               </div>
             </form>
-            {/* Strength */}
-            <div className="candidate-profile-strength col-lg-4 col-md-5 d-none d-md-block">
-              <div
-                className="preview-section"
-                data-tooltip-id="progressTooltip"
-              >
-                <div className="progress-index">
-                  <CircularProgressbarWithChildren
-                    className="progressIcon"
-                    value={percentage}
-                    maxValue={100}
-                    strokeWidth={2}
-                    styles={{ path: { strokeLinecap: "butt" } }}
-                  >
-                    <h1>
-                      <span>{percentage}</span>
-                      <span>%</span>
-                    </h1>
-                    <div>Profile Strength</div>
-                  </CircularProgressbarWithChildren>
-                </div>
-                <Tooltip
-                  id="progressTooltip"
-                  place="bottom"
-                  // content="Hello world! I'm a Tooltip"
-                >
-                  <ul className="profile-list-check">
-                    {listItems.map((item) => (
-                      <li
-                        key={item.id}
-                        className="profile-check-item"
-                        onClick={() => toggleCheck(item.id)} // Toggle state on click
-                      >
-                        <FaCheckCircle
-                          className="progressCheck"
-                          style={{
-                            color: checkStatus[item.id]
-                              ? "var(--civi-color-accent)"
-                              : "gray",
-                            backgroundColor: "white",
-                            borderRadius: "50%",
-                            padding: "0",
-                          }}
-                        />
-                        <span>
-                          {checkStatus[item.id]
-                            ? `${item.label} has enough information`
-                            : `${item.label} not enough information`}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </Tooltip>
-              </div>
-            </div>
           </div>
         </div>
       </div>

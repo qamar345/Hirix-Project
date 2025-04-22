@@ -1,4 +1,6 @@
 const express= require('express');
+const multer = require("multer");
+const path = require("path");
 const cors = require('cors');
 const router = require('./routes/app-routes');
 const jwt = require('jsonwebtoken');
@@ -7,6 +9,24 @@ const bcrypt = require('bcrypt');
 const { databaseconfig } = require('./config/connection');
 
 const dotenv = require("dotenv").config();
+
+const port = process.env.PORT;
+
+const app= express();
+
+app.use(express.json());
+
+app.use(cors({
+    origin: "http://localhost:5173"
+}));
+databaseconfig();
+app.use("/uploads", express.static("uploads"));
+app.use(router);
+
+app.listen(port, ()=>{
+    console.log("express app running on port 9000");
+});
+
 require("./controller/admin/adminlogin"); 
 require("./controller/admin/adminHaveData");
 require("./controller/combined/commonAboutPosts");
@@ -19,22 +39,6 @@ require("./controller/employee/regardingApplication");
 require("./controller/employee/companies");
 require("./controller/employee/reviewApplicants");
 require("./controller/employee/messages")
-const port = process.env.PORT;
-
-const app= express();
-
-app.use(express.json());
-
-app.use(cors({
-    origin: "http://localhost:3000/"
-}));
-databaseconfig();
-
-app.use(router);
-
-app.listen(port, ()=>{
-    console.log("express app running on port 9000");
-});
 
 // Generating JWT
 // app.post("/user/generateToken", (req, res) => {

@@ -1,13 +1,110 @@
 const { conn_sql } = require("../../config/connection");
 
-// get all user's data
+// get all employees data
 const Getdata = (req, res) => {
-  const sql_get = "SELECT * FROM `user_accounts`";
-  conn_sql.query(sql_get, (err, result) => {
+  const page = parseInt(req.query.page) || 1;
+  const search = req.query.search || "";
+  const limit = 10;
+  const offset = (page - 1) * limit;
+  const sql_get = "SELECT * FROM `user_accounts` WHERE role = 'employee' AND username LIKE ? LIMIT ? OFFSET ?";
+  conn_sql.query(sql_get, [`%${search}%`, limit, offset], (err, result) => {
     if (err) {
       return res.json(err);
+    } else  {
+      const sql = "SELECT COUNT(*) as count FROM `user_accounts`  WHERE username LIKE ?";
+
+      conn_sql.query(sql, [`%${search}%`], (c_err, c_data) => {
+        const totalData = c_data[0].count;
+        const totalPages = Math.ceil(totalData / limit);
+
+        return res.json({
+          data: result,
+          meta: {
+            search,
+            page,
+            limit,
+            totalData,
+            totalPages,
+          },
+        });
+      });
+    }
+  });
+};
+
+// get all users data
+const Getusers = (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const search = req.query.search || "";
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
+  const sql_get = "SELECT * FROM `user_accounts` WHERE role ='jobseeker' AND username LIKE ?  LIMIT ? OFFSET ?";
+  conn_sql.query(sql_get, [`%${search}%`, limit, offset], (err, result) => {
+    if (err) {
+      return res.json(err);
+    } else  {
+      const sql = "SELECT COUNT(*) as count FROM `user_accounts`  WHERE username LIKE ?";
+
+      conn_sql.query(sql, [`%${search}%`], (c_err, c_data) => {
+        const totalData = c_data[0].count;
+        const totalPages = Math.ceil(totalData / limit);
+
+        return res.json({
+          data: result,
+          meta: {
+            search,
+            page,
+            limit,
+            totalData,
+            totalPages,
+          },
+        });
+      });
+    }
+  });
+};
+
+// get dashboard data
+const GetDashboard = (req, res) => {
+  const sql_get = "SELECT 'total jobs' AS label, COUNT(*) AS num FROM `jobs` UNION SELECT 'candidates' AS label, COUNT(*) AS num FROM `user_accounts` WHERE role = 'jobseeker' UNION SELECT 'Employees' AS label, COUNT(*) AS num FROM `user_accounts` WHERE role = 'employee' UNION SELECT 'total companies' AS label, COUNT(*) AS num FROM `companies` WHERE `status_delete` = 1";
+  conn_sql.query(sql_get, (err, result) => {
+    if (err) {
+      console.log(err);
+      return res.json(err);
     } else {
+      // console.log(result);
       return res.json(result);
+    }
+  });
+};
+
+// get all managers data
+const GetManagers = (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10;
+  const offset = (page - 1) * limit;
+  const sql_get = "SELECT * FROM `admin-account` WHERE role !='admin' LIMIT ? OFFSET ?";
+  conn_sql.query(sql_get,[limit, offset], (err, result) => {
+    if (err) {
+      return res.json(err);
+    } else  {
+      const sql = "SELECT COUNT(*) as count FROM `admin-account`";
+
+      conn_sql.query(sql, (c_err, c_data) => {
+        const totalData = c_data[0].count;
+        const totalPages = Math.ceil(totalData / limit);
+
+        return res.json({
+          data: result,
+          meta: {
+            page,
+            limit,
+            totalData,
+            totalPages,
+          },
+        });
+      });
     }
   });
 };
@@ -40,5 +137,5 @@ const request = (req, res) => {
 //     });
   };
 
-  module.exports = {Getdata, request,
-    requestrejected};
+  module.exports = {Getdata, Getusers, request, GetManagers,
+    requestrejected, GetDashboard};

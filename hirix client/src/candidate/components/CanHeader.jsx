@@ -1,9 +1,17 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { candidateImg } from "../assets/images/index.js";
 import { FaBars } from "react-icons/fa";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { CanSideMenu } from "../index.js";
+
 const CanHeader = () => {
+  const check = sessionStorage.getItem("isLoggedIn");
+  const firstName = sessionStorage.getItem("first_name");
+  const imageUser = sessionStorage.getItem("image");
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!check) navigate("/");
+  });
   return (
     <header className="site-header">
       <div className="container">
@@ -37,16 +45,17 @@ const CanHeader = () => {
                 </div>
               </div>
             </div> */}
-
+            {check && (
               <div className="profileImg">
                 <img
-                  src={candidateImg}
+                  src={`http://localhost:9000${imageUser}`}
                   title="Candidate"
                   alt="Candidate"
                   className=""
                 />
-                <span className="d-none d-md-block">Candidate </span>
+                <span className="d-none d-md-block">{firstName}</span>
               </div>
+            )}
             <div className="d-none d-xl-block">
 
               <NavLink

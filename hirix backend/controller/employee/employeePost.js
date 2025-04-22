@@ -3,40 +3,33 @@ const { conn_sql } = require("../../config/connection");
 // Post job
 const PostJob = (req, res) => {
   const { id } = req.params;
+  
   const {
-    title,
-    description,
-    job_type,
-    career_level,
-    Experience,
-    qualification,
-    available_seats,
-    gender,
-    currency,
-    minimum_currency,
-    maximum_currency,
-    company_name,
-    time,
-    salary,
-    required_skills,
-    location,
-  } = req.body;
+    title,job_category,description,job_type,workplace_type,career_level,Experience,qualification,available_seats,gender,
+    currency, minimum_currency,maximum_currency,Rate,Email,Url,Phone,company_name,required_skills,expiry_date,
+    salary,ApplyType,province,city
+  } = req.body; 
+  let skillsString = Array.isArray(required_skills) ? required_skills.join(",") : required_skills;
   const sql_getpost =
     "SELECT user_account_id FROM companies WHERE user_account_id = ?";
   conn_sql.query(sql_getpost, [id], (err, result) => {
     if (err) {
       return res.json(err);
     } else {
+      console.log(id);
       if (result.length > 0) {
         const sqlpost =
-          "INSERT INTO `jobs` (`employee_id`,`title`,`description`, `job_type` ,`career_level`, `Experience`, `qualification`,`available_seats`, `gender`,`currency`, `minimum_currency`, `maximum_currency`, `company_name`, `time`, `salary`,`required_skills`, `location`) VALUES (?,?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?, ?)";
+          "INSERT INTO `jobs` (`employee_id`,`title`,`job_category`, `description`, `job_type`,`workplace_type` ,`career_level`, `Experience`, `qualification`,`available_seats`, `gender`,`currency`, `minimum_currency`, `maximum_currency`,`Rate`,`Email`,`Url`,`Phone`,`company_name`,`required_skills`,`expiry_date`,`salary`,`ApplyType`,`province`,`city`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+          
         conn_sql.query(
           sqlpost,
           [
             id,
             title,
+            job_category,
             description,
             job_type,
+            workplace_type,
             career_level,
             Experience,
             qualification,
@@ -45,16 +38,26 @@ const PostJob = (req, res) => {
             currency,
             minimum_currency,
             maximum_currency,
+            Rate,
+            Email,
+            Url,
+            Phone,
             company_name,
-            time,
+            skillsString,
+            expiry_date,
             salary,
-            required_skills,
-            location,
+            ApplyType,
+            province,
+            city,
+            // location,
           ],
           (err, result) => {
             if (err) {
-              return res.json(err);
+              // return res.json(err);
+              console.log(err);
+              return res.json({ msg: "Something went wrong while posting the job." });
             } else {
+              console.log(result);
               return res.json({ msg: "Posted...", result });
             }
           }
@@ -70,29 +73,18 @@ const PostJob = (req, res) => {
 const editposts = (req, res) => {
   const { id } = req.params;
   const {
-    title,
-    description,
-    job_type,
-    career_level,
-    Experience,
-    qualification,
-    available_seats,
-    gender,
-    currency,
-    minimum_currency,
-    maximum_currency,
-    company_name,
-    time,
-    salary,
-    required_skills,
-    location,
+    title,job_category,description,job_type,career_level,Experience,qualification,available_seats,gender,
+    currency, minimum_currency,maximum_currency,Rate,Email,Url,Phone,company_name,required_skills,
+    salary,ApplyType,province,city
   } = req.body;
+ 
   const sqleditpost =
-    "UPDATE `jobs` SET `title`=? ,`description`=? ,`job_type`=? ,`career_level`=? , `Experience` =? , `qualification` =? ,`available_seats` =? ,`gender` = ? , `currency` =? , `minimum_currency`= ? , `maximum_currency`=? , `company_name`=? ,`time`=? , `salary`=? ,`required_skills`=? , `location` = ?  WHERE id=?";
+    "UPDATE `jobs` SET `title`=? ,`job_category`=? ,`description`=? ,`job_type`=? ,`career_level`=? , `Experience` =? , `qualification` =? ,`available_seats` =? ,`gender` = ? , `currency` =? , `minimum_currency`= ? , `maximum_currency`=? ,`Rate`=?,`Email`=?, `Url`=?, `Phone`=?, `company_name`=? , `salary`=? ,`required_skills`=? ,`ApplyType`=?, `province`=?, `city`=?  WHERE id=?";
   conn_sql.query(
     sqleditpost,
     [
       title,
+      job_category,
       description,
       job_type,
       career_level,
@@ -103,11 +95,16 @@ const editposts = (req, res) => {
       currency,
       minimum_currency,
       maximum_currency,
+      Rate,
+      Email,
+      Url,
+      Phone,
       company_name,
-      time,
       salary,
       required_skills,
-      location,
+      ApplyType,
+      province,
+      city,
       id,
     ],
     (err, result) => {
@@ -155,7 +152,7 @@ const editposts = (req, res) => {
 // Job Post's status (opening)
 const post_status = (req, res) => {
   const { id } = req.params;
-  const sql_status = "UPDATE `jobs` SET `status`= 'Opening' WHERE id=?";
+  const sql_status = "UPDATE `jobs` SET `status`= 'Open' WHERE id=?";
   conn_sql.query(sql_status, [id], (err, result) => {
     if (err) {
       return res.json(err);
@@ -191,6 +188,31 @@ const delposts = (req, res) => {
   });
 };
 
+// Job Post Delete
+const jobDel = (req, res) => {
+  const { id } = req.params;
+  const sql_del = "DELETE FROM `jobs` WHERE id=?";
+  conn_sql.query(sql_del, [id], (err, result) => {
+    if (err) {
+      return res.json({ msg: "Not deleted yet!!", err });
+    } else {
+      return res.json({ msg: "Job Deleted!", result });
+    }
+  });
+};
+// Get specific Post
+const GetJob = (req, res) => {
+  const {id} = req.params;
+  const sql_get = "SELECT * FROM `jobs` WHERE id = ?";
+  conn_sql.query(sql_get, [id],(err, result) => {
+    if (err) {
+      return res.json(err);
+    } else {
+      return res.json(result);
+    }
+  });
+};
+
 // // Add skillset in database
 
 // const Addskillset = (req, res) => {
@@ -222,12 +244,45 @@ const delposts = (req, res) => {
 
 // get All job posts (only his posts)
 const Gethisposts = (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const search = req.query.search || "";
+  const limit = 10;
+  const offset = (page - 1) * limit;
   const { id } = req.params;
-  const sql_get = "SELECT * FROM `jobs` WHERE `employee_id` = ?";
-  conn_sql.query(sql_get, [id], (err, result) => {
+  // const sql_get = "SELECT * FROM `jobs` WHERE `employee_id` = ? AND `title` LIKE ?  LIMIT ? OFFSET ?";
+  const sql_get = "SELECT j.*,(SELECT COUNT(*) FROM applicants a WHERE a.job_id = j.id) AS total_applicants FROM jobs j WHERE j.employee_id = ? AND j.title LIKE ? LIMIT ? OFFSET ?";
+  conn_sql.query(sql_get, [id, `%${search}%`, limit, offset], (err, result) => {
     if (err) {
       return res.json(err);
-    } else {
+    } else  {
+      const sql = "SELECT COUNT(*) as count FROM jobs  WHERE title LIKE ?";
+
+      conn_sql.query(sql, [`%${search}%`], (c_err, c_data) => {
+        const totalData = c_data[0].count;
+        const totalPages = Math.ceil(totalData / limit);
+
+        return res.json({
+          data: result,
+          meta: {
+            search,
+            page,
+            limit,
+            totalData,
+            totalPages,
+          },
+        });
+      });
+    }
+  });
+};
+
+ // Select Companies of particular employer
+ const SelectCompanies = (req, res) =>{
+  const {id} = req.params;
+  const query_select = "SELECT id, name FROM `companies` WHERE `user_account_id` =? AND `status`= 'Approved'";
+  conn_sql.query(query_select, [id],(err, result) =>{
+    if(err) throw err;
+    else {
       return res.json(result);
     }
   });
@@ -240,4 +295,7 @@ module.exports = {
   post_status,
   status_pause,
   Gethisposts,
+  jobDel,
+   GetJob,
+   SelectCompanies
 };

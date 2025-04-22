@@ -7,7 +7,7 @@ function verifyToken(req, res, next) {
 
   const origin = req.headers["origin"];
 
-  if (origin !== "https://hirix.pk") {
+  if (origin !== "http://localhost:5173") {
     return res.json("Origin Invalid");
   }
 

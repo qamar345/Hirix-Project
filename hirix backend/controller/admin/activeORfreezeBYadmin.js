@@ -14,6 +14,19 @@ const Active = (req, res) => {
 };
 
 // Freeze Employee
+const FreezeUsers = (req, res) => {
+  const { id } = req.params;
+  const sql_active = "UPDATE `user_accounts` SET `account_status` = 0 WHERE `id` = ?";
+  conn_sql.query(sql_active, [id], (err, result) => {
+    if (err) {
+      return res.json({ msg: "Not updated yet!!", err });
+    } else {
+      return res.json({ msg: "Freeze!", result });
+    }
+  });
+};
+
+// Freeze Employee
 const Freeze= (req, res) => {
   const { id } = req.params;
   const {reason} = req.body;
@@ -34,5 +47,30 @@ const Freeze= (req, res) => {
   });
 };
 
+// Active Managers
+const ActiveManagers = (req, res) => {
+  const { id } = req.params;
+  const sql_active = "UPDATE `admin-account` SET `status` = 'Active' WHERE `id` = ?";
+  conn_sql.query(sql_active, [id], (err, result) => {
+    if (err) {
+      return res.json({ msg: "Not updated yet!!", err });
+    } else {
+      return res.json({ msg: "Active!", result });
+    }
+  });
+};
 
-module.exports = {Active, Freeze};
+// Freeze Managers
+const InactiveManagers = (req, res) => {
+  const { id } = req.params;
+  const sql_active = "UPDATE `admin-account` SET `status` = 'Inactive' WHERE `id` = ?";
+  conn_sql.query(sql_active, [id], (err, result) => {
+    if (err) {
+      return res.json({ msg: "Not updated yet!!", err });
+    } else {
+      return res.json({ msg: "Freeze!", result });
+    }
+  });
+};
+
+module.exports = {Active, Freeze, FreezeUsers, ActiveManagers, InactiveManagers};

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Select from "react-select";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { IoIosSearch } from "react-icons/io";
 import {
   AdSideBar,
@@ -11,23 +11,37 @@ import {
 } from "../index.js";
 const AdCandidates = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   const handleSidebarToggle = () => {
     setIsCollapsed(!isCollapsed);
   };
   const jobType = [
-    { value: "", label: "All jobs" },
-    { value: "backend", label: "Sr. Backend Go Developer" },
-    { value: "blockchain", label: "Blockchain Engineer" },
+    { value: "", label: "All candidates" },
+    { value: 1, label: "Active" },
+    { value: 0, label: "Freeze" },
   ];
-
-  
 
   const jobAge = [
     { value: "newest", label: "Newest" },
     { value: "oldest", label: "Oldest" },
     { value: "featured", label: "Featured" },
   ];
+
+  const handleSearchSubmit = (e) =>{
+    e.preventDefault();
+    if(searchQuery.trim()!== ""){
+      navigate(`/admin/candidates?search=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery("");
+    }
+  };
+
+  const handleFilterChange = (selectedOption) => {
+    const filter = selectedOption.value;
+    navigate(`/admin/candidates?filter=${filter}`); 
+  };
+
   return (
     <div className={`tablePage ${isCollapsed ? "half" : "full"}`}>
       <div className="page-sidebar">
@@ -52,16 +66,21 @@ const AdCandidates = () => {
                 styles={customStyles}
                 className="border p-1 rounded-2  selectFull "
                 defaultValue={jobType.find((option) => option.value === "")}
+                onChange={handleFilterChange}
               />
 
               <div className="action-search selectFull">
+                <form onSubmit={handleSearchSubmit}>
                 <input
                   type="text"
-                  name="jobs_search"
-                  placeholder="Find by jobs"
+                  // name="jobs_search"
+                  placeholder="Find Candidates"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                <NavLink className="btn-search d-flex">
-                  <IoIosSearch className="mx-2" />
+                </form>
+                <NavLink className="btn-search d-flex" type="submit">
+                  <IoIosSearch className="mx-3" />
                 </NavLink>
               </div>
             </div>
@@ -79,6 +98,7 @@ const AdCandidates = () => {
           </div>
           <div className=" d-grid">
           <ApplicantList/>
+          
           </div>
           <div className="page-list">
             <Pagination />

@@ -3,14 +3,150 @@ const { VerifyEmail } = require("../../mailer/mailer-controller");
 const bcrypt = require("bcrypt");
 
 // get All job posts
-const Getposts = (req, res) => {
-  const sql_get = "SELECT * FROM `jobs`";
-  conn_sql.query(sql_get, (err, result) => {
+const GetpostsByAdmin = (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const search = req.query.search || "";
+  const limit = 10;
+  const offset = (page - 1) * limit;
+  const sql_get =
+    "SELECT jobs.*, (SELECT COUNT(*) FROM applicants WHERE applicants.job_id = jobs.id) AS applicant_count FROM jobs WHERE title LIKE ? LIMIT ? OFFSET ?";
+
+  conn_sql.query(sql_get, [`%${search}%`, limit, offset], (err, result) => {
     if (err) {
       return res.json(err);
     } else {
-      return res.json(result);
+      const sql = "  SELECT COUNT(*) as count FROM jobs WHERE title LIKE ?";
+
+      conn_sql.query(sql, [`%${search}%`], (c_err, c_data) => {
+        const totalData = c_data[0].count;
+        const totalPages = Math.ceil(totalData / limit);
+
+        return res.json({
+          data: result,
+          meta: {
+            search,
+            page,
+            limit,
+            totalData,
+            totalPages,
+          },
+        });
+      });
     }
+  });
+};
+const Getposts = (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const search = req.query.search || "";
+  const city = req.query.city || "";
+  const category = req.query.category || "";
+  const limit = 10;
+  const offset = (page - 1) * limit;
+  const jobTypes = req.query.jobTypes || "";
+  const salaryMin = req.query.salaryMin ? parseInt(req.query.salaryMin) : null;
+  const salaryMax = req.query.salaryMax ? parseInt(req.query.salaryMax) : null;
+  const rate = req.query.rate || null;
+  const experiences = req.query.experiences || "";
+  const careerLevels = req.query.careerLevels || "";
+  let filters = [
+    `jobs.status = "Open"`,
+  ];
+  let values = [];
+
+  if (search) {
+    filters.push(`jobs.title LIKE ?`);
+    values.push(`%${search}%`);
+  }
+  
+  if (city) {
+    filters.push(`jobs.city LIKE ?`);
+    values.push(`%${city}%`);
+  }
+  
+  if (category) {
+    filters.push(`jobs.required_skills LIKE ?`);
+    values.push(`%${category}%`);
+  }
+  
+  if (jobTypes) {
+    filters.push(`jobs.job_type = ?`);
+    values.push(jobTypes);
+  }
+
+  if (salaryMin !== null) {
+    filters.push(`jobs.minimum_currency >= ?`);
+    values.push(salaryMin);
+  }
+
+  if (salaryMax !== null) {
+    filters.push(`jobs.minimum_currency <= ?`);
+    values.push(salaryMax);
+  }
+
+  if (rate) {
+    filters.push(`jobs.Rate = ?`);
+    values.push(rate);
+  }
+
+  if (experiences) {
+    filters.push(`jobs.Experience = ?`);
+    values.push(experiences);
+  }
+
+  if (careerLevels) {
+    filters.push(`jobs.career_level = ?`);
+    values.push(careerLevels);
+  }
+
+  const whereClause = filters.length ? `WHERE ${filters.join(" AND ")}` : "";
+
+  const sql_getJobs = `
+    SELECT 
+      jobs.*, 
+      (SELECT COUNT(*) FROM applicants WHERE applicants.job_id = jobs.id) AS applicant_count,
+      user_accounts.username AS employer_username,
+      companies.images
+    FROM jobs
+    LEFT JOIN user_accounts ON jobs.employee_id = user_accounts.id
+    LEFT JOIN companies ON jobs.company_name = companies.name
+    ${whereClause}
+    LIMIT ? OFFSET ?
+  `;
+  values.push(limit, offset);
+
+  conn_sql.query(sql_getJobs, values, (err, jobsResult) => {
+    if (err) return res.json(err);
+
+    conn_sql.query(`SELECT * FROM companies`, (compErr, companyResult) => {
+      if (compErr) return res.json(compErr);
+
+      const sql_count = `
+        SELECT COUNT(*) as count FROM jobs
+        LEFT JOIN user_accounts ON jobs.employee_id = user_accounts.id
+        LEFT JOIN companies ON jobs.company_name = companies.name
+        ${whereClause}
+      `;
+      conn_sql.query(sql_count, values.slice(0, -2), (countErr, countData) => {
+        if (countErr) return res.json(countErr);
+
+        const totalData = countData[0].count;
+        const totalPages = Math.ceil(totalData / limit);
+
+        return res.json({
+          data: {
+            jobs: jobsResult,
+            company: companyResult,
+          },
+          meta: {
+            search,
+            page,
+            limit,
+            totalData,
+            totalPages,
+          },
+        });
+      });
+    });
   });
 };
 
@@ -27,22 +163,116 @@ const Getpostbyid = (req, res) => {
   });
 };
 
-//put filters
-const filters = (req, res) => {
-  const { title, job_type, time, salary, required_skills, location } = req.body;
-  const sql_filters =
-    "SELECT * FROM `jobs` WHERE `title`=? OR `job_type`=? OR `time`= ? OR `salary`=? OR `required_skills`=? OR `location`=?";
-  conn_sql.query(
-    sql_filters,
-    [title, job_type, time, salary, required_skills, location],
-    (err, result) => {
-      if (err) {
-        return res.json(err);
+// get all jobs of applicant where he/she  applied to
+
+const GetSpecificPost = (req, res) => {
+  const { id } = req.params;
+
+  // SQL query to fetch all job IDs for a given client (client_id) from the applicants table
+  const sql_get_applications = `
+    SELECT job_id 
+    FROM applicants
+    WHERE job_seeker_id = ?
+  `;
+
+  conn_sql.query(sql_get_applications, [id], (err, applicationsResult) => {
+    if (err) {
+      return res.json({ error: err.message });
+    } else {
+      // If the client has applied for any job
+      if (applicationsResult.length > 0) {
+        const jobIds = applicationsResult.map(
+          (application) => application.job_id
+        ); // Collect job_ids of the jobs the client has applied to
+
+        // Now fetch details of those jobs from the jobs table
+        const sql_get_jobs = `
+          SELECT * FROM jobs
+          WHERE id IN (?);
+        `;
+
+        conn_sql.query(sql_get_jobs, [jobIds], (err, jobPostsResult) => {
+          if (err) {
+            return res.json({ error: err.message });
+          } else {
+            // If there are jobs that the client has applied for
+            if (jobPostsResult.length > 0) {
+              return res.json({
+                message: "Job posts fetched successfully",
+                jobPosts: jobPostsResult,
+              });
+            } else {
+              return res.json({
+                message: "No job posts found for this client",
+              });
+            }
+          }
+        });
       } else {
-        return res.json(result);
+        return res.json({
+          message: "This client has not applied for any jobs",
+        });
       }
     }
-  );
+  });
+};
+
+//put filters
+const filtersCount = async (req, res) => {
+  const jobTypes = ["full", "intern", "part"];
+  const careerLevels = ["starting", "junior", "middle", "senior"];
+  const experiences = [
+    { label: "1 - 2 Years", value: 2 },
+    { label: "3 - 5 Years", value: 5 },
+    { label: "6 - 9 Years", value: 9 },
+    { label: "10+ Years", value: 10 },
+  ];
+
+  const getCounts = (items, queryFn) => {
+    return Promise.all(
+      items.map((item) => {
+        return new Promise((resolve, reject) => {
+          const { sql, values } = queryFn(item);
+          conn_sql.query(sql, values, (err, result) => {
+            if (err) return reject(err);
+            resolve({ ...item, count: result[0].count });
+          });
+        });
+      })
+    );
+  };
+
+  try {
+    const jobTypeCounts = await getCounts(
+      jobTypes.map((j) => ({ value: j })),
+      (item) => ({
+        sql: "SELECT COUNT(*) as count FROM jobs WHERE job_type = ? AND status = 'Open'",
+        values: [item.value],
+      })
+    );
+
+    const careerLevelCounts = await getCounts(
+      careerLevels.map((c) => ({ value: c })),
+      (item) => ({
+        sql: "SELECT COUNT(*) as count FROM jobs WHERE career_level = ? AND status = 'Open'",
+        values: [item.value],
+      })
+    );
+
+    const experienceCounts = await getCounts(experiences, (item) => ({
+      sql: "SELECT COUNT(*) as count FROM jobs WHERE experience = ? AND status = 'Open'",
+      values: [item.value],
+    }));
+
+    return res.json({
+      jobTypes: jobTypeCounts,
+      careerLevels: careerLevelCounts,
+      experiences: experienceCounts,
+    });
+  } catch (error) {
+    console.error("Filter Count Error:", error);
+    return res.status(500).json({ error: "Failed to fetch filter counts" });
+  }
 };
 
 // get reviews
@@ -60,6 +290,7 @@ const Getreviews = (req, res) => {
 //VerifyEmail
 const SendCode = (req, res) => {
   const { email } = req.body;
+  console.log(email);
   if (!email) {
     return res.json({ msg: "Enter your email address" });
   }
@@ -84,36 +315,149 @@ const SendCode = (req, res) => {
     }
   });
 };
-//Forget Password
-const forgetPassword = (req, res) => {
-  const { id } = req.params;
-  const { token, password } = req.body;
 
-  bcrypt.hash(password, 10, function (err, hash) {
-  const sql_token = "SELECT token FROM `verifyemail` WHERE token = ?";
-  conn_sql.query(sql_token, [token], (err, result) => {
-    if (result[0].token === parseInt(token)) {
-      const sql_forget =
-        "UPDATE `user_accounts` SET `password` = ? WHERE id= ?";
-      conn_sql.query(sql_forget, [hash, id], (err, result) => {
-        if (err) throw err;
-        else {
-          return res.json({
-            message: "Updated Password Successfully!",
-            result
-          });
+//VerifyEmail (For admin)
+const SendCodeForAdmin = (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.json({ msg: "Enter your email address" });
+  }
+  const sql_verify = "SELECT email FROM `admin-account` WHERE email = ?";
+  conn_sql.query(sql_verify, [email], (err, result) => {
+    if (result.length === 0) {
+      return res.json({ message: "Invalid Email" });
+    } else {
+      const Token = Math.floor(1000 + Math.random() * 9000);
+      const sql_store_token =
+        "INSERT INTO `verifyemail` (`email`,`token`) VALUES (?, ?)";
+      conn_sql.query(sql_store_token, [email, Token], (err, result) => {
+        if (err) {
+          if (err.code === "ER_DUP_ENTRY") {
+            return res.json({ msg: "Verification Code Already Send!!!" });
+          }
+        } else {
+          VerifyEmail(email, Token);
+          return res.json(result);
         }
       });
     }
   });
-});
+};
+//Forget Password (For Admin)
+const forgetPasswordForAdmin = (req, res) => {
+  const { email, token, password } = req.body;
+  const sql_user = "SELECT * FROM `admin-account` WHERE email = ?";
+  conn_sql.query(sql_user, [email], (err, result) => {
+    if (err) {
+      return res.status(500).json({ message: "Internal server error" });
+    }
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const sql_token =
+      "SELECT token FROM `verifyemail` WHERE email = ? AND token = ?";
+    conn_sql.query(sql_token, [email, token], (err, result) => {
+      if (err) {
+        return res.status(500).json({ message: "Internal server error" });
+      }
+
+      if (result.length === 0) {
+        return res.status(400).json({ message: "Invalid token" });
+      }
+
+      const sql_update_password =
+        "UPDATE `admin-account` SET password = ? WHERE email = ?";
+      conn_sql.query(sql_update_password, [password, email], (err, result) => {
+        if (err) {
+          return res.status(500).json({ message: "Error updating password" });
+        }
+
+        return res
+          .status(200)
+          .json({ message: "Password updated successfully!" });
+      });
+    });
+  });
+};
+
+//Forget Password
+
+const forgetPassword = (req, res) => {
+  const { email, token, password } = req.body;
+
+  const sql_user = "SELECT * FROM `user_accounts` WHERE email = ?";
+  conn_sql.query(sql_user, [email], (err, userResult) => {
+    if (err) {
+      return res.status(500).json({ message: "Internal server error", err });
+    }
+
+    if (userResult.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const sql_token =
+      "SELECT token FROM `verifyemail` WHERE email = ? AND token = ?";
+    conn_sql.query(sql_token, [email, token], (err, tokenResult) => {
+      if (err) {
+        return res.status(500).json({ message: "Error verifying token", err });
+      }
+
+      if (tokenResult.length === 0) {
+        return res.status(400).json({ message: "Invalid or expired token" });
+      }
+
+      // Hash the new password
+      bcrypt.hash(password, 10, (hashErr, hashedPassword) => {
+        if (hashErr) {
+          return res
+            .status(500)
+            .json({ message: "Error hashing password", hashErr });
+        }
+
+        const sql_forget =
+          "UPDATE `user_accounts` SET `password` = ? WHERE email = ?";
+        conn_sql.query(
+          sql_forget,
+          [hashedPassword, email],
+          (updateErr, updateResult) => {
+            if (updateErr) {
+              return res
+                .status(500)
+                .json({ message: "Error updating password", updateErr });
+            }
+
+            return res.json({
+              message: "Updated Password Successfully!",
+              updateResult,
+            });
+          }
+        );
+      });
+    });
+  });
+};
+
+// For home page get total jobs
+const GetTotalJobs = (req, res) => {
+  const sql = "SELECT COUNT(*) as TotalJobs FROM jobs WHERE status = 'Open' AND expiry_date > CURDATE()";
+  conn_sql.query(sql, (err, result) => {
+    if (err) return res.status(500).json(err);
+    return res.json({ TotalJobs: result[0].TotalJobs });
+  });
 };
 
 module.exports = {
+  GetpostsByAdmin,
   Getposts,
   Getpostbyid,
   Getreviews,
-  filters,
+  filtersCount,
   forgetPassword,
   SendCode,
+  SendCodeForAdmin,
+  forgetPasswordForAdmin,
+  GetSpecificPost,
+  GetTotalJobs,
 };

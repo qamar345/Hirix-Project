@@ -1,39 +1,76 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { edit, applicant, text, candidate } from "../assets/icons/index.js";
 import { CiCamera } from "react-icons/ci";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import Select from "react-select";
-import { AdFooter, VisitChart } from "../index.js";
+import { AdFooter, VisitChart, CandidateVisitChart } from "../index.js";
+import axios from "axios";
+
 const EmpDashboard = () => {
-  const jobAge = [
-    { value: "1", label: "07 days" },
-    { value: "2", label: "15 days" },
-    { value: "3", label: "30 days" },
+  const check = sessionStorage.getItem("isLoggedIn");
+  const [selectedDays, setSelectedDays] = useState();
+  const navigate = useNavigate();
+  const [data, setData] = useState([
+    { src: edit, num: 0, label: "total jobs", color: "#b3e5fb" },
+    {
+      src: applicant,
+      num: 0,
+      label: "candidates",
+      color: "#cabffd",
+    },
+    { src: text, num: 0, label: "Employees", color: "#febc9c" },
+    {
+      src: candidate,
+      num: 0,
+      label: "Total companies",
+      color: "#b7e4cb",
+    },
+  ]);
+  useEffect(() => {
+    if (!check) navigate("/admin-login");
+  });
+
+  useEffect(() => {
+    const GetUsers = async () => {
+      await axios
+        .get("http://localhost:9000/DashboardData")
+        .then((res) => {
+          setData(res.data);
+        })
+        .then((fetchedData) => {
+          // fetchedData format example: { totalJobs: 47, candidates: 71, Employees: 41, totalCompanies: 7 }
+          const updatedData = data.map((item) => {
+            let num = 0;
+            if (item.label === "total jobs") num = fetchedData.totalJobs;
+            if (item.label === "candidates") num = fetchedData.candidates;
+            if (item.label === "Employees") num = fetchedData.Employees;
+            if (item.label === "total companies")
+              num = fetchedData.totalCompanies;
+            return { ...item, num };
+          });
+          setData(updatedData);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    };
+
+    GetUsers();
+  }, []);
+  const days = [
+    { value: 7, label: "Last 7 Days" },
+    { value: 15, label: "Last 15 Days" },
+    { value: 30, label: "Last 30 Days" },
   ];
 
   return (
     <>
       <div className="dashboardWrapper">
         <div className="dashboardPage">
-          <h2 className="heading">Welcome back! Admin</h2>
+          <h2 className="heading">Welcome back! </h2>
 
           <ul className="row">
-            {[
-              { src: edit, num: "47", label: "total jobs", color: "#b3e5fb" },
-              {
-                src: applicant,
-                num: "71",
-                label: "candidates",
-                color: "#cabffd",
-              },
-              { src: text, num: "41", label: "new companies", color: "#febc9c" },
-              {
-                src: candidate,
-                num: "7",
-                label: "approved companies",
-                color: "#b7e4cb",
-              },
-            ].map((item, index) => (
+            {data.map((item, index) => (
               <li className="col-xl-3 p-3 col-sm-6" key={index}>
                 <div className="entryCard d-flex   justify-content-between">
                   <div className="entryDetail">
@@ -48,7 +85,7 @@ const EmpDashboard = () => {
                     className="entryImg"
                     style={{ background: `${item.color}` }}
                   >
-                    <img src={item.src} alt={item.label} />
+                    <img src={item.src} />
                   </div>
                 </div>
               </li>
@@ -63,17 +100,16 @@ const EmpDashboard = () => {
                     <h4 className="title-chart">Total Companies</h4>
                     <div className="form-chart">
                       <Select
-                        options={jobAge}
+                        options={days}
                         styles={customStyles}
                         className="border p-1 rounded-2 text-nowrap mb-2 selectFull"
-                        defaultValue={jobAge.find(
-                          (option) => option.value === "1"
-                        )}
+                        defaultValue={days.find((option) => option.value === 7)}
+                        onChange={(e) => setSelectedDays(e.value)}
                       />
                     </div>
                   </div>
                   <div>
-                    <VisitChart/>
+                    <VisitChart days={selectedDays}/>
                   </div>
                 </div>
               </div>
@@ -84,23 +120,20 @@ const EmpDashboard = () => {
                     <h4 className="title-chart">Total Candidates</h4>
                     <div className="form-chart">
                       <Select
-                        options={jobAge}
+                        options={days}
                         styles={customStyles}
                         className="border p-1 rounded-2 text-nowrap mb-2 selectFull"
-                        defaultValue={jobAge.find(
-                          (option) => option.value === "1"
+                        defaultValue={days.find(
+                          (option) => option.value === "7"
                         )}
                       />
                     </div>
                   </div>
                   <div>
-                    <VisitChart/>
+                    <CandidateVisitChart days={selectedDays} />
                   </div>
                 </div>
               </div>
-
-           
-
             </div>
           </div>
         </div>

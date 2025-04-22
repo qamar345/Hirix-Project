@@ -1,32 +1,70 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { MdOutlineLocationOn } from "react-icons/md";
 import { FaRegHeart } from "react-icons/fa";
 import { urgent, featured } from "../assets/icons/index.js";
+import { Pagination } from "../index.js";
 const JobCard = ({
   id,
-  logo,
+  images,
   title,
-  author,
-  company,
-  timing,
+  employer_username,
+  company_name,
+  job_type,
   city,
-  salary,
-  remainingDays,
+  minimum_currency,
+  expiry_date,
   isFeatured,
   isSelected,
   isUrgent,
+  onClick,
 }) => {
   const customClass = `${isFeatured ? "civi-jobs-featured" : ""} ${
     isSelected ? "active" : ""
   } ${isUrgent ? "civi-jobs-urgent" : ""}`;
+  const navigate = useNavigate();
+  const check = sessionStorage.getItem("isLoggedIn");
+  const handleWishlist = async () => {
+    if (!check) {
+      alert("Please Login First!");
+      navigate("/");
+    } else {
+      try {
+        const userid = sessionStorage.getItem("id");
+        const res = await axios.post(
+          `http://localhost:9000/addWishlist/${userid}`,
+          null,
+          {
+            params: { job_id: id },
+          }
+        );
+
+        if (res.data.msg) {
+          alert(res.data.msg);
+        } else {
+          alert("please try again.");
+        }
+      } catch (error) {
+        alert("Error");
+      }
+    }
+  };
 
   return (
     <div className="content-jobs area-jobs area-archive column-1 ">
-      <div id={id} className={`civi-jobs-item layout-list  ${customClass}`}>
+      <div
+        id={id}
+        className={`civi-jobs-item layout-list  ${customClass}`}
+        onClick={onClick}
+        style={{ cursor: "pointer" }}
+      >
         <div className="jobs-archive-header">
           <div className="jobs-header-left">
-            <img className="logo-comnpany" src={logo} alt="" />
+            <img
+              className="logo-comnpany"
+              src={`http://localhost:9000${images}`}
+              alt=""
+            />
             <div className="jobs-left-inner">
               <h3 className="jobs-title">
                 <NavLink to="">{title}</NavLink>
@@ -34,13 +72,13 @@ const JobCard = ({
               <div className="info-company d-flex gap-2 flex-wrap">
                 <span>by</span>
                 <NavLink to="" className={`authour civi-link-bottom`}>
-                  {author}
+                  {employer_username}
                 </NavLink>
                 <span>in</span>
                 <div className="categories-warpper">
                   <div className="cate-warpper">
                     <NavLink to="" className={`cate civi-link-bottom`}>
-                      {company}
+                      {company_name}
                     </NavLink>
                   </div>
                 </div>
@@ -69,17 +107,17 @@ const JobCard = ({
               </span>
             )}
 
-            <span>
-              <NavLink className="jobIcon">
-                <FaRegHeart className="jobIcon" />
+            {/* <span>
+              <NavLink className="jobIcon" to="#"  >
+                <FaRegHeart className="jobIcon" onClick={handleWishlist}/>
               </NavLink>
-            </span>
+            </span> */}
           </div>
         </div>
         <div className="jobs-archive-footer">
           <div className="jobs-footer-left">
             <NavLink to="" className={`label label-type`}>
-              {timing}
+              {job_type}
             </NavLink>
 
             <NavLink to="" className={`label label-location`}>
@@ -87,14 +125,21 @@ const JobCard = ({
               {city}
             </NavLink>
 
-            <div className="label label-price">{salary}</div>
+            <div className="label label-price">
+              {" "}
+              starting from {minimum_currency}
+            </div>
           </div>
           <div className="jobs-footer-right">
             <p className="days">
-              <span> {remainingDays} </span>days left to apply
+              Apply Before:{" "}
+              <span>{new Date(expiry_date).toISOString().split("T")[0]}</span>
             </p>
           </div>
         </div>
+      </div>
+      <div className="page-list">
+        <Pagination />
       </div>
     </div>
   );

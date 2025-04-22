@@ -1,15 +1,89 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { edit, applicant, text, candidate } from "../assets/icons/index.js";
 import { CiCamera } from "react-icons/ci";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import Select from "react-select";
 import { EmpFooter, VisitChart } from "../index.js";
+import axios from "axios";
 const EmpDashboard = () => {
-  const jobAge = [
-    { value: "1", label: "07 days" },
-    { value: "2", label: "15 days" },
-    { value: "3", label: "30 days" },
+  const [selectedDays, setSelectedDays] = useState(7);
+  const navigate = useNavigate();
+  useEffect(() => {
+    const check = sessionStorage.getItem("isLoggedIn");
+    if (!check) {
+      navigate("/");
+    }
+  }, []);
+
+  // const [data, setData] = useState([
+  //   { label: "posted jobs", num: 0 },
+  //   { label: "applicants", num: 0 },
+  //   { label: "meetings", num: 0 },
+  //   { label: "companies", num: 0 },
+  // ]);
+  const [data, setData] = useState([]);
+  const [ColData, setColData] = useState([]);
+  const id = sessionStorage.getItem("id");
+  useEffect(() => {
+    const GetData = async () => {
+      if (!id) {
+        console.error("User ID not found in session storage");
+        return;
+      }
+      try {
+        const res = await axios.get(`http://localhost:9000/DashEmpData/${id}`);
+        setData(res.data.data);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+    };
+
+    GetData();
+  }, []);
+
+  useEffect(() => {
+    const Data = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:9000/dashDataEmployer/${id}`
+        );
+        console.log("Backend Response:", res.data);
+        setColData(res.data.data || []);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+    };
+
+    Data();
+  }, []);
+  const days = [
+    { value: 7, label: "Last 7 Days" },
+    { value: 15, label: "Last 15 Days" },
+    { value: 30, label: "Last 30 Days" },
   ];
+
+  const groupedJobs = ColData.reduce((acc, item) => {
+  let job = acc.find((j) => j.job_name === item.job_name);
+  
+  if (!job) {
+    job = {
+      job_name: item.job_name,
+      total_applicants: item.total_applicants,
+      applicants: [],
+    };
+    acc.push(job);
+  }
+
+  // Add applicant details (limit 3 applicants per job)
+  if (job.applicants.length < 3) {
+    job.applicants.push({
+      applicant_name: item.applicant_name,
+      applied_date: item.applied_date,
+    });
+  }
+
+  return acc;
+}, []);
 
   return (
     <>
@@ -18,41 +92,42 @@ const EmpDashboard = () => {
           <h2 className="heading">Welcome back! Employer</h2>
 
           <ul className="row">
-            {[
-              { src: edit, num: "47", label: "posted jobs", color: "#b3e5fb" },
-              {
-                src: applicant,
-                num: "71",
-                label: "applicants",
-                color: "#cabffd",
-              },
-              { src: text, num: "41", label: "meetings", color: "#febc9c" },
-              {
-                src: candidate,
-                num: "7",
-                label: "my follow",
-                color: "#b7e4cb",
-              },
-            ].map((item, index) => (
-              <li className="col-xl-3 p-3 col-sm-6" key={index}>
-                <div className="entryCard d-flex   justify-content-between">
-                  <div className="entryDetail">
-                    <div className="entryTitle">
-                      <h3>{item.label}</h3>
+            {data?.map((item, index) => {
+              const icons = {
+                "posted jobs": edit,
+                applicants: applicant,
+                meetings: text,
+                companies: candidate,
+              };
+
+              const colors = {
+                "posted jobs": "#b3e5fb",
+                applicants: "#cabffd",
+                meetings: "#febc9c",
+                companies: "#b7e4cb",
+              };
+
+              return (
+                <li className="col-xl-3 p-3 col-sm-6" key={index}>
+                  <div className="entryCard d-flex justify-content-between">
+                    <div className="entryDetail">
+                      <div className="entryTitle">
+                        <h3>{item.label}</h3>
+                      </div>
+                      <div className="entryNumber">
+                        <span>{item.num}</span>
+                      </div>
                     </div>
-                    <div className="entryNumber">
-                      <span>{item.num}</span>
+                    <div
+                      className="entryImg"
+                      style={{ background: colors[item.label] }}
+                    >
+                      <img src={icons[item.label]} alt={item.label} />
                     </div>
                   </div>
-                  <div
-                    className="entryImg"
-                    style={{ background: `${item.color}` }}
-                  >
-                    <img src={item.src} alt={item.label} />
-                  </div>
-                </div>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
 
           <div className="notification-dashboard">
@@ -60,28 +135,30 @@ const EmpDashboard = () => {
               <div className="col-md-7 p-3">
                 <div className="civi-chart-warpper civi-chart-employer">
                   <div className="chart-header">
-                    <h4 className="title-chart">Page views</h4>
+                    <h4 className="title-chart">Applicants</h4>
                     <div className="form-chart">
                       <Select
-                        options={jobAge}
+                        options={days}
                         styles={customStyles}
                         className="border p-1 rounded-2 text-nowrap mb-2 selectFull"
-                        defaultValue={jobAge.find(
-                          (option) => option.value === "1"
-                        )}
+                        defaultValue={days.find((option) => option.value === 7)}
+                        onChange={(e) => setSelectedDays(e.value)}
                       />
                     </div>
                   </div>
                   <div>
-                    <VisitChart/>
+                    <VisitChart days={selectedDays} />
                   </div>
                 </div>
               </div>
 
-              <div className="col-md-5 p-3">
+              {/* <div className="col-md-5 p-3">
                 <div className="applicants-wrap">
                   <h4 className="title-applicants">New applicants</h4>
+                   
                   <div className="applicants-innner">
+                    {ColData?.map((item,index) => {
+                      return (
                     <div className="applicants-heading ">
                       <h3>Sr. Backend Go Developer</h3>
                       <span>56</span>
@@ -105,7 +182,9 @@ const EmpDashboard = () => {
                         </p>
                       </div>
                     </div>
-                  </div>
+                      )
+                   })}
+                   </div>
                   <div className="">
                     <div className="applicants-heading ">
                       <h3>Blockchain Engineer</h3>
@@ -129,6 +208,49 @@ const EmpDashboard = () => {
                     </div>
                   </div>
                   <NavLink to="" className={`outlineBtn`}>
+                    All applicants
+                  </NavLink>
+                </div>
+              </div> */}
+              <div className="col-md-5 p-3">
+                <div className="applicants-wrap">
+                  <h4 className="title-applicants">New applicants</h4>
+
+                  <div className="applicants-inner">
+                    {groupedJobs?.map((job, index) => {
+                      // Ensure applicants is always an array
+                      const applicantsArray = Array.isArray(job.applicants)
+                        ? job.applicants
+                        : [];
+
+                      return (
+                        <div key={index}>
+                          <div className="applicants-heading">
+                            <h3>{job.job_name}</h3>
+                            <span>{job.total_applicants}</span>
+                          </div>
+                          {applicantsArray.slice(0, 3).map((applicant, i) => (
+                            <div className="applicants-content" key={i}>
+                              <div className="image-applicants">
+                                <CiCamera />
+                              </div>
+                              <div>
+                                <h6>{applicant.applicant_name}</h6>
+                                <p>
+                                  Applied date:{" "}
+                                  {new Date(
+                                    applicant.applied_date
+                                  ).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <NavLink to="/employer/applicants" className="outlineBtn">
                     All applicants
                   </NavLink>
                 </div>

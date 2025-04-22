@@ -1,13 +1,27 @@
-import React from "react";
+import React, { useState } from "react";
 import { CiFilter } from "react-icons/ci";
 import { FaArrowsSpin } from "react-icons/fa6";
+import { useLocation, useNavigate } from "react-router-dom";
 import Select from "react-select";
-const FilterWrapper = () => {
+
+const FilterWrapper = ({totalJobs}) => {
+  const navigate = useNavigate();
+  const [sortValue, setsortValue] = useState([]);
+  const location = useLocation();
   const jobAge = [
     { value: "newest", label: "Newest" },
     { value: "oldest", label: "Oldest" },
     { value: "featured", label: "Featured" },
   ];
+
+  const query = new URLSearchParams(location.search);
+  const sort = query.get("sort") || "newest";
+
+  const handleSortChange = (selectedOption) => {
+    
+    query.set("sort", selectedOption.value);
+    navigate(`?${query.toString()}`);
+  };
 
   return (
     <div className="filter-warpper ">
@@ -24,7 +38,7 @@ const FilterWrapper = () => {
           </a>
         </div>
         <span className="result-count d-block mt-1">
-          <span className="count">72</span> Jobs
+          <span className="count">{totalJobs}</span> Jobs
         </span>
       </div>
 
@@ -38,9 +52,10 @@ const FilterWrapper = () => {
 
           <Select options={jobAge} styles={customStyles} 
            className="border p-1 rounded-2 text-nowrap mb-1 ms-3 selectFull"
-           defaultValue={jobAge.find(
-             (option) => option.value === "newest"
+           value={jobAge.find(
+             (option) => option.value === sort
            )}
+           onChange={handleSortChange}
           />
         </div>
       </div>

@@ -1,4 +1,5 @@
-import React from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import {
   LineChart,
   Line,
@@ -10,23 +11,44 @@ import {
   ResponsiveContainer,
   LabelList,
 } from "recharts";
+import { format } from "date-fns";
+// const data = [
+//   { name: "Nov 1, 2024", visits: 16 },
+//   { name: "Nov 2, 2024", visits: 11 },
+//   { name: "Nov 3, 2024", visits: 15 },
+//   { name: "Nov 4, 2024", visits: 11 },
+//   { name: "Nov 5, 2024", visits: 3 },
+//   { name: "Nov 6, 2024", visits: 6 },
+//   { name: "Nov 7, 2024", visits: 11 },
+// ];
 
-const data = [
-  { name: "Nov 1, 2024", visits: 16 },
-  { name: "Nov 2, 2024", visits: 11 },
-  { name: "Nov 3, 2024", visits: 15 },
-  { name: "Nov 4, 2024", visits: 11 },
-  { name: "Nov 5, 2024", visits: 3 },
-  { name: "Nov 6, 2024", visits: 6 },
-  { name: "Nov 7, 2024", visits: 11 },
-];
+function VisitChart({days}) {
+  const [graph, setGraph] = useState([]);
+  // const [selectedDays, setSelectedDays] = useState(7);
+  const id = sessionStorage.getItem("id");
+  useEffect(() => {
+    const fetchDataGraph = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:9000/EmployerGraph/${id}/${days}`
+        );
+        console.log(res.data);
+        setGraph(res.data);
+      } catch (error) {
+        console.log("Error:", error);
+      }
+    };
 
-function VisitChart() {
+    fetchDataGraph();
+  }, [id, days]);
   return (
+    <>
     <ResponsiveContainer width={"100%"} height={400}>
-      <LineChart data={data} margin={{ top: 20 }}>
+    {graph.length > 0 ? (
+      <LineChart data={graph} margin={{ top: 20 }}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" padding={{ left: 30, right: 30 }} />
+        <XAxis dataKey="name" padding={{ left: 30, right: 30 }} 
+         tickFormatter={(date) => format(new Date(date), "yyyy-MM-dd")}/>
         <YAxis />
         <Tooltip />
         <Legend />
@@ -39,7 +61,13 @@ function VisitChart() {
           <LabelList position="top" offset={5} />
         </Line>
       </LineChart>
+       ) : (
+        <p style={{ textAlign: "center", marginTop: "20px" }}>
+          No data available
+        </p>
+      )}
     </ResponsiveContainer>
+    </>
   );
 }
 

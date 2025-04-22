@@ -1,24 +1,127 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { FaRegEye } from "react-icons/fa";
 import { urgent, featured } from "../assets/icons/index.js";
 import { FaRegHeart } from "react-icons/fa";
 import { GoShareAndroid } from "react-icons/go";
 import { MdOutlineLocationOn } from "react-icons/md";
-const JobPost = ({
-  logo,
-  title,
-  author,
-  company,
-  views,
-  isFeatured,
-  isUrgent,
-  timing,
-  city,
-}) => {
+import { differenceInDays } from "date-fns";
+import axios from "axios";
+
+const JobPost = ({ job }) => {
+  // logo,
+  // title,
+  // author,
+  // company,
+  // views,
+  // isFeatured,
+  // isUrgent,
+  // timing,
+  // city,
+  // }) => {
+  const [showSocialIcons, setShowSocialIcons] = useState(false);
+
   const [activeTab, setActiveTab] = useState("job-detail");
+  const navigate = useNavigate();
+  const check = sessionStorage.getItem("isLoggedIn");
   const handleTabClick = (tab) => {
     setActiveTab(tab);
+  };
+  if (!job) {
+    return (
+      <div className="job-post-placeholder">
+        <p>Please select a job to view details.</p>
+      </div>
+    );
+  }
+  const {
+    companyDetail,
+    id,
+    title,
+    employer_username,
+    company_name,
+    city,
+    job_type,
+    created_at,
+    expiry_date,
+    province,
+    maximum_currency,
+    Rate,
+    career_level,
+    qualification,
+    Experience,
+    available_seats,
+    description,
+    required_skills,
+  } = job;
+  const today = new Date();
+  const expiryDate = new Date(expiry_date);
+
+  const daysLeft = differenceInDays(expiryDate, today);
+
+  const handleApply = async () => {
+    if (!check) {
+      alert("Please Login First!");
+      navigate("/");
+    } else {
+      try {
+        const userid = sessionStorage.getItem("id");
+        const res = await axios.post(
+          `http://localhost:9000/apply-for-job/${userid}`,
+          null,
+          {
+            params: { job_id: id },
+          }
+        );
+
+        if (res.data.msg) {
+          alert(res.data.msg);
+        } else {
+          alert("Failed to apply, please try again.");
+        }
+      } catch (error) {
+        console.log("Error applying for job:", error);
+        alert("Error applying for the job.");
+      }
+    }
+  };
+
+  const handleWishlist = async () => {
+    if (!check) {
+      alert("Please Login First!");
+      navigate("/");
+    } else {
+      try {
+        const userid = sessionStorage.getItem("id");
+        const res = await axios.post(
+          `http://localhost:9000/addWishlist/${userid}`,
+          null,
+          {
+            params: { job_id: id },
+          }
+        );
+
+        if (res.data.msg) {
+          alert(res.data.msg);
+        } else {
+          alert("please try again.");
+        }
+      } catch (error) {
+        alert("Error");
+      }
+    }
+  };
+
+  const handleShare = () => {
+    const currentURL = window.location.href;
+    navigator.clipboard
+      .writeText(currentURL)
+      .then(() => {
+        alert("Link copied to clipboard!");
+      })
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
+      });
   };
 
   return (
@@ -28,11 +131,11 @@ const JobPost = ({
           <div className="block-archive-inner jobs-head-details">
             <div className="civi-jobs-header-top">
               <div className="civi-header-left">
-                <img className="logo-comnpany" src={logo} alt="" />
+                {/* <img className="logo-comnpany" src={logo} alt="" /> */}
                 <div className="info">
                   <div className="title-wapper d-flex gap-4">
                     <h1>{title}</h1>
-                    <span>
+                    {/* <span>
                       {isFeatured && (
                         <img src={featured} alt="Featured" title="Featured" />
                       )}
@@ -41,63 +144,115 @@ const JobPost = ({
                       {isUrgent && (
                         <img src={urgent} alt="Urgent" title="Urgent" />
                       )}
-                    </span>
+                    </span> */}
                   </div>
                   <div className="d-flex gap-2">
                     <span>by</span>
                     <NavLink to="" className={`authour civi-link-bottom`}>
-                      {author}
+                      {employer_username}
                     </NavLink>
                     <span>in</span>
                     <div className="categories-warpper">
                       <div className="cate-warpper">
                         <NavLink to="" className={`cate civi-link-bottom`}>
-                          {company}
+                          {company_name}
                         </NavLink>
                       </div>
                     </div>
-                    <div className="jobs-view">
+                    {/* <div className="jobs-view">
                       <FaRegEye />
                       <span className="count"> {views} (views)</span>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>
               <div className="civi-header-right">
                 <div className="toggle-social">
                   <a
-                    // href="#"
-
-                    className="jobs-share btn-share "
+                    href="#"
+                    className="jobs-share btn-share"
                     title="Share"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleShare();
+                    }}
                   >
                     <GoShareAndroid style={{ width: "20px", height: "20px" }} />
                   </a>
+                
                   {/* <div className="social-share">
                     <div className="list-social-icon">
-                      <a className="facebook" href="#">
+                      <a
+                        className="facebook"
+                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                          window.location.href
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         <ImFacebook2 />
                       </a>
-                      <a className="twitter" href="#">
+
+                      <a
+                        className="twitter"
+                        href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(
+                          window.location.href
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         <i className="fab fa-twitter" />
                       </a>
-                      <a className="linkedin" href="#">
+
+                      <a
+                        className="linkedin"
+                        href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+                          window.location.href
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         <i className="fab fa-linkedin-in" />
                       </a>
-                      <a className="tumblr" href="#">
+
+                      <a
+                        className="tumblr"
+                        href={`https://www.tumblr.com/widgets/share/tool?canonicalUrl=${encodeURIComponent(
+                          window.location.href
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         <i className="fab fa-tumblr" />
                       </a>
-                      <a className="pinterest" href="#">
+
+                      <a
+                        className="pinterest"
+                        href={`https://pinterest.com/pin/create/button/?url=${encodeURIComponent(
+                          window.location.href
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         <i className="fab fa-pinterest-p" />
                       </a>
-                      <a className="whatapp" href="#">
+
+                      <a
+                        className="whatsapp"
+                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                          window.location.href
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         <i className="fab fa-whatsapp" />
                       </a>
                     </div>
                   </div> */}
+                  
                 </div>
                 <div>
-                  <NavLink>
+                  <NavLink to="#" onClick={handleWishlist}>
                     <FaRegHeart style={{ fontSize: "20px" }} />
                   </NavLink>
                 </div>
@@ -110,13 +265,14 @@ const JobPost = ({
                   {city}
                 </NavLink>
                 <NavLink to="" className={`label label-type`}>
-                  {timing}
+                  {job_type}
                 </NavLink>
               </div>
               <div className="right">
                 <NavLink
-                  to=""
+                  to="#"
                   className={`civi-button civi-button-apply civi_form_apply_jobs`}
+                  onClick={handleApply}
                 >
                   Apply now
                 </NavLink>
@@ -172,7 +328,9 @@ const JobPost = ({
                       </div>
                       <div className="info">
                         <p className="title-info">Date posted</p>
-                        <p className="details-info">October 18, 2022</p>
+                        <p className="details-info">
+                          {new Date(created_at).toISOString().split("T")[0]}
+                        </p>
                       </div>
                     </li>
                     <li className="list-item col-md-4 col-sm-6">
@@ -192,7 +350,9 @@ const JobPost = ({
                       </div>
                       <div className="info">
                         <p className="title-info">Closing date</p>
-                        <p className="details-info">July 13, 2025</p>
+                        <p className="details-info">
+                          {new Date(expiry_date).toISOString().split("T")[0]}
+                        </p>
                       </div>
                     </li>
                     <li className="list-item col-md-4 col-sm-6">
@@ -213,7 +373,9 @@ const JobPost = ({
                       <div className="info">
                         <p className="title-info">Hiring location</p>
                         <p className="details-info">
-                          <span>California</span>
+                          <span>
+                            {province}/ {city}
+                          </span>
                         </p>
                       </div>
                     </li>
@@ -235,7 +397,7 @@ const JobPost = ({
                       <div className="info">
                         <p className="title-info">Offered salary</p>
                         <p className="details-info salary-info">
-                          Max:$500/month
+                          Max:{maximum_currency} / {Rate}
                         </p>
                       </div>
                     </li>
@@ -257,7 +419,7 @@ const JobPost = ({
                       <div className="info">
                         <p className="title-info">Career level</p>
                         <p className="details-info">
-                          <span>Junior</span>
+                          <span>{career_level}</span>
                         </p>
                       </div>
                     </li>
@@ -279,7 +441,7 @@ const JobPost = ({
                       <div className="info">
                         <p className="title-info">Qualification</p>
                         <p className="details-info">
-                          <span>Bachelor Degree</span>
+                          <span>{qualification}</span>
                         </p>
                       </div>
                     </li>
@@ -301,7 +463,7 @@ const JobPost = ({
                       <div className="info">
                         <p className="title-info">Experience</p>
                         <p className="details-info">
-                          <span>1 - 2 Years</span>
+                          <span>{Experience} Years</span>
                         </p>
                       </div>
                     </li>
@@ -322,7 +484,7 @@ const JobPost = ({
                       </div>
                       <div className="info">
                         <p className="title-info">Quantity</p>
-                        <p className="details-info">1 person</p>
+                        <p className="details-info">{available_seats} person</p>
                       </div>
                     </li>
                   </div>
@@ -344,15 +506,16 @@ const JobPost = ({
                   <h4 className="wp-block-heading">Overview</h4>
 
                   <p>
-                    We are Uxper. With a presence in more than 60 countries,
+                    {/* We are Uxper. With a presence in more than 60 countries,
                     we’re a growing global organization that helps amazing
                     companies engage with customers through mobile messaging,
-                    email, voice and video.
+                    email, voice and video. */}
+                    {description}
                   </p>
 
-                  <h4 className="wp-block-heading">Requirements</h4>
+                  {/* <h4 className="wp-block-heading">Requirements</h4> */}
 
-                  <ul>
+                  {/* <ul>
                     <li>
                       Be heavily involved in turning user stories into testable,
                       maintainable and high-quality code. This is a hands-on
@@ -399,7 +562,7 @@ const JobPost = ({
                       You are familiar with using Jira and Confluence in your
                       workflow
                     </li>
-                  </ul>
+                  </ul> */}
                 </div>
                 <div className="toggle-description">
                   <a href="#" className="show-more-description">
@@ -417,15 +580,12 @@ const JobPost = ({
               <div className="block-archive-inner jobs-skills-details">
                 <h4 className="title-jobs">Skills</h4>
                 <div className="skills-warpper">
-                  <NavLink to="" className={`label label-skills`}>
-                    Customer Service
-                  </NavLink>
-                  <NavLink to="" className={`label label-skills`}>
-                    Customer Support
-                  </NavLink>
-                  <NavLink to="" className={`label label-skills`}>
-                    Technical Support
-                  </NavLink>
+                  {required_skills &&
+                    required_skills.split(",").map((skill, index) => (
+                      <NavLink key={index} to="" className="label label-skills">
+                        {skill.trim()}
+                      </NavLink>
+                    ))}
                 </div>
               </div>
 
@@ -454,9 +614,16 @@ const JobPost = ({
               }`}
             >
               <div className="company-overview">
-                <h4 className="title-post">Overview</h4>
-                <div className="content">
-                  <p>
+                {companyDetail ? (
+                  <>
+                    <h4 className="title-post">Overview</h4>
+
+                    <div className="civi-description">
+                      <div className="row">
+                        {/* <p>{companyDetail.About}</p> */}
+                      </div>
+
+                      {/* <p>
                     Foundation helps creators mint and auction their digital
                     artworks as NFTs on the Ethereum blockchain.
                   </p>
@@ -487,85 +654,95 @@ const JobPost = ({
 
                   <p>
                     Let’s explore these new possibilities collectively.&nbsp;
-                  </p>
-
-                  <a href="#">Read more</a>
-                </div>
-                <div className="info">
-                  <p className="title-info">Categories</p>
-                  <div className="list-cate">
-                    <a href="#" className="cate civi-link-bottom">
-                      B2B SaaS
-                    </a>
-                    <a href="#" className="cate civi-link-bottom">
+                  </p> */}
+                      {/* <a href="#">Read more</a> */}
+                    </div>
+                    <div className="info">
+                      <p className="title-info">Categories</p>
+                      <div className="list-cate">
+                        <a href="#" className="cate civi-link-bottom">
+                          {companyDetail.categories}
+                        </a>
+                        {/* <a href="#" className="cate civi-link-bottom">
                       Ecommerce
+                    </a> */}
+                      </div>
+                    </div>
+                    <div className="info">
+                      <p className="title-info">Company size</p>
+                      <div className="list-cate">
+                        {companyDetail.total_members}
+                      </div>
+                    </div>
+                    <div className="info">
+                      <p className="title-info">Founded in</p>
+                      <p className="details-info">{companyDetail.founded_in}</p>
+                    </div>
+                    <div className="info">
+                      <p className="title-info">Location</p>
+                      <p className="details-info">
+                        <span>
+                          {companyDetail.province} / {companyDetail.city}
+                        </span>
+                      </p>
+                    </div>
+                    <div className="info">
+                      <p className="title-info">Phone</p>
+                      <p className="details-info company-phone">
+                        <a href="tel:(+12)321654987">{companyDetail.Contact}</a>
+                        <i className="fal fa-eye" />
+                      </p>
+                    </div>
+                    <div className="info">
+                      <p className="title-info">Email</p>
+                      <p className="details-info email">
+                        <a href="#">{companyDetail.E_mail}</a>
+                      </p>
+                    </div>
+                    <ul className="list-social">
+                      <li>
+                        <a href="https://www.facebook.com">
+                          <i className="fab fa-facebook-f" />
+                        </a>
+                      </li>
+                      <li>
+                        <a href="https://twitter.com/foundation">
+                          <i className="fab fa-twitter" />
+                        </a>
+                      </li>
+                      <li>
+                        <a href="https://linkedin.com/company/foundation-labs-inc">
+                          <i className="fab fa-linkedin" />
+                        </a>
+                      </li>
+                      <li>
+                        <a href="https://instagram.com/withfoundation">
+                          <i className="fab fa-instagram" />
+                        </a>
+                      </li>
+                    </ul>
+                    {/* <a
+                      href="#"
+                      className="civi-button button-outline button-block button-visit"
+                      target="_blank"
+                    >
+                      Visit foundation.app
+                      <i className="fas fa-external-link" />
                     </a>
-                  </div>
-                </div>
-                <div className="info">
-                  <p className="title-info">Company size</p>
-                  <div className="list-cate">200-300</div>
-                </div>
-                <div className="info">
-                  <p className="title-info">Founded in</p>
-                  <p className="details-info">2020</p>
-                </div>
-                <div className="info">
-                  <p className="title-info">Location</p>
-                  <p className="details-info">
-                    <span>Boston</span>
-                  </p>
-                </div>
-                <div className="info">
-                  <p className="title-info">Phone</p>
-                  <p className="details-info company-phone">
-                    <a href="tel:(+12)321654987">(+12)32165 ****</a>
-                    <i className="fal fa-eye" />
-                  </p>
-                </div>
-                <div className="info">
-                  <p className="title-info">Email</p>
-                  <p className="details-info email">
-                    <a href="#">hello@uxper.co</a>
-                  </p>
-                </div>
-                <ul className="list-social">
-                  <li>
-                    <a href="https://www.facebook.com">
-                      <i className="fab fa-facebook-f" />
-                    </a>
-                  </li>
-                  <li>
-                    <a href="https://twitter.com/foundation">
-                      <i className="fab fa-twitter" />
-                    </a>
-                  </li>
-                  <li>
-                    <a href="https://linkedin.com/company/foundation-labs-inc">
-                      <i className="fab fa-linkedin" />
-                    </a>
-                  </li>
-                  <li>
-                    <a href="https://instagram.com/withfoundation">
-                      <i className="fab fa-instagram" />
-                    </a>
-                  </li>
-                </ul>
-                <a
-                  href="#"
-                  className="civi-button button-outline button-block button-visit"
-                  target="_blank"
-                >
-                  Visit foundation.app
-                  <i className="fas fa-external-link" />
-                </a>
-                <div className="logged-out">
-                  <a href="#" className="civi-button btn-login civi-send-mess">
-                    Send message
-                  </a>
-                </div>
+                    <div className="logged-out">
+                      <a
+                        href="#"
+                        className="civi-button btn-login civi-send-mess"
+                      >
+                        Send message
+                      </a>
+                    </div> */}
+                  </>
+                ) : (
+                  <p>No company details available.</p>
+                )}
               </div>
-              <div className="company-jobs">
+              {/* <div className="company-jobs">
                 <h4 className="title-post">Jobs Opening</h4>
                 <ul className="list-jobs">
                   <li className="list-items">
@@ -642,7 +819,7 @@ const JobPost = ({
                 <a href="#" className="civi-button button-outline button-block">
                   View all jobs
                 </a>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -652,13 +829,14 @@ const JobPost = ({
           <div className="info-apply">
             <h4>Interested in this job?</h4>
             <p className="days">
-              <span> 251 </span>days left to apply
+              <span>{daysLeft > 0 ? daysLeft : 0} </span>days left to apply
             </p>
           </div>
           <a
             href="#civi_form_apply_jobs"
             className="civi-button civi-button-apply civi_form_apply_jobs"
             data-jobs_id={2071}
+            onClick={handleApply}
           >
             Apply now
           </a>

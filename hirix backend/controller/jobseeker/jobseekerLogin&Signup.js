@@ -93,6 +93,37 @@ const showjobs = (req, res) => {
     }
   });
 };
+
+// Password Change 
+const JobSeekerChangePassword = (req, res) => {
+  const { id } = req.params;
+  const { currentPass, newPass } = req.body.editPasswordData;
+  const checkPasswordQuery = "SELECT password FROM `user_accounts` WHERE id = ?";
+  
+  conn_sql.query(checkPasswordQuery, [id], (err, results) => {
+    if (err) {
+      return res.json({ msg: "Database error",err });
+    }
+    
+    if (results.length === 0) {
+      return res.json({msg: "user not found" });
+    }
+
+    const storedPassword = results[0].password;
+
+    if (storedPassword !== currentPass) {
+      return res.json({ msg: "Current password is incorrect" });
+    }
+    const updatePasswordQuery = "UPDATE `user_accounts` SET `password`= ? WHERE id=?";
+    conn_sql.query(updatePasswordQuery, [newPass, id], (updateErr, updateResult) => {
+      if (updateErr) {
+        return res.json({ msg: "Failed to update password",updateErr });
+      }
+      return res.json({ msg: "Password updated successfully",updateResult });
+    });
+  });
+
+};
  
 
-module.exports = { userlogin, UserProfile, showjobs };
+module.exports = { userlogin, UserProfile, showjobs, JobSeekerChangePassword };

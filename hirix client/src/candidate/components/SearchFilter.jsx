@@ -1,11 +1,47 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { GoSearch } from "react-icons/go";
 import { IoChevronDown } from "react-icons/io5";
 import { CiFolderOn } from "react-icons/ci";
 import { ImSpinner } from "react-icons/im";
 import { searchFilterImg } from "../assets/images/index.js";
+import { job } from "../assets/icons/index.js";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
 
 const SearchFilter = () => {
+  const [job, setjob] = useState("");
+  const [category, setcategory] = useState("");
+  const [city, setcity] = useState("");
+  const [skillsList, setSkillsList] = useState([]);
+
+  const navigate = useNavigate();
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (job.trim() !== "" || city.trim() !== "" || category.trim() !== "") {
+      navigate(
+        `?search=${encodeURIComponent(job)}&city=${city}&category=${category}`
+      );
+    }
+  };
+  const handleClearSearch = () => {
+    setjob("");
+    setcategory("");
+    setcity("");
+    navigate("/");
+  };
+  useEffect(() => {
+    const fetchSkills = async () => {
+      try {
+        const res = await axios.get(`http://localhost:9000/getSkills`);
+        setSkillsList(res.data);
+      } catch (err) {
+        console.error("Error fetching skills:", err);
+      }
+    };
+
+    fetchSkills();
+  }, []);
   return (
     <div className="archive-layout archive-jobs filter-canvas search-section">
       <div
@@ -18,7 +54,10 @@ const SearchFilter = () => {
           <h2 style={{ fontSize: "3.4rem", fontWeight: "normal" }}>
             Find Your Dream Jobs
           </h2>
-          <form className="form-jobs-top-filter form-archive-top-filter">
+          <form
+            onSubmit={handleSearchSubmit}
+            className="form-jobs-top-filter form-archive-top-filter"
+          >
             <div className="row">
               <div className="form-group h-100">
                 <input
@@ -27,6 +66,8 @@ const SearchFilter = () => {
                   type="text"
                   name="jobs_filter_search"
                   placeholder="Jobs title or keywords"
+                  value={job}
+                  onChange={(e) => setjob(e.target.value)}
                 />
                 <span className="btn-filter-search">
                   <GoSearch className="icon" />
@@ -40,6 +81,8 @@ const SearchFilter = () => {
                   name="jobs-search-location"
                   placeholder="All Cities"
                   autoComplete="off"
+                  value={city}
+                  onChange={(e) => setcity(e.target.value)}
                 />
 
                 <span className="icon-location">
@@ -64,17 +107,17 @@ const SearchFilter = () => {
                     </defs>
                   </svg>
                 </span>
-                <span className="icon-arrow">
+                {/* <span className="icon-arrow">
                   <IoChevronDown className="icon" />
-                </span>
+                </span> */}
               </div>
 
               <div className="form-group category-group">
                 <CiFolderOn className="folder-icon" />
 
-                <span className="select2 select2-container ">
-                  <span className="selection">
-                    <span
+                {/* <span className="select2 select2-container "> */}
+                {/* <span className="selection">  */}
+                {/* <span
                       className="select2-selection select2-selection--single"
                       role="combobox"
                       aria-haspopup="true"
@@ -83,29 +126,54 @@ const SearchFilter = () => {
                       aria-disabled="false"
                       aria-labelledby="select2-jobs-categories-re-container"
                     >
-                      <span
+                      <div className="form-group category-group">
+                        <CiFolderOn className="folder-icon" /> */}
+
+                <select
+                  className="select2 select2-container "
+                  value={category}
+                  onChange={(e) => setcategory(e.target.value)}
+                >
+                  <option value="">All Skills</option>
+                  {skillsList.map((skill) => (
+                    <option key={skill.id} value={skill.skills}>
+                      {skill.skills}
+                    </option>
+                  ))}
+                </select>
+                {/* </div> */}
+
+                {/* <span
+                        type="text"
                         className="select2-selection__rendered"
                         id="select2-jobs-categories-re-container"
                         role="textbox"
                         aria-readonly="true"
                         title="All Categories"
+                        value={category}
+                        onChange={(e) => setcategory(e.target.value)}
                       >
                         All Categories
-                      </span>
-                      <span className="" role="presentation">
+                      </span> */}
+                {/* <span className="" role="presentation">
                         <span className="icon-arrow">
                           <IoChevronDown className="icon" />
                         </span>
                         <b role="presentation" />
-                      </span>
-                    </span>
-                  </span>
-                  <span className="dropdown-wrapper" aria-hidden="true" />
-                </span>
+                      </span> */}
+                {/* </span> */}
+                {/* </span> */}
+                {/* <span className="dropdown-wrapper" aria-hidden="true" /> */}
+                {/* </span> */}
               </div>
 
               <div className="form-group last ">
-                <span className="civi-clear-top-filter ">Clear</span>
+                <span
+                  className="civi-clear-top-filter "
+                  onClick={handleClearSearch}
+                >
+                  Clear
+                </span>
 
                 <button
                   type="submit"

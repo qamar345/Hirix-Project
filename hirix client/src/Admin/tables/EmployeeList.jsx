@@ -1,0 +1,311 @@
+import React, { useEffect, useState } from "react";
+import Table from "react-bootstrap/Table";
+import { Link, useLocation } from "react-router-dom";
+import { CiCamera } from "react-icons/ci";
+import { FaExternalLinkAlt, FaDownload, FaEllipsisH } from "react-icons/fa";
+import axios from "axios";
+import { Pagination } from "../components/Pagination";
+import { Dropdown } from "react-bootstrap";
+// Custom Toggle Component
+const CustomToggle = React.forwardRef(({ onClick }, ref) => (
+  <span
+    ref={ref}
+    onClick={(e) => {
+      e.preventDefault();
+      onClick(e);
+    }}
+    style={{ cursor: "pointer" }}
+  >
+    <FaEllipsisH />
+  </span>
+));
+const EmployeeList = () => {
+  const [datauser, setdatauser] = useState([]);
+  const [currentPage, settCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [filterUsers, setfiltersUsers] = useState([]);
+  const location = useLocation();
+
+  const queryParams = new URLSearchParams(location.search);
+  const filter = queryParams.get("filter") || "";
+
+  const querysearch = new URLSearchParams(location.search);
+  const searchQuery = querysearch.get("search") || "";
+
+  const GetEmployee = async (page, search = "") => {
+    // setLoading(true);
+    try {
+      const res = await axios.get("http://localhost:9000/get-data", {
+        params: {
+          page: page,
+          search: search,
+        },
+      });
+      setdatauser(res.data.data);
+      setfiltersUsers(res.data.data);
+      settCurrentPage(res.data.meta.page);
+      setTotalPages(res.data.meta.totalPages);
+      // setLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handlePageChange = (page) => {
+    settCurrentPage(page);
+  };
+
+  useEffect(() => {
+    GetEmployee(currentPage, searchQuery);
+  }, [currentPage, searchQuery]);
+
+  useEffect(() => {
+    const filteredData =
+      filter == ""
+        ? datauser
+        : datauser.filter((user) => user.account_status == filter);
+    setfiltersUsers(filteredData);
+  }, [filter, datauser]);
+
+  const ActiveAccount = async (id) => {
+    await axios
+      .put(`http://localhost:9000/active-employee/${id}`)
+      .then((res) => {
+        alert(res.data.msg);
+        window.location.reload();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const FreezeAccount = async (id) => {
+    await axios
+      .put(`http://localhost:9000/freezeusers/${id}`)
+      .then((res) => {
+        alert(res.data.msg);
+        window.location.reload();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  // const applicantsData = [
+  //   {
+  //     name: "reza123",
+  //     appliedPosition: "Sr. Backend Go Developer",
+  //     appliedDate: "November 9, 2024",
+  //     status: "Rejected",
+  //     email: "drkphnx99@gmail.com",
+  //     phone: "+8801739761068",
+  //     actions: {
+  //       meetings: true,
+  //       downloadCV: true,
+  //       settings: true,
+  //       dropdownActions: ["Approved", "Rejected"],
+  //     },
+  //   },
+  //   {
+  //     name: "User not logged in",
+  //     appliedPosition: "Sr. Backend Go Developer",
+  //     appliedDate: "November 5, 2024",
+  //     status: "Rejected",
+  //     email: "leo@yopmail.com",
+  //     phone: "+3581234567",
+  //     actions: {
+  //       meetings: true,
+  //       downloadCV: true,
+  //       settings: true,
+  //       dropdownActions: ["Approved", "Rejected"],
+  //     },
+  //   },
+  //   {
+  //     name: "User not logged in",
+  //     appliedPosition: "Blockchain Engineer",
+  //     appliedDate: "September 20, 2024",
+  //     status: "Approved",
+  //     email: "gason.eric55@gmail.com",
+  //     phone: "0484180700",
+  //     actions: {
+  //       meetings: true,
+  //       downloadCV: true,
+  //       settings: true,
+  //       dropdownActions: ["Approved", "Rejected"],
+  //     },
+  //   },
+  //   {
+  //     name: "User not logged in",
+  //     appliedPosition: "Sr. Backend Go Developer",
+  //     appliedDate: "September 16, 2024",
+  //     status: "Approved",
+  //     email: "de@g.com",
+  //     phone: "+2250101010101",
+  //     actions: {
+  //       meetings: true,
+  //       downloadCV: true,
+  //       settings: true,
+  //       dropdownActions: ["Approved", "Rejected"],
+  //     },
+  //   },
+  // ];
+  return (
+    <>
+      <Table hover responsive>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Status</th>
+            <th>Information</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filterUsers.length > 0 ? (
+            filterUsers.map((applicant, index) => {
+              return (
+                <>
+                  <tr key={index}>
+                    <td className="info-user">
+                      <div className="image-applicants">
+                        {applicant.image ? (
+                          <img
+                            src={`http://localhost:9000${applicant.image}`}
+                          />
+                        ) : (
+                          <CiCamera />
+                        )}
+                      </div>
+                      <div className="info-details">
+                        <h3>{applicant.username}</h3>
+                        {/* <div className="applied">
+                        Applied:
+                        <a href="#" target="_blank" rel="noopener noreferrer">
+                          <span> {applicant.qualification}</span>
+                          <FaExternalLinkAlt className="externalIcon" />
+                        </a>
+                      </div> */}
+                      </div>
+                    </td>
+                    <td className="status">
+                      <div>
+                        <span
+                          className={`label 
+                ${applicant.account_status == 0 ? "label-close" : "label-open"}
+                `}
+                        >
+                          {applicant.account_status == 0 ? "Freeze" : "Active"}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="info">
+                      <span className="gmail">{applicant.email}</span>
+                      <span className="phone">{applicant.phone}</span>
+                    </td>
+                    <td className="applicants-control action-setting">
+                      <div className="list-action">
+                        <div className="links">
+                          {/* {applicant.actions.downloadCV && (
+                      <Link
+                        to=""
+                        className="action icon-download"
+                        data-title="Download CV"
+                      >
+                        <FaDownload />
+                      </Link>
+                    )}
+                    {applicant.actions.settings && (
+                      <Link href="#" className="icon-setting">
+                        <FaEllipsisH />
+                      </Link>
+                     )} */}
+                        </div>
+                        <Dropdown>
+                          <Dropdown.Toggle as={CustomToggle} />
+                          <Dropdown.Menu>
+                            {applicant.account_status === 0 ? (
+                              <>
+                                <Dropdown.Item>
+                                  <button
+                                    className="btn btn-light"
+                                    onClick={() => ActiveAccount(applicant.id)}
+                                    style={{
+                                      display: "block",
+                                      width: "100%",
+                                      fontSize: "1.5rem",
+                                    }}
+                                  >
+                                    Active
+                                  </button>
+                                </Dropdown.Item>
+                                <Dropdown.Item>
+                                  <button
+                                    className="btn btn-light"
+                                    onClick={() => FreezeAccount(applicant.id)}
+                                    style={{
+                                      display: "block",
+                                      width: "100%",
+                                      fontSize: "1.5rem",
+                                    }}
+                                  >
+                                    Freeze
+                                  </button>
+                                </Dropdown.Item>
+                              </>
+                            ) : (
+                              <>
+                                <Dropdown.Item>
+                                  <button
+                                    className="btn btn-light"
+                                    onClick={() => FreezeAccount(applicant.id)}
+                                    style={{
+                                      display: "block",
+                                      width: "100%",
+                                      fontSize: "1.5rem",
+                                    }}
+                                  >
+                                    Freeze
+                                  </button>
+                                </Dropdown.Item>
+                                <Dropdown.Item>
+                                  <button
+                                    className="btn btn-light"
+                                    onClick={() => ActiveAccount(applicant.id)}
+                                    style={{
+                                      display: "block",
+                                      width: "100%",
+                                      fontSize: "1.5rem",
+                                    }}
+                                  >
+                                    Active
+                                  </button>
+                                </Dropdown.Item>
+                              </>
+                            )}
+                          </Dropdown.Menu>
+                        </Dropdown>
+                      </div>
+                    </td>
+                  </tr>
+                </>
+              );
+            })
+          ) : (
+            <tr>
+              <td colSpan="4" className="text-gray-500 text-center">
+                No data yet.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </Table>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
+    </>
+  );
+};
+
+export default EmployeeList;

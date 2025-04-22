@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import Select from "react-select";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { IoIosSearch } from "react-icons/io";
+import axios from "axios";
+
 import {
   AdSideBar,
   JobList,
@@ -9,19 +11,35 @@ import {
   AdFooter,
   Pagination,
 } from "../index.js";
+
 const AdJobs = () => {
+  const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleSidebarToggle = () => {
     setIsCollapsed(!isCollapsed);
   };
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim() !== "") {
+      navigate(`/admin/jobs?search=${encodeURIComponent(searchQuery)}`);
+      setSearchQuery("");
+    }
+  };
+
+  const handleSortChange = (selectedOption) => {
+    const sort = selectedOption.value;
+    navigate(`/admin/jobs?sort=${sort}`);
+  };
+
   const jobType = [
     { value: "", label: "All jobs" },
-    { value: "publish", label: "Opening" },
-    { value: "pause", label: "Paused" },
-    { value: "expired", label: "Closed" },
-    { value: "pending", label: "Pending" },
+    { value: "Open", label: "Opening" },
+    { value: "Paused", label: "Paused" },
+    { value: "Closed", label: "Closed" },
+    { value: "Pending", label: "Pending" },
   ];
 
   const jobAge = [
@@ -29,6 +47,12 @@ const AdJobs = () => {
     { value: "oldest", label: "Oldest" },
     { value: "featured", label: "Featured" },
   ];
+
+  const handleFilterChange = (selectedOption) => {
+    const filter = selectedOption.value;
+    navigate(`/admin/jobs?filter=${filter}`);
+  };
+
   return (
     <div className={`tablePage ${isCollapsed ? "half" : "full"}`}>
       <div className="page-sidebar">
@@ -53,17 +77,21 @@ const AdJobs = () => {
                 styles={customStyles}
                 className="border p-1 rounded-2 text-nowrap selectFull "
                 defaultValue={jobType.find((option) => option.value === "")}
+                onChange={handleFilterChange}
               />
 
               <div className="action-search selectFull">
-                <input
-                  type="text"
-                  name="jobs_search"
-                  placeholder="Search jobs title"
-                />
-                <NavLink className="btn-search d-flex">
-                  <IoIosSearch className="mx-2" />
-                </NavLink>
+                <form onSubmit={handleSearchSubmit}>
+                  <input
+                    type="text"
+                    // name="jobs_search"
+                    placeholder="Search jobs title"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}/>                 
+                </form>
+                <NavLink className="btn-search d-flex" type="submit">
+                    <IoIosSearch className="mx-3" />
+                  </NavLink>
               </div>
             </div>
             <div className="d-flex align-items-center gap-3 selectFull">
@@ -75,11 +103,12 @@ const AdJobs = () => {
                 defaultValue={jobAge.find(
                   (option) => option.value === "newest"
                 )}
+                onChange={handleSortChange}
               />
             </div>
           </div>
           <div className=" d-grid">
-          <JobList/>
+            <JobList />
           </div>
           <div className="page-list">
             <Pagination />

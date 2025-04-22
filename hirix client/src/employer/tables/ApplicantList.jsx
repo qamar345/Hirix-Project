@@ -1,166 +1,335 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Table from "react-bootstrap/Table";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { CiCamera } from "react-icons/ci";
 import { FaExternalLinkAlt, FaDownload, FaEllipsisH } from "react-icons/fa";
 import { RiVideoAddFill } from "react-icons/ri";
-
-
-
+import { Pagination } from "../components/Pagination";
+import axios from "axios";
+import { Dropdown } from "react-bootstrap";
+const CustomToggle = React.forwardRef(({ onClick }, ref) => (
+  <span
+    ref={ref}
+    onClick={(e) => {
+      e.preventDefault();
+      onClick(e);
+    }}
+    style={{ cursor: "pointer" }}
+  >
+    <FaEllipsisH />
+  </span>
+));
 const ApplicantList = () => {
-  const applicantsData = [
-    {
-      name: "reza123",
-      appliedPosition: "Sr. Backend Go Developer",
-      appliedDate: "November 9, 2024",
-      status: "Rejected",
-      email: "drkphnx99@gmail.com",
-      phone: "+8801739761068",
-      actions: {
-        meetings: true,
-        downloadCV: true,
-        settings: true,
-        dropdownActions: ["Approved", "Rejected"],
-      },
-    },
-    {
-      name: "User not logged in",
-      appliedPosition: "Sr. Backend Go Developer",
-      appliedDate: "November 5, 2024",
-      status: "Rejected",
-      email: "leo@yopmail.com",
-      phone: "+3581234567",
-      actions: {
-        meetings: true,
-        downloadCV: true,
-        settings: true,
-        dropdownActions: ["Approved", "Rejected"],
-      },
-    },
-    {
-      name: "User not logged in",
-      appliedPosition: "Blockchain Engineer",
-      appliedDate: "September 20, 2024",
-      status: "Approved",
-      email: "gason.eric55@gmail.com",
-      phone: "0484180700",
-      actions: {
-        meetings: true,
-        downloadCV: true,
-        settings: true,
-        dropdownActions: ["Approved", "Rejected"],
-      },
-    },
-    {
-      name: "User not logged in",
-      appliedPosition: "Sr. Backend Go Developer",
-      appliedDate: "September 16, 2024",
-      status: "Approved",
-      email: "de@g.com",
-      phone: "+2250101010101",
-      actions: {
-        meetings: true,
-        downloadCV: true,
-        settings: true,
-        dropdownActions: ["Approved", "Rejected"],
-      },
-    },
-  ];
+  const [applicants, setApplicants] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const [filterUsers, setfiltersUsers] = useState([]);
+  const id = sessionStorage.getItem("id");
+  const location = useLocation();
+
+  const queryParams = new URLSearchParams(location.search);
+const filter = queryParams.get("filter") || "";
+const searchQuery = queryParams.get("search") || "";
+const sort = queryParams.get("sort") || "newest"; 
+
+  const GetApplicants = async (page, search) => {
+    // setLoading(true);
+    try {
+      const res = await axios.get(
+        `http://localhost:9000/get-applicants/${id}`,
+        {
+          params: {
+            page: page,
+            search: search,
+          },
+        }
+      );
+      setApplicants(res.data?.data || []);
+      // console.log(res.data);
+      setCurrentPage(res.data?.meta?.page ?? 1);
+      setTotalPages(res.data?.meta?.totalPages ?? 1);
+      // setLoading(false);
+    } catch (error) {
+      console.log(error);
+      setApplicants([]);
+      setCurrentPage(1);
+      setTotalPages(1);
+    }
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  useEffect(() => {
+    GetApplicants(currentPage, searchQuery);
+  }, [currentPage, searchQuery]);
+
+  useEffect(() => {
+    let filteredData =
+      filter === ""
+        ? [...applicants] 
+        : applicants.filter((user) => user.application_status === filter);
+
+    if (sort === "newest") {
+        filteredData = filteredData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    } else if (sort === "oldest") {
+        filteredData = filteredData.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    }
+    setfiltersUsers(filteredData || []);
+}, [filter, applicants, sort]);
+
+useEffect(() => {
+  console.log("Applicants Data:", applicants);
+}, [applicants]);
+
+  const Review = async (id) => {
+    await axios
+      .put(`http://localhost:9000/status-review/${id}`)
+      .then((res) => {
+        alert(res.data.msg);
+        window.location.reload();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+  const Selected = async (id) => {
+    await axios
+      .put(`http://localhost:9000/statusselected/${id}`)
+      .then((res) => {
+        alert(res.data.msg);
+        window.location.reload();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  const Rejected = async (id) => {
+    await axios
+      .put(`http://localhost:9000/statusrejected/${id}`)
+      .then((res) => {
+        alert(res.data.msg);
+        window.location.reload();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+ 
   return (
-    <Table hover responsive>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Status</th>
-          <th>Information</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {applicantsData.map((applicant, index) => (
-          <tr key={index}>
-            <td className="info-user">
-              <div className="image-applicants">
-                <CiCamera />
-              </div>
-              <div className="info-details">
-                <h3>{applicant.name}</h3>
-                <div className="applied">
-                  Applied:
-                  <a href="#" target="_blank" rel="noopener noreferrer">
-                    <span> {applicant.appliedPosition}</span>
-                    <FaExternalLinkAlt className="externalIcon" />
-                  </a>
-                </div>
-              </div>
-            </td>
-            <td className="status">
-              <div className={applicant.status.toLowerCase()}>
-                <span
-                  className={`label label-${
-                    applicant.status === "Approved" ? "open" : "close"
-                  }`}
-                >
-                  {applicant.status}
-                </span>
-                <span className="applied-time">
-                  Applied: {applicant.appliedDate}
-                </span>
-              </div>
-            </td>
-            <td className="info">
-              <span className="gmail">{applicant.email}</span>
-              <span className="phone">{applicant.phone}</span>
-            </td>
-            <td className="applicants-control action-setting">
-              <div className="list-action">
-                <div className="links">
-                  {/* {applicant.actions.meetings && (
-                    <Link
-                      to=""
-                      className="action icon-video btn-reschedule-meetings"
-                      data-title="Meetings"
-                    >
-                      <RiVideoAddFill />
-                    </Link>
-                  )} */}
-                  {applicant.actions.downloadCV && (
-                    <Link
-                      to=""
-                      className="action icon-download"
-                      data-title="Download CV"
-                    >
-                      <FaDownload />
-                    </Link>
-                  )}
-                  {applicant.actions.settings && (
-                    <Link href="#" className="icon-setting">
-                      <FaEllipsisH />
-                    </Link>
-                  )}
-                </div>
-                <div className="action">
-                  <ul className="action-dropdown">
-                    {applicant.actions.dropdownActions.map(
-                      (action, dropdownIndex) => (
-                        <li key={dropdownIndex}>
-                          <Link
-                            className={`btn-${action.toLowerCase()}`}
-                            to=""
-                          >
-                            {action}
-                          </Link>
-                        </li>
-                      )
-                    )}
-                  </ul>
-                </div>
-              </div>
-            </td>
+    <>
+      <Table hover responsive>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Status</th>
+            <th>Applied To</th>
+            <th>Actions</th>
           </tr>
-        ))}
-      </tbody>
+        </thead>
+        <tbody>
+          {filterUsers.length > 0 ? (
+            filterUsers.map((applicant, index) => {
+              return (
+                <>
+                  <tr key={index}>
+                    <td className="info-user">
+                      <div className="image-applicants">
+                        <CiCamera />
+                      </div>
+                      <div className="info-details">
+                        <h3>{applicant.jobseeker_name}</h3>
+                        {/* <div className="applied">
+                          Applied:
+                          <a href="#" target="_blank" rel="noopener noreferrer">
+                            <span> {applicant.qualification}</span>
+                            <FaExternalLinkAlt className="externalIcon" />
+                          </a>
+                        </div> */}
+                      </div>
+                    </td>
+                    <td className="status">
+                      <div>
+                        {applicant.application_status === "Applied" ? (
+                          <span
+                            className="label label-open"
+                          >
+                            Applied
+                          </span>
+                        ) : applicant.application_status === "Review" ? (
+                          <span className="label label-pending"
+                          >
+                            Review
+                          </span>
+                        ) : applicant.application_status === "Selected" ? (
+                          <span className="label label-open"
+                          >
+                            Selected
+                          </span>
+                        ) : (
+                          <span
+                            className="label label-close"
+                          >
+                            Rejected
+                          </span>
+                        ) }
+                      </div>
+                    </td>
+                    <td className="info">
+                      <span className="gmail">{applicant.jobs_title}</span>
+                    </td>
+                    <td className="applicants-control action-setting">
+                      <div className="list-action">
+                        <div className="links">
+                          {/* {applicant.actions.downloadCV && (
+                      <Link
+                        to=""
+                        className="action icon-download"
+                        data-title="Download CV"
+                      >
+                        <FaDownload />
+                      </Link>
+                    )}
+                    {applicant.actions.settings && (
+                      <Link href="#" className="icon-setting">
+                        <FaEllipsisH />
+                      </Link>
+                     )} */}
+                        </div>
+                        <Dropdown>
+                          <Dropdown.Toggle as={CustomToggle} />
+                          <Dropdown.Menu>
+                            {applicant.application_status === "Applied" ? (
+                              <>
+                                <Dropdown.Item>
+                                  <button
+                                    className="btn btn-light"
+                                    onClick={() => Review(applicant.Applicant_id)}
+                                     style={{
+                                      display: "block",
+                                      width: "100%",
+                                      fontSize: "1.5rem",
+                                    }} 
+                                  >
+                                    Review
+                                  </button>
+                                </Dropdown.Item>
+                                <Dropdown.Item>
+                                  <button
+                                    className="btn btn-light"
+                                    onClick={() => Selected(applicant.Applicant_id)}
+                                    style={{
+                                      display: "block",
+                                      width: "100%",
+                                      fontSize: "1.5rem",
+                                    }}
+                                  >
+                                    Selected
+                                  </button>
+                                </Dropdown.Item>
+                                <Dropdown.Item>
+                                  <button
+                                    className="btn btn-light"
+                                    onClick={() => Rejected(applicant.Applicant_id)}
+                                    style={{
+                                      display: "block",
+                                      width: "100%",
+                                      fontSize: "1.5rem",
+                                    }}
+                                  >
+                                    Rejected
+                                  </button>
+                                </Dropdown.Item>
+                              </>
+                            ) : applicant.application_status === "Review" ? (
+                              <>
+                                <Dropdown.Item>
+                                  <button
+                                    className="btn btn-light"
+                                    onClick={() => Selected(applicant.Applicant_id)}
+                                    style={{
+                                      display: "block",
+                                      width: "100%",
+                                      fontSize: "1.5rem",
+                                    }}
+                                  >
+                                    Selected
+                                  </button>
+                                </Dropdown.Item>
+                                <Dropdown.Item>
+                                  <button
+                                    className="btn btn-light"
+                                    onClick={() => Rejected(applicant.Applicant_id)}
+                                    style={{
+                                      display: "block",
+                                      width: "100%",
+                                      fontSize: "1.5rem",
+                                    }}
+                                  >
+                                    Reject
+                                  </button>
+                                </Dropdown.Item>
+                              </>
+                            ) : applicant.application_status === "Selected" ? (
+                              <>
+                                <Dropdown.Item>
+                                  <button
+                                    className="btn btn-light"
+                                    onClick={() => Rejected(applicant.Applicant_id)}
+                                    style={{
+                                      display: "block",
+                                      width: "100%",
+                                      fontSize: "1.5rem",
+                                    }}
+                                  >
+                                    Reject
+                                  </button>
+                                </Dropdown.Item>
+                              </>
+                            ) : (
+                              <>
+                                <Dropdown.Item>
+                                  <button
+                                    className="btn btn-light"
+                                    onClick={() => Review(applicant.Applicant_id)}
+                                    style={{
+                                      display: "block",
+                                      width: "100%",
+                                      fontSize: "1.5rem",
+                                    }}
+                                  >
+                                    Review
+                                  </button>
+                                </Dropdown.Item>
+                              </>
+                            )}
+                          </Dropdown.Menu>
+                        </Dropdown>
+                      </div>
+                    </td>
+                  </tr>
+                </>
+              );
+            })
+          ) : (
+            <tr>
+              <td colSpan="4" className="text-gray-500 text-center">
+                No data yet.
+              </td>
+            </tr>
+          )}
+        </tbody>
       </Table>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
+    </>
   );
 };
 

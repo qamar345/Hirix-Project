@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaSpinner, FaCheckCircle } from "react-icons/fa";
 import { PiMapPin } from "react-icons/pi";
 import { CiCamera } from "react-icons/ci";
@@ -9,9 +9,47 @@ import Select from "react-select";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { EmpFooter } from "../index.js";
-const AddCompany = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
+import axios from "axios";
 
+const AddCompany = () => {
+  const navigate = useNavigate();
+  const id = sessionStorage.getItem("id");
+  const check = sessionStorage.getItem("isLoggedIn");
+  useEffect(() => {
+    if (!check) navigate("/");
+  });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState(null);
+  const [Name, setName] = useState("");
+  const [category, setCategory] = useState("");
+  const [des, setDes] = useState("");
+  const [websiteLink, setWebsiteLink] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [foundedIn, setFoundedIn] = useState("");
+  const [companySize, setCompanySize] = useState("");
+  const [Twitter, setTwitter] = useState("");
+  const [facebook, setFacebook] = useState("");
+  const [instagram, setInstagram] = useState("");
+  const [LinkedIn, setLinkedIn] = useState("");
+  const [Province, setProvince] = useState("");
+  const [City, setCity] = useState("");
+  const [PC, setPC] = useState("");
+  const handleLogoUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setUploadedImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  const handleCancelUpload = () => {
+    setUploadedImage(null);
+  };
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 150) {
@@ -29,66 +67,49 @@ const AddCompany = () => {
     };
   }, []);
 
-  const [companyData, setCompanyData] = useState({
-    title: "",
-    city: null,
-    province: null,
-    description: "",
-    logo: null,
-  });
+  // submit
+  const submit = async (e) => {
+    e.preventDefault();
 
-  // Handle input changes
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setCompanyData((prevData) => ({ ...prevData, [name]: value }));
-  };
+    const formData = new FormData();
 
-  const handleInputCity = (selectedOption) => {
-    setCompanyData((prevData) => ({
-      ...prevData,
-      city: selectedOption,
-    }));
-  };
+    // Append text fields
+    formData.append("name", Name?.trim());
+    formData.append("E_mail", email?.trim());
+    formData.append("categories", category?.trim());
+    formData.append("About", des?.trim());
+    formData.append("website_link", websiteLink?.trim());
+    formData.append("twitter", Twitter?.trim());
+    formData.append("facebook", facebook?.trim());
+    formData.append("instagram", instagram?.trim());
+    formData.append("linkedIn", LinkedIn?.trim());
+    formData.append("founded_in", foundedIn?.trim());
+    formData.append("total_members", companySize?.trim());
+    formData.append("Contact", phone?.trim());
+    formData.append("city", City?.trim());
+    formData.append("province", Province?.trim());
+    formData.append("postalCode", PC?.trim());
 
-  const handleInputProvince = (selectedOption) => {
-    setCompanyData((prevData) => ({
-      ...prevData,
-      province: selectedOption,
-    }));
-  };
-
-  const handleQuillChange = (value) => {
-    setCompanyData((prevData) => ({
-      ...prevData,
-      description: value,
-    }));
-  };
-
-  const [uploadedImage, setUploadedImage] = useState(null);
-
-  const handleLogoUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setUploadedImage(reader.result);
-
-        setCompanyData((prevData) => ({
-          ...prevData,
-          logo: reader.result,
-        }));
-      };
-      reader.readAsDataURL(file);
+    // Append image if selected
+    if (selectedFile) {
+      formData.append("image", selectedFile);
     }
-  };
 
-  const handleCancelUpload = () => {
-    setUploadedImage(null);
-
-    setCompanyData((prevData) => ({
-      ...prevData,
-      logo: null,
-    }));
+    try {
+      const res = await axios.post(
+        `http://localhost:9000/add-company/${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      alert(res.data.msg);
+      navigate(`/employer/company`);
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   const cats = [
@@ -128,15 +149,15 @@ const AddCompany = () => {
     { value: "2024", label: "2024" },
   ];
   const ppl = [
-    { value: "1050", label: "10-50" },
-    { value: "50100", label: "50-100" },
-    { value: "100200", label: "100-200" },
-    { value: "200300", label: "200-300" },
+    { value: "10-50", label: "10-50" },
+    { value: "50-100", label: "50-100" },
+    { value: "100-200", label: "100-200" },
+    { value: "200-300", label: "200-300" },
   ];
   return (
     <div className="dashboardWrapper addCompany">
       <div className="entry-my-page submit-company-dashboard">
-        <form action="#" className="form-dashboard">
+        <form action="#" onSubmit={submit} className="form-dashboard">
           <div className="content-company">
             <div className="row ">
               <div className="col-lg-8 col-md-7 entry-section ">
@@ -153,7 +174,7 @@ const AddCompany = () => {
                     >
                       Cancel
                     </Link>
-                    <Link
+                    <button
                       to="/employer/employer-company"
                       type="submit"
                       className="btn-normal"
@@ -162,7 +183,7 @@ const AddCompany = () => {
                       <span className="btn-loading">
                         <FaSpinner />
                       </span>
-                    </Link>
+                    </button>
                   </div>
                 </div>
                 <div className="companyData">
@@ -176,9 +197,9 @@ const AddCompany = () => {
                         <input
                           type="text"
                           id="company_title"
-                          name="title"
-                          value={companyData.title}
-                          onChange={handleInputChange}
+                          name="name"
+                          value={Name}
+                          onChange={(e) => setName(e.target.value)}
                           placeholder="Name"
                         />
                       </div>
@@ -192,6 +213,12 @@ const AddCompany = () => {
                           options={cats}
                           styles={customStyles}
                           className="border p-1 rounded-2"
+                          value={cats.find(
+                            (option) => option.value === category
+                          )}
+                          onChange={(selectedOption) =>
+                            setCategory(selectedOption.value)
+                          }
                         />
                       </div>
 
@@ -218,15 +245,9 @@ const AddCompany = () => {
                         <label className="label-des-company">
                           About company <sup>*</sup>
                         </label>
-
-                        {/* <Editor
-                          value={companyData.description}
-                          onChange={handleQuillChange}
-                          placeholder="Enter job description here..."
-                      /> */}
                         <ReactQuill
-                          value={companyData.description}
-                          onChange={handleQuillChange}
+                          value={des}
+                          onChange={setDes}
                           placeholder="Define Your Company..."
                         />
                       </div>
@@ -235,9 +256,10 @@ const AddCompany = () => {
                         <label> Website</label>
                         <input
                           type="url"
-                          id="company_website"
-                          name="company_website"
+                          name="websiteLink"
                           placeholder="www.domain.com"
+                          value={websiteLink}
+                          onChange={(e) => setWebsiteLink(e.target.value)}
                         />
                       </div>
 
@@ -251,9 +273,10 @@ const AddCompany = () => {
                           />
                           <input
                             type="tel"
-                            id="company_phone"
-                            name="company_phone"
+                            name="phone"
                             placeholder="+00 12 334 5678"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
                           />
                         </div>
                       </div>
@@ -264,9 +287,10 @@ const AddCompany = () => {
                         </label>
                         <input
                           type="email"
-                          id="company_email"
                           name="company_email"
                           placeholder="hello@domain.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
                         />
                       </div>
 
@@ -276,6 +300,12 @@ const AddCompany = () => {
                           options={yrs}
                           styles={customStyles}
                           className="border p-1 rounded-2"
+                          value={yrs.find(
+                            (option) => option.value === foundedIn
+                          )}
+                          onChange={(selectedOption) =>
+                            setFoundedIn(selectedOption.value)
+                          }
                         />
                       </div>
                       <div className="entryGroup col-md-6">
@@ -286,6 +316,12 @@ const AddCompany = () => {
                           options={ppl}
                           styles={customStyles}
                           className="border p-1 rounded-2 mb-3"
+                          value={ppl.find(
+                            (option) => option.value === companySize
+                          )}
+                          onChange={(selectedOption) =>
+                            setCompanySize(selectedOption.value)
+                          }
                         />
                       </div>
                     </div>
@@ -340,8 +376,9 @@ const AddCompany = () => {
                         <input
                           type="url"
                           name="company_twitter"
-                          id="company_twitter"
                           placeholder="twitter.com/company"
+                          value={Twitter}
+                          onChange={(e) => setTwitter(e.target.value)}
                         />
                       </div>
                       <div className="entryGroup col-12 col-sm-6">
@@ -349,8 +386,9 @@ const AddCompany = () => {
                         <input
                           type="url"
                           name="company_linkedin"
-                          id="company_linkedin"
                           placeholder="linkedin.com/company"
+                          value={LinkedIn}
+                          onChange={(e) => setLinkedIn(e.target.value)}
                         />
                       </div>
                       <div className=" col-12 col-sm-6">
@@ -359,8 +397,9 @@ const AddCompany = () => {
                           type="url"
                           entryGroup
                           name="company_facebook"
-                          id="company_facebook"
                           placeholder="facebook.com/company"
+                          value={facebook}
+                          onChange={(e) => setFacebook(e.target.value)}
                         />
                       </div>
                       <div className="entryGroup col-12 col-sm-6">
@@ -368,12 +407,13 @@ const AddCompany = () => {
                         <input
                           type="url"
                           name="company_instagram"
-                          id="company_instagram"
                           placeholder="instagram.com/company"
+                          value={instagram}
+                          onChange={(e) => setInstagram(e.target.value)}
                         />
                       </div>
                     </div>
-                    <div className="field-social-clone">
+                    {/* <div className="field-social-clone">
                       <div className="clone-wrap">
                         <div className="soical-remove-inner">
                           <a href="#" className="remove-social">
@@ -403,7 +443,7 @@ const AddCompany = () => {
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
 
                   <div className="block-from mt12" id="company-submit-location">
@@ -416,9 +456,12 @@ const AddCompany = () => {
                           options={province}
                           styles={customStyles}
                           className="border p-1 rounded-2"
-                          value={companyData.province}
-                          onChange={handleInputProvince}
-                          id="province"
+                          value={province.find(
+                            (option) => option.value === Province
+                          )}
+                          onChange={(selectedOption) =>
+                            setProvince(selectedOption.value)
+                          }
                         />
                       </div>
 
@@ -427,11 +470,12 @@ const AddCompany = () => {
                         <Select
                           options={city}
                           styles={customStyles}
-                          id="city"
                           name="city"
                           className="border p-1 rounded-2"
-                          value={companyData.city}
-                          onChange={handleInputCity}
+                          value={city.find((option) => option.value === City)}
+                          onChange={(selectedOption) =>
+                            setCity(selectedOption.value)
+                          }
                         />
                       </div>
 
@@ -440,11 +484,12 @@ const AddCompany = () => {
                         <input
                           type="number"
                           name="postalCode"
-                          id="postalCode"
+                          value={PC}
+                          onChange={(e) => setPC(e.target.value)}
                         />
                       </div>
 
-                      <div className="entryGroup col-lg-6">
+                      {/* <div className="entryGroup col-lg-6">
                         <label htmlFor="search-location">Share Location</label>
                         <div className="input-area">
                           <input
@@ -452,7 +497,7 @@ const AddCompany = () => {
                             placeholder="Share Google Map Location"
                           />
                         </div>
-                      </div>
+                      </div> */}
                       <div className="entryGroup col-md-12 company-fields-map">
                         <div className="company-fields company-map">
                           <div id="mapbox_map" className="civi-map-warpper">
@@ -472,7 +517,7 @@ const AddCompany = () => {
                 </div>
               </div>
 
-              <div className="col-lg-4 col-md-5  text-wrap">
+              {/* <div className="col-lg-4 col-md-5  text-wrap">
                 <div
                   className={`widget-area-init  ${
                     isScrolled ? "preview-section" : ""
@@ -517,7 +562,7 @@ const AddCompany = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </form>

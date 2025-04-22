@@ -18,6 +18,12 @@
     outline: 0px;
   }
 }
+
+.highlight-applied-job {
+  background-color: #ec1adb; /* Light blue or any other color for highlighting */
+  font-weight: bold;
+}
+
 .action-search input {
   font-size: 16px;
   color: var(--civi-color-text);

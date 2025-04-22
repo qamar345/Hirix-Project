@@ -1,12 +1,23 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { RiUploadLine } from "react-icons/ri";
 import { IoCloseSharp } from "react-icons/io5";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
 import { AdFooter } from "../index.js";
+import axios from "axios";
+
 const AdSettings = () => {
+  const check = sessionStorage.getItem("isLoggedIn");
+  const [editUserData, setEditUserData] = useState({});
+  const [editPasswordData, setEditPasswordData] = useState({
+    currentPass: "",
+    newPass: "",
+    confirmPass: "",
+  });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [userData, setUserData] = useState([]);
   const [value, setValue] = useState();
   const [isActive, setIsActive] = useState("personalInfo");
   const [payGroup, setPayGroup] = useState({
@@ -14,7 +25,7 @@ const AdSettings = () => {
     stripe: false,
     bank: false,
   });
-
+  const navigate = useNavigate();
   const handlePayGroup = (tab) => {
     setPayGroup((prevState) => ({
       ...prevState,
@@ -43,16 +54,112 @@ const AdSettings = () => {
   const handleLogoUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
+      setSelectedFile(file); // Backend ke liye image store karna
       const reader = new FileReader();
       reader.onload = () => {
-        setUploadedImage(reader.result);
+        setUploadedImage(reader.result); // Frontend preview ke liye
       };
       reader.readAsDataURL(file);
     }
   };
+
   const handleCancelUpload = () => {
     setUploadedImage(null);
   };
+  useEffect(() => {
+    if (!check) navigate("/admin-login");
+  });
+
+  useEffect(() => {
+    const GetUserData = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:9000/GetAdmin/${sessionStorage.getItem("id")}`
+        );
+
+        setUserData(res.data);
+        setEditUserData(res.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    GetUserData();
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setEditUserData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handlePasswordChange = (e) => {
+    setEditPasswordData({
+      ...editPasswordData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("FirstName", editUserData.FirstName);
+    formData.append("LastName", editUserData.LastName);
+    formData.append("email", editUserData.email);
+
+    // Image ko sirf tab append karein jab user ne naya image select kiya ho
+    if (selectedFile) {
+      formData.append("image", selectedFile);
+    }
+
+    try {
+      const res = await axios.put(
+        `http://localhost:9000/admin-profile/${sessionStorage.getItem("id")}`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+
+      alert(res.data.message);
+      window.location.reload();
+    } catch (err) {
+      console.error("Error:", err);
+    }
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+
+    if (
+      !editPasswordData.currentPass ||
+      !editPasswordData.newPass ||
+      !editPasswordData.confirmPass
+    ) {
+      alert("All fields are required.");
+      return;
+    }
+
+    if (editPasswordData.newPass !== editPasswordData.confirmPass) {
+      alert("New password and confirm password do not match.");
+      return;
+    }
+    try {
+      const response = await axios.put(
+        `http://localhost:9000/change-password/${sessionStorage.getItem("id")}`,
+        {
+          editPasswordData,
+        }
+      );
+
+      alert(response.data.msg);
+      setEditPasswordData({ currentPass: "", newPass: "", confirmPass: "" });
+      console.log(setEditPasswordData);
+    } catch (error) {
+      alert("Error updating password: ", error);
+    }
+  };
+
   return (
     <>
       <div className="dashboardWrapper">
@@ -86,169 +193,185 @@ const AdSettings = () => {
               }`}
             >
               <div className="row block-from">
-                <div className="entryGroup col-md-12 mt12">
-                  <h6 className="block-heading">Personal info</h6>
-                  <div className="user-avatar">
-                    <div className="gap-3 d-flex flex-column">
-                      <label>Your photo</label>
-                      <div className="file-uploader">
-                        {!uploadedImage ? (
-                          <label className="upload-label">
-                            <RiUploadLine className="upload-icon" />
-                            <span>Upload</span>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleLogoUpload}
-                              className="hidden-input"
-                            />
-                          </label>
-                        ) : (
-                          <div className="image-preview">
-                            <img
-                              src={uploadedImage}
-                              alt="Uploaded Preview"
-                              className="img-preview"
-                            />
-                            <div className="close-btn">
-                              <button onClick={handleCancelUpload}>
-                                <IoCloseSharp className="icon" />
-                              </button>
+                <form onSubmit={handleSubmit}>
+                  <div className="entryGroup col-md-12 mt12">
+                    <h6 className="block-heading">Personal info</h6>
+                    <div className="user-avatar">
+                      <div className="gap-3 d-flex flex-column">
+                        <label>Your photo</label>
+                        <div className="file-uploader">
+                          {!uploadedImage ? (
+                            <label className="upload-label">
+                              <RiUploadLine className="upload-icon" />
+                              <span>Upload</span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleLogoUpload}
+                                className="hidden-input"
+                              />
+                            </label>
+                          ) : (
+                            <div className="image-preview">
+                              <img
+                                src={uploadedImage}
+                                alt="Uploaded Preview"
+                                className="img-preview"
+                              />
+                              <div className="close-btn">
+                                <button onClick={handleCancelUpload}>
+                                  <IoCloseSharp className="icon" />
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
+                        </div>
+                      </div>
+                      <div className="user-desc">
+                        Update your photo manually, if the photo is not set the
+                        default Avatar will be the same as your login email
+                        account.
                       </div>
                     </div>
-                    <div className="user-desc">
-                      Update your photo manually, if the photo is not set the
-                      default Avatar will be the same as your login email
-                      account.
-                    </div>
                   </div>
-                </div>
-                <div className="entryGroup col-md-6">
-                  <label htmlFor="firstName">First name</label>
-                  <input
-                    type="text"
-                    id="firstName"
-                    name="firstName"
-                    placeholder="First Name"
-                  />
-                </div>
-                <div className="entryGroup col-md-6">
-                  <label htmlFor="lastName">Last name</label>
-                  <input
-                    type="text"
-                    id="lastName"
-                    name="lastName"
-                    placeholder="Last Name"
-                  />
-                </div>
-                <div className="entryGroup col-md-6">
-                  <label htmlFor="email">Email Address</label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    placeholder="email@test.com"
-                  />
-                </div>
-                <div className="entryGroup col-md-6">
-                  <PhoneInput
-                    // placeholder="Enter phone number"
-                    value={value}
-                    onChange={setValue}
-                    defaultCountry="PK"
-                  />
-                </div>
-                <div className="entryGroup col-md-6">
-                  <Link className="civi-button">Save changes</Link>
-                </div>
+                  <div className="entryGroup col-md-6">
+                    <label htmlFor="firstName">First name</label>
+                    <input
+                      type="text"
+                      id="firstName"
+                      name="FirstName"
+                      placeholder="First Name"
+                      value={editUserData.FirstName}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="entryGroup col-md-6">
+                    <label htmlFor="lastName">Last name</label>
+                    <input
+                      type="text"
+                      id="lastName"
+                      name="LastName"
+                      placeholder="Last Name"
+                      value={editUserData.LastName}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="entryGroup col-md-6">
+                    <label htmlFor="email">Email Address</label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      placeholder="email@test.com"
+                      value={editUserData.email}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="entryGroup col-md-6">
+                    <button className="civi-button" type="submit">
+                      Save changes
+                    </button>
+                  </div>
+                </form>
               </div>
               <div className="row block-from mt12">
-                <div className="entryGroup col-md-12 ">
-                  <h6 className="block-heading">Change password</h6>
-                </div>
+                <form onSubmit={handlePasswordSubmit}>
+                  <div className="entryGroup col-md-12 ">
+                    <h6 className="block-heading">Change password</h6>
+                  </div>
 
-                <div className="passwordFields">
-                  {/* Current Password */}
-                  <div className="entryGroup col-md-12">
-                    <label htmlFor="currentPass">Current password</label>
-                    <div className="inputGrout">
-                      <input
-                        className="inputControl"
-                        type={passwordVisibility.current ? "text" : "password"}
-                        id="currentPass"
-                        name="currentPass"
-                        placeholder="Enter current password"
-                      />
-                      <span
-                        onClick={() => togglePasswordVisibility("current")}
-                        style={{ cursor: "pointer" }}
-                      >
-                        {passwordVisibility.current ? (
-                          <FaEyeSlash className="d-block" />
-                        ) : (
-                          <FaEye className="d-block" />
-                        )}
-                      </span>
+                  <div className="passwordFields">
+                    {/* Current Password */}
+                    <div className="entryGroup col-md-12">
+                      <label htmlFor="currentPass">Current password</label>
+                      <div className="inputGrout">
+                        <input
+                          className="inputControl"
+                          type={
+                            passwordVisibility.current ? "text" : "password"
+                          }
+                          id="currentPass"
+                          name="currentPass"
+                          placeholder="Enter current password"
+                          value={editPasswordData.currentPass}
+                          onChange={handlePasswordChange}
+                        />
+                        <span
+                          onClick={() => togglePasswordVisibility("current")}
+                          style={{ cursor: "pointer" }}
+                        >
+                          {passwordVisibility.current ? (
+                            <FaEyeSlash className="d-block" />
+                          ) : (
+                            <FaEye className="d-block" />
+                          )}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* New Password */}
+                    <div className="entryGroup col-md-12">
+                      <label htmlFor="newPass">New password</label>
+                      <div className="inputGrout">
+                        <input
+                          className="inputControl"
+                          type={passwordVisibility.new ? "text" : "password"}
+                          id="newPass"
+                          name="newPass"
+                          placeholder="Enter new password"
+                          value={editPasswordData.newPass}
+                          onChange={handlePasswordChange}
+                        />
+                        <span
+                          onClick={() => togglePasswordVisibility("new")}
+                          style={{ cursor: "pointer" }}
+                        >
+                          {passwordVisibility.new ? (
+                            <FaEyeSlash className="d-block" />
+                          ) : (
+                            <FaEye className="d-block" />
+                          )}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Confirm Password */}
+                    <div className="entryGroup col-md-12">
+                      <label htmlFor="confirmPass">Confirm password</label>
+                      <div className="inputGrout">
+                        <input
+                          className="inputControl"
+                          type={
+                            passwordVisibility.confirm ? "text" : "password"
+                          }
+                          id="confirmPass"
+                          name="confirmPass"
+                          placeholder="Confirm your password"
+                          value={editPasswordData.confirmPass}
+                          onChange={handlePasswordChange}
+                        />
+                        <span
+                          onClick={() => togglePasswordVisibility("confirm")}
+                          style={{ cursor: "pointer" }}
+                        >
+                          {passwordVisibility.confirm ? (
+                            <FaEyeSlash className="d-block" />
+                          ) : (
+                            <FaEye className="d-block" />
+                          )}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* New Password */}
                   <div className="entryGroup col-md-12">
-                    <label htmlFor="newPass">New password</label>
-                    <div className="inputGrout">
-                      <input
-                        className="inputControl"
-                        type={passwordVisibility.new ? "text" : "password"}
-                        id="newPass"
-                        name="newPass"
-                        placeholder="Enter new password"
-                      />
-                      <span
-                        onClick={() => togglePasswordVisibility("new")}
-                        style={{ cursor: "pointer" }}
-                      >
-                        {passwordVisibility.new ? (
-                          <FaEyeSlash className="d-block" />
-                        ) : (
-                          <FaEye className="d-block" />
-                        )}
-                      </span>
-                    </div>
+                    <button type="submit" className="civi-button">
+                      Save changes
+                    </button>
                   </div>
-
-                  {/* Confirm Password */}
-                  <div className="entryGroup col-md-12">
-                    <label htmlFor="confirmPass">Confirm password</label>
-                    <div className="inputGrout">
-                      <input
-                        className="inputControl"
-                        type={passwordVisibility.confirm ? "text" : "password"}
-                        id="confirmPass"
-                        name="confirmPass"
-                        placeholder="Confirm your password"
-                      />
-                      <span
-                        onClick={() => togglePasswordVisibility("confirm")}
-                        style={{ cursor: "pointer" }}
-                      >
-                        {passwordVisibility.confirm ? (
-                          <FaEyeSlash className="d-block" />
-                        ) : (
-                          <FaEye className="d-block" />
-                        )}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="entryGroup col-md-12">
-                  <Link className="civi-button">Save changes</Link>
-                </div>
+                </form>
               </div>
-              <Link className="btn-deactivate mb-5">Deactivate account</Link>
             </div>
 
             <div

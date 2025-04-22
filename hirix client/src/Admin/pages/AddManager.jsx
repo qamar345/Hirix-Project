@@ -1,15 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaSpinner } from "react-icons/fa";
 import Select from "react-select";
 import "react-quill/dist/quill.snow.css";
 import PhoneInput from "react-phone-number-input";
-
 import { AdFooter } from "../index.js";
-const AddManager = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [value, setValue] = useState();
+import axios from "axios";
 
+const AddManager = () => {
+  const check = sessionStorage.getItem("isLoggedIn");
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [FirstName, setFirstName] = useState("");
+  const [role, setRole] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [City, setCity] = useState("");
+  const [provinces, setProvince] = useState("");
+  const [value, setValue] = useState();
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 150) {
@@ -25,9 +34,12 @@ const AddManager = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!check) navigate("/admin-login");
+  }, [check]);
   const cats = [
-    { value: "manager", label: "Manager" },
-    { value: "assistant", label: "Assistant" },
+    { value: "Manager", label: "Manager" },
+    { value: "Assistant", label: "Assistant" },
   ];
 
   const city = [
@@ -42,11 +54,45 @@ const AddManager = () => {
     { value: "sindh", label: "Sindh" },
     { value: "balochistan", label: "Balochistan" },
   ];
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    // if (!handleValidation()) {
+    //   setIsLoading(false);
+    //   return;
+    // }
+
+    const payload = {
+      FirstName: FirstName.trim(),
+      email,
+      role,
+      phone: phone.trim(),
+      City: City.trim(),
+      province: provinces.trim(),
+    };
+
+    try {
+      await axios
+        .post("http://localhost:9000/addManager",payload)
+        .then((res) => {
+          alert(res.data.msg);
+          navigate(`/admin/user-management`);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } catch (error) {
+      console.error("Error:", error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="dashboardWrapper addCompany">
       <div className="entry-my-page submit-company-dashboard">
-        <form action="#" className="form-dashboard">
+        <form onSubmit={handleSubmit} className="form-dashboard">
           <div className="content-company">
             <div className="row ">
               <div className="col-lg-8 col-md-7 entry-section ">
@@ -60,8 +106,8 @@ const AddManager = () => {
                     <Link to="/admin/user-management" className="btn-outline">
                       Cancel
                     </Link>
-                    <Link
-                      to="/admin/user-management"
+                    <button
+                      // to="/admin/user-management"
                       type="submit"
                       className="btn-normal"
                     >
@@ -69,7 +115,7 @@ const AddManager = () => {
                       <span className="btn-loading">
                         <FaSpinner />
                       </span>
-                    </Link>
+                    </button>
                   </div>
                 </div>
                 <div className="companyData">
@@ -83,8 +129,9 @@ const AddManager = () => {
                         <input
                           type="text"
                           id="company_title"
-                          name="title"
                           placeholder="Name"
+                          value={FirstName}
+                          onChange={(e) => setFirstName(e.target.value)}
                         />
                       </div>
 
@@ -97,6 +144,10 @@ const AddManager = () => {
                           options={cats}
                           styles={customStyles}
                           className="border p-1 rounded-2"
+                          value={cats.find((c) => c.value === role)}
+                          onChange={(selectedOption) =>
+                            setRole(selectedOption.value)
+                          }
                         />
                       </div>
 
@@ -105,9 +156,9 @@ const AddManager = () => {
                         <div className="">
                           <PhoneInput
                             className="signUpPhone"
-                            value={value}
-                            onChange={setValue}
                             defaultCountry="PK"
+                            value={phone}
+                            onChange={setPhone}
                           />
                         </div>
                       </div>
@@ -119,8 +170,9 @@ const AddManager = () => {
                         <input
                           type="email"
                           id="company_email"
-                          name="company_email"
                           placeholder="hello@domain.com"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
                         />
                       </div>
                     </div>
@@ -132,11 +184,15 @@ const AddManager = () => {
                       <div className="entryGroup col-lg-6">
                         <label>Province</label>
                         <Select
-                          name="province"
                           options={province}
                           styles={customStyles}
                           className="border p-1 rounded-2"
-                          id="province"
+                          value={province.find((p) => p.value === provinces)}
+                          onChange={(selectedOption) =>
+                            setProvince(
+                              selectedOption ? selectedOption.value : ""
+                            )
+                          }
                         />
                       </div>
 
@@ -146,7 +202,10 @@ const AddManager = () => {
                           options={city}
                           styles={customStyles}
                           id="city"
-                          name="city"
+                          value={city.find((l) => l.value === City)}
+                          onChange={(selectedOption) =>
+                            setCity(selectedOption ? selectedOption.value : "")
+                          }
                           className="border p-1 rounded-2"
                         />
                       </div>
