@@ -179,7 +179,7 @@ const JobPost = ({ job }) => {
                   >
                     <GoShareAndroid style={{ width: "20px", height: "20px" }} />
                   </a>
-                
+
                   {/* <div className="social-share">
                     <div className="list-social-icon">
                       <a
@@ -249,7 +249,6 @@ const JobPost = ({ job }) => {
                       </a>
                     </div>
                   </div> */}
-                  
                 </div>
                 <div>
                   <NavLink to="#" onClick={handleWishlist}>
@@ -351,7 +350,9 @@ const JobPost = ({ job }) => {
                       <div className="info">
                         <p className="title-info">Closing date</p>
                         <p className="details-info">
-                          {new Date(expiry_date).toISOString().split("T")[0]}
+                          {new Date(expiry_date).toLocaleDateString("en-CA", {
+                            timeZone: "Asia/Karachi",
+                          })}
                         </p>
                       </div>
                     </li>

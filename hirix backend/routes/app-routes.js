@@ -46,6 +46,7 @@ const {
   GetEmployee,
   EmployeeChangePassword,
   EmployerGraph,
+  GenerateUserName,
 } = require("../controller/employee/employeeLogin&Signup");
 const {
   PostJob,
@@ -282,5 +283,7 @@ router.post("/AddProject/:id", Project);
 router.post("/AddAward/:id", Award);
 
 router.get("/profile-status/:id", getUserProfileStatus);
+
+router.get("/GenerateAutoUserName", GenerateUserName);
 
 module.exports = router;

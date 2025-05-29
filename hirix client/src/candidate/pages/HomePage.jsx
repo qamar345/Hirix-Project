@@ -34,7 +34,7 @@ const HomePage = () => {
       }
     };
     getJobCount();
-  }, [1000]);
+  }, []);
   return (
     <>
       <div>

@@ -27,6 +27,7 @@ app.listen(port, ()=>{
     console.log("express app running on port 9000");
 });
 
+
 require("./controller/admin/adminlogin"); 
 require("./controller/admin/adminHaveData");
 require("./controller/combined/commonAboutPosts");

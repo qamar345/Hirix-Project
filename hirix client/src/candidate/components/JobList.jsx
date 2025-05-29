@@ -31,7 +31,6 @@ const JobList = ({ onSelectJob }) => {
   const category = query.get("category") || "";
 
   const GetJobs = async () => {
-    // console.log("search:", searchQuery, "city:", city, "category:", category);
     try {
       const params = {
         page: currentPage,

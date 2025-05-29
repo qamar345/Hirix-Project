@@ -1,8 +1,10 @@
 import { createRoot } from "react-dom/client";
+import React from "react";
+
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "./style.css";
-
+import { ClerkProvider } from "@clerk/clerk-react";
 // Candidate
 import {
   HomePage,
@@ -20,7 +22,7 @@ import {
   Error,
 } from "./candidate/index.js";
 
-// Employer
+ // Employer
 import {
   Employer,
   EmpApplicants,
@@ -61,6 +63,14 @@ import {
   RouterProvider,
 } from "react-router-dom";
 
+// Import your Publishable Key
+// const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const PUBLISHABLE_KEY = "pk_test_ZXhwZXJ0LWdhdG9yLTQyLmNsZXJrLmFjY291bnRzLmRldiQ";
+
+if (!PUBLISHABLE_KEY) {
+  throw Error("Missing Publishable Key");
+}
+
 const router = createBrowserRouter(
   createRoutesFromElements(
     <>
@@ -81,7 +91,7 @@ const router = createBrowserRouter(
 
         <Route path="add-education" element={<AddEducation />} />
       </Route>
-      {/* Employer */}
+        {/* Employer */}
       <Route path="employer" element={<Employer />}>
         <Route path="dashboard" element={<EmpDashboard />} />
 
@@ -92,8 +102,8 @@ const router = createBrowserRouter(
         <Route path="settings" element={<EmpSettings />} />
         <Route path="add-company" element={<AddCompany />} />
         <Route path="post-job" element={<PostJob />} />
-        <Route path ="Edit_job" element ={< EmpJobEdit/>}/>
-        <Route path ="Edit_Company" element ={< EmpEditCompany/>}/>
+        <Route path="Edit_job" element={<EmpJobEdit />} />
+        <Route path="Edit_Company" element={<EmpEditCompany />} />
       </Route>
       <Route path="employer/jobs" element={<EmpJobs />} />
       <Route path="employer/jobs/list" element={<JobList />} />
@@ -114,12 +124,22 @@ const router = createBrowserRouter(
       <Route path="/admin/candidates" element={<AdCandidates />} />
       <Route path="/admin/candidates/list" element={<ApplicantList />} />
       <Route path="/admin/employees" element={<AdEmployee />} />
-      <Route path="/admin/employees/list" element={<EmployeeList/>} />
-      <Route path="/admin/user-management" element={<AdManagement />} />
-    </>
+      <Route path="/admin/employees/list" element={<EmployeeList />} />
+      <Route path="/admin/user-management" element={<AdManagement />} /> 
+   </>
   )
-);
+); 
 
 createRoot(document.getElementById("root")).render(
-  <RouterProvider router={router} />
+  <React.StrictMode>
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
+      <RouterProvider router={router} />
+    </ClerkProvider>
+  </React.StrictMode>
 );
+
+// createRoot(document.getElementById("root")).render(
+//   <React.StrictMode>
+//     <div>Hello, world!</div>
+//   </React.StrictMode>
+// );

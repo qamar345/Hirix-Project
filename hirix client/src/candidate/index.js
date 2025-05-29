@@ -34,6 +34,7 @@ import AddEducation from "./profile/AddEducation";
 import VisitChart from "./table/VisitChart";
 
 import Error from "./pages/Error";
+
 export {
   HomePage,
   TopNav,

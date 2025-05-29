@@ -441,7 +441,7 @@ const forgetPassword = (req, res) => {
 
 // For home page get total jobs
 const GetTotalJobs = (req, res) => {
-  const sql = "SELECT COUNT(*) as TotalJobs FROM jobs WHERE status = 'Open' AND expiry_date > CURDATE()";
+  const sql = "SELECT COUNT(*) as TotalJobs FROM jobs WHERE status = 'Open' AND expiry_date >= CURDATE()";
   conn_sql.query(sql, (err, result) => {
     if (err) return res.status(500).json(err);
     return res.json({ TotalJobs: result[0].TotalJobs });

@@ -133,7 +133,11 @@ const JobCard = ({
           <div className="jobs-footer-right">
             <p className="days">
               Apply Before:{" "}
-              <span>{new Date(expiry_date).toISOString().split("T")[0]}</span>
+              <span>
+                {new Date(expiry_date).toLocaleDateString("en-CA", {
+                  timeZone: "Asia/Karachi",
+                })}
+              </span>
             </p>
           </div>
         </div>
