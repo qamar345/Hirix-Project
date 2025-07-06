@@ -6,11 +6,18 @@ import { hirixText } from "../assets/icons/index.js";
 import { NavLink, useLocation } from "react-router-dom";
 import Login from "../../userAuthentication/Login.jsx";
 import { AdLogin } from "../../Admin/index.js";
+import { FaChevronDown } from "react-icons/fa";
+
 const NavbarMenu = () => {
   const [modalShow, setModalShow] = React.useState(false);
   const [adModalShow, setAdModalShow] = React.useState(false);
-
+  const [user, setUser] = useState({
+    name: "",
+    photoURL: "",
+    role: "",
+  });
   const location = useLocation();
+  const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
     if (location.pathname === "/admin-login") {
@@ -19,6 +26,27 @@ const NavbarMenu = () => {
       setAdModalShow(false);
     }
   }, [location.pathname]);
+
+  useEffect(() => {
+    const updateProfileData = () => {
+      const username = sessionStorage.getItem("first_name");
+      const images = sessionStorage.getItem("image");
+      const role = sessionStorage.getItem("role");
+      const baseURL = "http://localhost:9000";
+      const imageURL = images ? baseURL + images : null;
+
+      if (username && images) {
+        setUser({ name: username, photoURL: imageURL, role });
+      }
+    };
+
+    updateProfileData(); // on first load
+
+    window.addEventListener("profileUpdated", updateProfileData);
+
+    return () =>
+      window.removeEventListener("profileUpdated", updateProfileData);
+  }, []);
 
   return (
     <header className="site-header header-dark">
@@ -50,23 +78,101 @@ const NavbarMenu = () => {
           <div className="right-header px-0 col-auto">
             <div className="d-none d-xl-block">
               <div className="account logged-out">
-                <NavLink
-                  className={`btn-login`}
-                  type="button"
-                  variant="primary"
-                  onClick={() => setModalShow(true)}
-                >
-                  Login
-                </NavLink>
+                {user?.name ? (
+                  <div
+                    className="profile d-flex align-items-center "
+                    onClick={() => setShowDropdown(!showDropdown)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <img
+                      src={user.photoURL}
+                      // alt={user.name}
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "50%",
+                        marginRight: "10px",
+                      }}
+                    />
+                    <span>{user.name}</span>
+                    <FaChevronDown
+                      style={{ marginLeft: "8px", fontSize: "14px" }}
+                    />
 
-                <Login show={modalShow} onHide={() => setModalShow(false)} />
-                <AdLogin
-                  show={adModalShow}
-                  onHide={() => setAdModalShow(false)}
-                />
+                    {showDropdown && (
+                      <div
+                        className="dropdown-menu show"
+                        style={{
+                          position: "absolute",
+                          top: "100%",
+                          right: 0,
+                          background: "white",
+                          boxShadow: "0px 2px 8px rgba(0,0,0,0.3)",
+                          padding: "5px",
+                          fontSize: "14px",
+                        }}
+                      >
+                        <NavLink
+                          to={`/${
+                            user?.role === "jobseeker"
+                              ? "candidate"
+                              : user?.role === "employee"
+                              ? "employer"
+                              : "dashboard"
+                          }/dashboard`}
+                          className="dropdown-item"
+                          style={{
+                            display: "block",
+                            padding: "5px 10px",
+                            color: "#334",
+                            textDecoration: "none",
+                          }}
+                        >
+                          Dashboard
+                        </NavLink>
+
+                        <div
+                          className="dropdown-item"
+                          onClick={() => {
+                            sessionStorage.clear();
+                            setUser({ name: "", photoURL: "", role: "" }); // <-- reset user state
+                            window.location.reload();
+                          }}
+                          style={{
+                            display: "block",
+                            padding: "2px 5px",
+                            color: "#333",
+                            cursor: "pointer",
+                          }}
+                        >
+                          Logout
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <NavLink
+                      className={`btn-login`}
+                      type="button"
+                      variant="primary"
+                      onClick={() => setModalShow(true)}
+                    >
+                      Login
+                    </NavLink>
+
+                    <Login
+                      show={modalShow}
+                      onHide={() => setModalShow(false)}
+                    />
+                    <AdLogin
+                      show={adModalShow}
+                      onHide={() => setAdModalShow(false)}
+                    />
+                  </>
+                )}
               </div>
             </div>
-
             <div className="d-xl-none">
               <div className="block-search search-icon civi-ajax-search">
                 <div className="icon-search">

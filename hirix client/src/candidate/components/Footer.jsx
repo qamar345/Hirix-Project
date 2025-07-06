@@ -11,6 +11,7 @@ import { letterBox } from "../assets/icons/index.js";
 import { NavLink } from "react-router-dom";
 
 const Footer = () => {
+   const currentYear = new Date().getFullYear();
   return (
     <footer className="footerWrapper">
       <section className="footer-top border-bottom">
@@ -179,7 +180,7 @@ const Footer = () => {
         <div className="container">
           <div className="row">
             <div className="col-md-12  ">
-              <p> © 2024 Hirix. All Right Reserved.</p>
+              <p> © {currentYear} Hirix. All Right Reserved.</p>
             </div>
           </div>
         </div>

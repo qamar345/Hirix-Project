@@ -39,4 +39,59 @@ const status_rejected = (req, res) => {
     });
     };
 
-    module.exports = {status_review , status_selected, status_rejected};
+    // get all data of applicants
+   const GetFullApplicantProfile = (req, res) => {
+  const { id } = req.params;
+
+  const queries = {
+    user: "SELECT * FROM user_accounts WHERE id = ?",
+    details: "SELECT * FROM user_details WHERE user_id = ?",
+    projects: "SELECT * FROM user_projects WHERE user_id = ?",
+    awards: "SELECT * FROM user_awards WHERE user_id = ?",
+    experience: "SELECT * FROM user_experience WHERE user_id = ?",
+    qualification: "SELECT * FROM user_qualification WHERE user_id =?"
+  };
+
+  const profile = {};
+
+  conn_sql.query(queries.user, [id], (err, userResult) => {
+    if (err) return res.status(500).json({ error: "User error", err });
+
+    profile.user = userResult[0];
+
+    conn_sql.query(queries.details, [id], (err, detailResult) => {
+      if (err) return res.status(500).json({ error: "Details error", err });
+
+      profile.details = detailResult[0];
+
+      conn_sql.query(queries.projects, [id], (err, projectsResult) => {
+        if (err) return res.status(500).json({ error: "Projects error", err });
+
+        profile.projects = projectsResult;
+
+        conn_sql.query(queries.awards, [id], (err, awardsResult) => {
+          if (err) return res.status(500).json({ error: "Awards error", err });
+
+          profile.awards = awardsResult;
+
+          conn_sql.query(queries.experience, [id], (err, expResult) => {
+            if (err) return res.status(500).json({ error: "Experience error", err });
+
+            profile.experience = expResult;
+
+          conn_sql.query(queries.qualification, [id], (err, qualResult) => {
+            if (err) return res.status(500).json({ error: "Qualification error", err });
+
+            profile.qualification = qualResult;
+
+            return res.json(profile);
+          });
+        });
+      });
+    });
+  });
+  });
+};
+
+
+    module.exports = {status_review , status_selected, status_rejected, GetFullApplicantProfile};

@@ -14,7 +14,7 @@ import MobileNavBar from "./components/MobileNavBar";
 import CanFooter from "./components/CanFooter";
 import CanHeader from "./components/CanHeader";
 import CanSidebar from "./components/CanSidebar";
-
+import JobPage from "./pages/JobPage";
 import CanDashboard from "./pages/CanDashboard";
 import CanFollow from "./pages/CanFollow";
 import CanJobs from "./pages/CanJobs";
@@ -46,6 +46,7 @@ export {
   JobList,
   PageList,
   JobPost,
+  JobPage,
   Footer,
   Pagination,
   MobileNavBar,

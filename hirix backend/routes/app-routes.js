@@ -47,6 +47,7 @@ const {
   EmployeeChangePassword,
   EmployerGraph,
   GenerateUserName,
+  GetEmpAndCom,
 } = require("../controller/employee/employeeLogin&Signup");
 const {
   PostJob,
@@ -60,11 +61,13 @@ const {
   jobDel,
   GetJob,
   SelectCompanies,
+  draftJob,
 } = require("../controller/employee/employeePost");
 const {
   status_review,
   status_selected,
   status_rejected,
+  GetFullApplicantProfile,
 } = require("../controller/employee/regardingApplication");
 const {
   Addcompany,
@@ -89,7 +92,7 @@ const {
   JobSeekerChangePassword,
 } = require("../controller/jobseeker/jobseekerLogin&Signup");
 const { AddReview, editreview } = require("../controller/jobseeker/reviews");
-const { appliedTo, addskillset, ApplyForJob, Addskillset, DeleteFromTable, CancleApplication, Apply, AddToWishlist } = require("../controller/jobseeker/appliedTo");
+const { appliedTo, addskillset, ApplyForJob, Addskillset, DeleteFromTable, CancleApplication, Apply, AddToWishlist, GetWishlist } = require("../controller/jobseeker/appliedTo");
 const verifyToken = require("../middleware/authToken");
 const { Getcompanies, Approvedcompany, Rejectcompany } = require("../controller/combined/companies");
 const { AddManager } = require("../controller/admin/AddManagers");
@@ -97,7 +100,7 @@ const { pagination } = require("../controller/combined/Pagination");
 const { Graph, CandidateGraph } = require("../controller/admin/Graph");
 const { Dashboard, dashData } = require("../controller/employee/DashboardData");
 const { JS_Dashboard, Skills_select, GraphUser } = require("../controller/jobseeker/DashboardData");
-const { ProfileBasicInfo, Education, Experience, Project, Award, getUserProfileStatus } = require("../controller/jobseeker/profileData");
+const { ProfileBasicInfo, Education, Experience, Project, Award, getUserProfileStatus, GetProfile } = require("../controller/jobseeker/profileData");
 
 //....................................Admin.......................................
 const router = express.Router();
@@ -144,6 +147,8 @@ router.post("/verify-emailForAdmin", SendCodeForAdmin);
 
 router.put("/forget-passwordForAdmin", forgetPasswordForAdmin);
 
+router.get("/GetAllProfileData/:id", GetFullApplicantProfile);
+
 // router.get("/pagination", pagination);
 //......................................Combined........................................
 
@@ -153,7 +158,7 @@ router.get("/get-postsBYAdmin", GetpostsByAdmin);
 
 router.get("/getTotal_jobs", GetTotalJobs);
 
-router.get("/get-post-by-id/:id",verifyToken, Getpostbyid);
+router.get("/get-post-by-id/:id", Getpostbyid);
 
 router.get("/getcompanies", Getcompanies);
 
@@ -187,7 +192,11 @@ router.post("/employee-signup", employeesignup);
 
 router.get("/getEmployer/:id", GetEmployee);
 
+router.get("/GetEmployeesWithCompanies/:id", GetEmpAndCom);
+
 router.post("/postbyEmployee/:id", PostJob);
+
+router.post("/saveAsDraft/:id", draftJob);
 
 router.get("/GetCompanies/:id", SelectCompanies);
 
@@ -268,11 +277,15 @@ router.post("/apply-for-job/:id", ApplyForJob);
 
 router.post("/addWishlist/:id", AddToWishlist);
 
+router.get("/getWishlists/:id", GetWishlist);
+
 router.get("/show-jobs/:id",verifyToken, showjobs);
 
-router.post("/add-skillset/:id", Addskillset)
+router.post("/add-skillset/:id", Addskillset);
 
-router.post("/postProfile/:id",upload.single("image"), ProfileBasicInfo)
+router.get("/getProfile/:id", GetProfile);
+
+router.post("/postProfile/:id",upload.single("image"), ProfileBasicInfo);
 
 router.post("/AddEducation/:id",upload.none(), Education);
 

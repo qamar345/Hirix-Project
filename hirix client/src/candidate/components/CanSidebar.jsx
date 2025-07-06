@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   hirixText,
   dashboard,
@@ -18,12 +18,26 @@ import ProgressBar from "react-bootstrap/ProgressBar";
 
 const CanSidebar = ({ isCollapsed, handleSidebarToggle }) => {
   const navigate = useNavigate();
+  const [now, setNow] = useState(sessionStorage.getItem("Percent") || 0);
   const handleLogout = () => {
     sessionStorage.clear();
+     setUser({ name: "", photoURL: "", role: "" }); // <-- reset user state
+  window.location.reload();
     alert("LoggedOut Successfully");
     navigate("/");
   };
-  const now = sessionStorage.getItem("Percent");
+   useEffect(() => {
+    const handlePercentUpdate = () => {
+      const updated = sessionStorage.getItem("Percent") || 0;
+      setNow(updated);
+    };
+
+    // 🔁 Listen for custom event
+    window.addEventListener("percentUpdated", handlePercentUpdate);
+
+    // Clean up
+    return () => window.removeEventListener("percentUpdated", handlePercentUpdate);
+  }, []);
   return (
     <aside
       className={` ${isCollapsed ? "asideWrapperCollapsed" : "asideWrapper"}`}

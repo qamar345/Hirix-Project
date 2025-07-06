@@ -2,10 +2,24 @@ import Table from "react-bootstrap/Table";
 import { NavLink, useLocation } from "react-router-dom";
 import { lock, urgent } from "../assets/icons/index.js";
 import { FaEllipsisH } from "react-icons/fa";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Pagination } from "../components/Pagination";
+import { Dropdown } from "react-bootstrap";
 
+// Custom Toggle Component
+const CustomToggle = React.forwardRef(({ onClick }, ref) => (
+  <span
+    ref={ref}
+    onClick={(e) => {
+      e.preventDefault();
+      onClick(e);
+    }}
+    style={{ cursor: "pointer" }}
+  >
+    <FaEllipsisH />
+  </span>
+));
 const JobList = () => {
   const [datauser, setdatauser] = useState([]);
   const [currentPage, settCurrentPage] = useState(1);
@@ -33,37 +47,13 @@ const JobList = () => {
       settCurrentPage(res.data.meta.page);
       setTotalPages(res.data.meta.totalPages);
     } catch (error) {
-      console.log(error);
-    }
+          }
   };
 
   const GetAppliedJobs = async () => {
     if (clientId) {
       try {
         const res = await axios.get(`http://localhost:9000/getPostSpecific/${clientId}`);
-        console.log("Applied jobs response:", res.data);  // Log the API response
-  
-        // Access the jobPosts array from the response
-        if (Array.isArray(res.data.jobPosts)) {
-          setAppliedJobs(res.data.jobPosts);  // Set the applied jobs correctly
-        } else {
-          console.log("Response is not an array:", res.data);
-        }
-      } catch (error) {
-        console.log("Error fetching applied jobs:", error);
-      }
-    }
-  };
-  
-
-  const handlePageChange = (page) => {
-    settCurrentPage(page);
-  };
-
-  useEffect(() => {
-    GetJobPosts(currentPage, searchQuery);
-  }, [currentPage, searchQuery]);
-
   useEffect(() => {
     let filteredData =
       filter === ""
@@ -78,12 +68,20 @@ const JobList = () => {
   }, [filter, datauser, sort]);
 
   useEffect(() => {
-    console.log("Applied Jobs:", appliedJobs);
-    GetAppliedJobs();  // Fetch the applied jobs for the client
+        GetAppliedJobs();  // Fetch the applied jobs for the client
   }, [clientId]);
  
-  console.log("Data to show:", dataToShow);
-
+  
+   const Delete = async (id) => {
+    await axios
+      .delete(`http://localhost:9000/deleteJob/${id}`)
+      .then((res) => {
+        alert(res.data.msg);
+        window.location.reload();
+      })
+      .catch((err) => {
+              });
+  };
   return (
     <>
       <Table hover responsive>
@@ -94,6 +92,7 @@ const JobList = () => {
             <th>STATUS</th>
             <th>POSTED</th>
             <th>EXPIRED ON</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -106,7 +105,7 @@ const JobList = () => {
 
               // Update status dynamically for expired jobs
               const jobStatus =
-                job.expiry_date && new Date(job.expiry_date) < new Date()
+                job.expiry_date < new Date()
                   ? "Closed"
                   : job.status;
 
@@ -120,7 +119,7 @@ const JobList = () => {
                 >
                   <td>
                     <h3 className="title-jobs-dashboard">
-                      <NavLink to="">
+                      <NavLink to={`/jobdetail/${job.id}`}>
                         <span className="icon">
                           {jobStatus === "Closed" ? (
                             <img src={lock} alt={job.tooltip} title={job.tooltip} />
@@ -137,9 +136,9 @@ const JobList = () => {
                       </span>
                     </p>
                   </td>
-                  <td className="number-applicant">
-                    <span className="number">{job.applicant_count}</span>
-                    <NavLink to="">Application</NavLink>
+                  <td className="title-jobs-dashboard">
+                    <span className="number">{job.applicant_count} </span>
+                    <NavLink to=""> Application</NavLink>
                   </td>
                   <td>
                     <span
@@ -173,6 +172,39 @@ const JobList = () => {
                     >
                       {jobStatus === "Closed" ? "Expire" : expiryDate || "No Expiry Date"}
                     </span>
+                  </td>
+                  <td>
+                    <Dropdown>
+                          <Dropdown.Toggle as={CustomToggle} />
+                          <Dropdown.Menu>
+                                <Dropdown.Item>
+                                  <button
+                                    className="btn btn-light"
+                                    onClick={() => Edit(job.id)}
+                                    style={{
+                                      display: "block",
+                                      width: "100%",
+                                      fontSize: "1.5rem",
+                                    }}
+                                  >
+                                    Edit
+                                  </button>
+                                </Dropdown.Item>
+                                <Dropdown.Item>
+                                  <button
+                                    className="btn btn-light"
+                                    onClick={() => Delete(job.id)}
+                                    style={{
+                                      display: "block",
+                                      width: "100%",
+                                      fontSize: "1.5rem",
+                                    }}
+                                  >
+                                    Delete
+                                  </button>
+                                </Dropdown.Item>
+                                 </Dropdown.Menu>
+                                 </Dropdown>
                   </td>
                 </tr>
               );

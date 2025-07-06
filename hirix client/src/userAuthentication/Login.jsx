@@ -63,12 +63,12 @@ const Login = ({ ...props }) => {
         .post("http://localhost:9000/employee-login", { payload })
         .then((res) => {
           alert(res.data.msg);
-          console.log(res.data);
-          if (res.data.isloggedin) {
+                    if (res.data.isloggedin) {
             sessionStorage.setItem("id", res.data.data.id);
             sessionStorage.setItem("name", res.data.data.username);
             sessionStorage.setItem("first_name", res.data.data.first_name);
             sessionStorage.setItem("image", res.data.data.image);
+             sessionStorage.setItem("role", res.data.data.role);
             sessionStorage.setItem("email", res.data.data.email);
             sessionStorage.setItem("isLoggedIn", res.data.data.isloggedin);
             if (res.data.data.role === "employee") {
@@ -84,12 +84,10 @@ const Login = ({ ...props }) => {
           }
         })
         .catch((err) => {
-          console.log(err);
-        });
+                  });
     } catch (error) {
       setError(error.message);
-      console.error("Error:", error.message);
-    } finally {
+          } finally {
       setLoading(false);
     }
   };
@@ -117,8 +115,7 @@ const Login = ({ ...props }) => {
 
       setVerificationSent(true);
     } catch (error) {
-      console.error("Clerk signup error:", error);
-      alert(error.errors?.[0]?.message || "Failed to send verification");
+            alert(error.errors?.[0]?.message || "Failed to send verification");
     }
   };
 
@@ -146,8 +143,7 @@ const Login = ({ ...props }) => {
       alert(res.data.msg);
       window.location.reload();
     } catch (error) {
-      console.error("Verification error:", error);
-      alert("Verification failed. Please check the code.");
+            alert("Verification failed. Please check the code.");
     }
   };
 
@@ -217,8 +213,7 @@ const Login = ({ ...props }) => {
       const data = await response.json();
       setUserName(data.username);
     } catch (error) {
-      console.error(error);
-      alert("Error generating username");
+            alert("Error generating username");
     }
   };
 
@@ -283,7 +278,7 @@ const Login = ({ ...props }) => {
                       Password
                     </label>
                     <input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       id="ip_password"
                       className="form-control input-field valid"
                       name="password"
@@ -296,6 +291,7 @@ const Login = ({ ...props }) => {
                     <span
                       toggle="#ip_password"
                       className="field-icon civi-toggle-password"
+                      onClick={() => setShowPassword(!showPassword)}
                     >
                       <FaRegEye className="mb-3" />
                     </span>
@@ -373,7 +369,7 @@ const Login = ({ ...props }) => {
                         Password
                       </label>
                       <input
-                        type="password"
+                         type={showPassword ? "text" : "password"}
                         className="form-control input-field valid"
                         name="password"
                         autoComplete="on"
@@ -385,6 +381,7 @@ const Login = ({ ...props }) => {
                       <span
                         toggle="#ip_password"
                         className="field-icon civi-toggle-password"
+                        onClick={() => setShowPassword(!showPassword)}
                       >
                         <FaRegEye className="mb-3" />
                       </span>
@@ -573,7 +570,7 @@ const Login = ({ ...props }) => {
                   Password
                 </label>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   id="ip_reg_password"
                   className="form-control input-field"
                   name="reg_password"
@@ -585,6 +582,7 @@ const Login = ({ ...props }) => {
                 <span
                   toggle="#ip_reg_password"
                   className="fa fa-fw fa-eye field-icon civi-toggle-password"
+                   onClick={() => setShowPassword(!showPassword)}
                 />
                 {verificationSent && (
                   <div className="form-group mt-3">

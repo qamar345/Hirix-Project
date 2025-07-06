@@ -4,6 +4,8 @@ import Dropdown from "react-bootstrap/Dropdown";
 import { FaEllipsisH } from "react-icons/fa";
 import axios from "axios";
 import { Pagination } from "../components/Pagination";
+import { Link } from "react-router-dom";
+
 // Custom Toggle Component
 const CustomToggle = React.forwardRef(({ onClick }, ref) => (
   <span
@@ -35,8 +37,7 @@ const CompanyList = () => {
       setTotalPages(res.data.meta.totalPages);
       // setLoading(false);
     } catch (error) {
-      console.log(error);
-    }
+          }
   };
 
   const handlePageChange = (page) => {
@@ -54,8 +55,7 @@ const CompanyList = () => {
   //         setcompanydata(res.data);
   //       })
   //       .catch((err) => {
-  //         console.log(err);
-  //       });
+  //           //       });
   //   };
 
   //   GetUsers();
@@ -68,8 +68,7 @@ const CompanyList = () => {
         window.location.reload();
       })
       .catch((err) => {
-        console.log(err);
-      });
+              });
   };
   const RejectCompany = async (id) => {
     await axios
@@ -79,8 +78,7 @@ const CompanyList = () => {
         window.location.reload();
       })
       .catch((err) => {
-        console.log(err);
-      });
+              });
   };
   // const companies = [
   //   {
@@ -133,15 +131,15 @@ const CompanyList = () => {
               return (
                 <>
                   <tr key={index}>
-                    <td style={{ width: "170px" }}>
+                    <td style={{ width: "200px" }}>
                       <div className="d-flex align-items-center">
                         <div className="me-3">
-                          {company.img ? (
+                          {company.images ? (
                             <img
-                              src={company.images}
+                              src={`http://localhost:9000${company.images}`}
                               alt={company.name}
                               style={{
-                                width: "40px",
+                                width: "50px",
                                 height: "40px",
                                 borderRadius: "50%",
                               }}
@@ -149,7 +147,7 @@ const CompanyList = () => {
                           ) : (
                             <div
                               style={{
-                                width: "40px",
+                                width: "50px",
                                 height: "40px",
                                 borderRadius: "50%",
                                 backgroundColor: "#ddd",
@@ -165,7 +163,9 @@ const CompanyList = () => {
                           )}
                         </div>
                         <div>
-                          <h6>{company.name}</h6>
+                          <Link to={`/CompanyDetails/${company.id}`}>
+                            <h6>{company.name}</h6>
+                          </Link>
                           <small>{company.E_mail}</small>
                         </div>
                       </div>

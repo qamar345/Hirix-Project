@@ -26,6 +26,7 @@ import CompanyList from "./tables/CompanyList";
 import ManagersList from "./tables/ManagersList";
 import VisitChart from "./tables/VisitChart";
 import CandidateVisitChart from "./tables/CandidateVisitChart";
+import CompanyForm from "./tables/CompanyDetails";
 
 export {
   AdLogin,
@@ -50,4 +51,5 @@ export {
   AdManagement,
   AddManager,
   ManagersList,
+  CompanyForm,
 };

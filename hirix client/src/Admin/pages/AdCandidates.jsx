@@ -17,6 +17,10 @@ const AdCandidates = () => {
   const handleSidebarToggle = () => {
     setIsCollapsed(!isCollapsed);
   };
+   const handleSortChange = (selectedOption) => {
+    const sort = selectedOption.value;
+    navigate(`/admin/candidates?sort=${sort}`);
+  };
   const jobType = [
     { value: "", label: "All candidates" },
     { value: 1, label: "Active" },
@@ -29,9 +33,9 @@ const AdCandidates = () => {
     { value: "featured", label: "Featured" },
   ];
 
-  const handleSearchSubmit = (e) =>{
+  const handleSearchSubmit = (e) => {
     e.preventDefault();
-    if(searchQuery.trim()!== ""){
+    if (searchQuery.trim() !== "") {
       navigate(`/admin/candidates?search=${encodeURIComponent(searchQuery)}`);
       setSearchQuery("");
     }
@@ -39,7 +43,7 @@ const AdCandidates = () => {
 
   const handleFilterChange = (selectedOption) => {
     const filter = selectedOption.value;
-    navigate(`/admin/candidates?filter=${filter}`); 
+    navigate(`/admin/candidates?filter=${filter}`);
   };
 
   return (
@@ -70,18 +74,20 @@ const AdCandidates = () => {
               />
 
               <div className="action-search selectFull">
-                <form onSubmit={handleSearchSubmit}>
-                <input
-                  type="text"
-                  // name="jobs_search"
-                  placeholder="Find Candidates"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                </form>
-                <NavLink className="btn-search d-flex" type="submit">
-                  <IoIosSearch className="mx-3" />
-                </NavLink>
+                  <input
+                    type="text"
+                    // name="jobs_search"
+                    placeholder="Find Candidates"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <button
+                    onClick={handleSearchSubmit}
+                    className="btn-search d-flex"
+                    style={{ all: "unset", cursor: "pointer" }}
+                  >
+                    <IoIosSearch className="mx-3" />
+                  </button>
               </div>
             </div>
             <div className="d-flex align-items-center gap-3 selectFull">
@@ -93,12 +99,12 @@ const AdCandidates = () => {
                 defaultValue={jobAge.find(
                   (option) => option.value === "newest"
                 )}
+                 onChange={handleSortChange}
               />
             </div>
           </div>
           <div className=" d-grid">
-          <ApplicantList/>
-          
+            <ApplicantList />
           </div>
           <div className="page-list">
             <Pagination />

@@ -18,7 +18,7 @@ const EmpSettings = () => {
     confirmPass: "",
   });
   const [userData, setUserData] = useState([]);
-   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [value, setValue] = useState();
   const [isActive, setIsActive] = useState("personalInfo");
   const [payGroup, setPayGroup] = useState({
@@ -74,12 +74,10 @@ const EmpSettings = () => {
     const GetData = async () => {
       try {
         const res = await axios.get(`http://localhost:9000/getEmployer/${id}`);
-
-        setUserData(res.data);
-        setEditUserData(res.data);
+         setUserData(res.data[0]);
+        setEditUserData(res.data[0]);
       } catch (error) {
-        console.log(error);
-      }
+              }
     };
     GetData();
   }, []);
@@ -116,13 +114,15 @@ const EmpSettings = () => {
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
+      
+const updatedData = res.data.result;
 
+sessionStorage.setItem("image", updatedData.image);
+sessionStorage.setItem("first_name", updatedData.first_name);
+window.dispatchEvent(new Event("profileUpdated"));
       alert(res.data.message);
-      console.log(editUserData);
-      window.location.reload();
     } catch (error) {
-      console.log("Error:", error);
-    }
+          }
   };
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
@@ -150,8 +150,7 @@ const EmpSettings = () => {
 
       alert(response.data.msg);
       setEditPasswordData({ currentPass: "", newPass: "", confirmPass: "" });
-      console.log(setEditPasswordData);
-    } catch (error) {
+          } catch (error) {
       alert("Error updating password: ", error);
     }
   };
@@ -235,8 +234,7 @@ const EmpSettings = () => {
                       type="text"
                       id="first_name"
                       name="first_name"
-                      placeholder="First Name"
-                      value={editUserData.first_name}
+                      value={editUserData.first_name || ""}
                       onChange={handleChange}
                     />
                   </div>
@@ -246,8 +244,7 @@ const EmpSettings = () => {
                       type="text"
                       id="last_name"
                       name="last_name"
-                      placeholder="Last Name"
-                      value={editUserData.last_name}
+                      value={editUserData.last_name || ""}
                       onChange={handleChange}
                     />
                   </div>
@@ -257,8 +254,7 @@ const EmpSettings = () => {
                       type="email"
                       id="email"
                       name="email"
-                      placeholder="email@test.com"
-                      value={editUserData.email}
+                      value={editUserData.email || ""}
                       onChange={handleChange}
                     />
                   </div>

@@ -1,14 +1,15 @@
-import React, { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { FaRegEye } from "react-icons/fa";
 import { urgent, featured } from "../assets/icons/index.js";
-import { FaRegHeart } from "react-icons/fa";
+import { FaRegHeart, FaHeart } from "react-icons/fa";
 import { GoShareAndroid } from "react-icons/go";
 import { MdOutlineLocationOn } from "react-icons/md";
 import { differenceInDays } from "date-fns";
 import axios from "axios";
 
-const JobPost = ({ job }) => {
+const JobPost = ({ job , fromShare}) => {
+  const showJob = localStorage.getItem("test");
   // logo,
   // title,
   // author,
@@ -20,10 +21,13 @@ const JobPost = ({ job }) => {
   // city,
   // }) => {
   const [showSocialIcons, setShowSocialIcons] = useState(false);
+  const [wishlistJobs, setWishlistJobs] = useState([]);
 
   const [activeTab, setActiveTab] = useState("job-detail");
   const navigate = useNavigate();
   const check = sessionStorage.getItem("isLoggedIn");
+  const urlParams = new URLSearchParams(window.location.search);
+  // const sharedId = urlParams.get("id");
   const handleTabClick = (tab) => {
     setActiveTab(tab);
   };
@@ -45,7 +49,7 @@ const JobPost = ({ job }) => {
     created_at,
     expiry_date,
     province,
-    maximum_currency,
+    minimum_currency,
     Rate,
     career_level,
     qualification,
@@ -58,6 +62,22 @@ const JobPost = ({ job }) => {
   const expiryDate = new Date(expiry_date);
 
   const daysLeft = differenceInDays(expiryDate, today);
+
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const userId = sessionStorage.getItem("id");
+        const res = await axios.get(
+          `http://localhost:9000/getWishlists/${userId}`
+        );
+        const jobIds = res.data.map((item) => item.job_id);
+        setWishlistJobs(jobIds);
+      } catch (error) {
+              }
+    };
+
+    fetchWishlist();
+  }, []);
 
   const handleApply = async () => {
     if (!check) {
@@ -80,9 +100,7 @@ const JobPost = ({ job }) => {
           alert("Failed to apply, please try again.");
         }
       } catch (error) {
-        console.log("Error applying for job:", error);
-        alert("Error applying for the job.");
-      }
+              }
     }
   };
 
@@ -90,38 +108,43 @@ const JobPost = ({ job }) => {
     if (!check) {
       alert("Please Login First!");
       navigate("/");
-    } else {
-      try {
-        const userid = sessionStorage.getItem("id");
-        const res = await axios.post(
-          `http://localhost:9000/addWishlist/${userid}`,
-          null,
-          {
-            params: { job_id: id },
-          }
-        );
+      return;
+    }
 
-        if (res.data.msg) {
-          alert(res.data.msg);
-        } else {
-          alert("please try again.");
-        }
-      } catch (error) {
-        alert("Error");
+    try {
+      const userId = sessionStorage.getItem("id");
+      const res = await axios.post(
+        `http://localhost:9000/addWishlist/${userId}`,
+        null,
+        { params: { job_id: id } }
+      );
+
+      const message = res.data.msg;
+
+      if (message === "Job added to wishlist") {
+        alert(message);
+        setWishlistJobs(res.data.wishlist);
+      } else if (message === "Job already in wishlist") {
+        alert(message);
+      } else {
+        alert("Something went wrong. Please try again.");
       }
+    } catch (error) {
+            alert("An error occurred while adding to wishlist.");
     }
   };
 
   const handleShare = () => {
-    const currentURL = window.location.href;
+    const currentURL = window.location.origin + window.location.pathname;
+    const shareURL = `${currentURL}?id=${id}`;
+
     navigator.clipboard
-      .writeText(currentURL)
+      .writeText(shareURL)
       .then(() => {
         alert("Link copied to clipboard!");
       })
       .catch((err) => {
-        console.error("Failed to copy: ", err);
-      });
+              });
   };
 
   return (
@@ -252,7 +275,13 @@ const JobPost = ({ job }) => {
                 </div>
                 <div>
                   <NavLink to="#" onClick={handleWishlist}>
-                    <FaRegHeart style={{ fontSize: "20px" }} />
+                    {wishlistJobs.includes(id) ? (
+                      <FaHeart
+                        style={{ fontSize: "20px", color: "red", fill: "red" }}
+                      />
+                    ) : (
+                      <FaRegHeart style={{ fontSize: "20px", color: "gray" }} />
+                    )}
                   </NavLink>
                 </div>
               </div>
@@ -326,11 +355,16 @@ const JobPost = ({ job }) => {
                         </svg>
                       </div>
                       <div className="info">
-                        <p className="title-info">Date posted</p>
-                        <p className="details-info">
-                          {new Date(created_at).toISOString().split("T")[0]}
-                        </p>
-                      </div>
+  <p className="title-info">Date posted</p>
+  <p className="details-info">
+    {created_at && !isNaN(new Date(created_at)) ? (
+      new Date(created_at).toISOString().split("T")[0]
+    ) : (
+      "N/A"
+    )}
+  </p>
+</div>
+
                     </li>
                     <li className="list-item col-md-4 col-sm-6">
                       <div className="icon-jobs">
@@ -350,9 +384,14 @@ const JobPost = ({ job }) => {
                       <div className="info">
                         <p className="title-info">Closing date</p>
                         <p className="details-info">
-                          {new Date(expiry_date).toLocaleDateString("en-CA", {
-                            timeZone: "Asia/Karachi",
-                          })}
+                          {expiry_date && !isNaN(new Date(expiry_date))
+                            ? new Date(expiry_date).toLocaleDateString(
+                                "en-CA",
+                                {
+                                  timeZone: "Asia/Karachi",
+                                }
+                              )
+                            : "N/A"}
                         </p>
                       </div>
                     </li>
@@ -398,7 +437,7 @@ const JobPost = ({ job }) => {
                       <div className="info">
                         <p className="title-info">Offered salary</p>
                         <p className="details-info salary-info">
-                          Max:{maximum_currency} / {Rate}
+                          Min: {minimum_currency} / {Rate}
                         </p>
                       </div>
                     </li>

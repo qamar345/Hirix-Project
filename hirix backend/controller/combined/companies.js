@@ -9,14 +9,22 @@ const Getcompanies = (req, res) => {
   const limit = 10;
   const offset = (page - 1) * limit;
 
-  const sql_get =
-    "SELECT c.*, COUNT(j.id) AS active_jobs FROM companies c LEFT JOIN jobs j ON c.user_account_id = j.employee_id AND j.status = 'Open' GROUP BY c.id LIMIT ? OFFSET ?";
+  const sql_get = `
+    SELECT 
+      c.*, 
+      COUNT(CASE WHEN j.status = 'Open' THEN j.id END) AS active_jobs
+    FROM companies c
+    LEFT JOIN jobs j 
+      ON j.company_name = c.id
+    GROUP BY c.id
+    LIMIT ? OFFSET ?
+  `;
+
   conn_sql.query(sql_get, [limit, offset], (err, result) => {
     if (err) {
       return res.json(err);
     } else {
       const sql = "SELECT COUNT(*) as count FROM companies";
-
       conn_sql.query(sql, (c_err, c_data) => {
         const totalData = c_data[0].count;
         const totalPages = Math.ceil(totalData / limit);
@@ -34,6 +42,8 @@ const Getcompanies = (req, res) => {
     }
   });
 };
+
+
 
 // Approved company
 const Approvedcompany = (req, res) => {

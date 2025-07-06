@@ -120,60 +120,94 @@ const CancleApplication = (req, res) => {
 
 // Apply for the job
 const ApplyForJob = (req, res) => {
-  const { id } = req.params; 
+  const { id } = req.params;
   const { job_id } = req.query;
 
-  const sql_get = "SELECT id AS job_id, employee_id FROM jobs WHERE id = ?";
-  conn_sql.query(sql_get, [job_id], (err, result) => {
-    if (err) return res.status(500).json({ msg: "Error getting job details" });
+  // 1. Get user role
+  const sql_role = "SELECT role FROM user_accounts WHERE id = ?";
+  conn_sql.query(sql_role, [id], (err, roleResult) => {
+    if (err) return res.json({ msg: "Error checking user role" });
 
-    if (result.length === 0) return res.status(404).json({ msg: "Job not found" });
+    if (roleResult.length === 0)
+      return res.json({ msg: "User not found" });
 
-    const { employee_id } = result[0];
-    const sql_check = `
-      SELECT * FROM applicants 
-      WHERE job_seeker_id = ? AND job_id = ?
-    `;
+    const role = roleResult[0].role;
 
-    conn_sql.query(sql_check, [id, job_id], (err, existing) => {
-      if (err) return res.status(500).json({ msg: "Error checking application" });
+    if (role !== "jobseeker") {
+      return res.json({ msg: "Only jobseekers can apply for jobs." });
+    }
 
-      if (existing.length > 0) {
-        const currentStatus = existing[0].status;
-        
-        if (currentStatus === "Wishlist") {
-          const sql_update = `
-            UPDATE applicants 
-            SET status = 'Applied' 
-            WHERE job_seeker_id = ? AND job_id = ?
-          `;
-          conn_sql.query(sql_update, [id, job_id], (err, result) => {
-            if (err) return res.status(500).json({ msg: "Error updating status" });
+    // 2. Continue with job details and application logic
+    const sql_get = "SELECT id AS job_id, employee_id FROM jobs WHERE id = ?";
+    conn_sql.query(sql_get, [job_id], (err, result) => {
+      if (err) return res.json({ msg: "Error getting job details" });
 
-            return res.json({ msg: "Successfully Applied", result });
-          });
+      if (result.length === 0)
+        return res.json({ msg: "Job not found" });
+
+      const { employee_id } = result[0];
+
+      const sql_check = `
+        SELECT * FROM applicants 
+        WHERE job_seeker_id = ? AND job_id = ?
+      `;
+      conn_sql.query(sql_check, [id, job_id], (err, existing) => {
+        if (err)
+          return res.json({ msg: "Error checking application" });
+
+        if (existing.length > 0) {
+          const currentStatus = existing[0].status;
+
+          if (currentStatus === "Wishlist") {
+            const sql_update = `
+              UPDATE applicants 
+              SET status = 'Applied' 
+              WHERE job_seeker_id = ? AND job_id = ?
+            `;
+            conn_sql.query(sql_update, [id, job_id], (err, result) => {
+              if (err)
+                return res.json({ msg: "Error updating status" });
+
+              return res.json({ msg: "Successfully Applied", result });
+            });
+          } else {
+            return res.json({
+              msg: "You have already applied for this job.",
+            });
+          }
         } else {
-          return res.json({ msg: "You have already applied for this job." });
+          const sql_apply = `
+            INSERT INTO applicants(job_seeker_id, employee_id, job_id) 
+            VALUES (?, ?, ?)
+          `;
+          conn_sql.query(sql_apply, [id, employee_id, job_id], (err, result) => {
+            if (err)
+              return res.json({ msg: "Error applying" });
+
+            return res.json({ msg: "Successfully applied", result });
+          });
         }
-
-      } else {
-        const sql_apply = `
-          INSERT INTO applicants(job_seeker_id, employee_id, job_id) 
-          VALUES (?, ?, ?)
-        `;
-        conn_sql.query(sql_apply, [id, employee_id, job_id], (err, result) => {
-          if (err) return res.status(500).json({ msg: "Error applying" });
-
-          return res.json({ msg: "Successfully applied", result });
-        });
-      }
+      });
     });
+  });
+};
+
+// get wishlist
+const GetWishlist = (req, res) => {
+  const { id } = req.params;
+  const sql = `
+    SELECT job_id FROM applicants 
+    WHERE job_seeker_id = ? AND status = 'Wishlist'
+  `;
+  conn_sql.query(sql, [id], (err, results) => {
+    if (err) return res.status(500).json(err);
+    res.json(results); 
   });
 };
 
 // Add to wishlist
 const AddToWishlist = (req, res) => {
-  const { id } = req.params; 
+  const { id } = req.params;
   const { job_id } = req.query;
 
   const sql_get = "SELECT employee_id FROM jobs WHERE id = ?";
@@ -184,7 +218,7 @@ const AddToWishlist = (req, res) => {
     const { employee_id } = result[0];
     const check_sql = `
       SELECT * FROM applicants 
-      WHERE job_seeker_id = ? AND job_id = ? 
+      WHERE job_seeker_id = ? AND job_id = ?
     `;
     conn_sql.query(check_sql, [id, job_id], (err, existing) => {
       if (err) return res.status(500).json(err);
@@ -196,7 +230,7 @@ const AddToWishlist = (req, res) => {
         }
 
         if (currentStatus === "Wishlist") {
-          return res.json({ msg: "Already added to wishlist." });
+          return res.json({ msg: "Job already in wishlist" });
         }
       }
 
@@ -204,9 +238,19 @@ const AddToWishlist = (req, res) => {
         INSERT INTO applicants (job_seeker_id, employee_id, job_id, status)
         VALUES (?, ?, ?, 'Wishlist')
       `;
-      conn_sql.query(sql_add, [id, employee_id, job_id], (err, result) => {
+      conn_sql.query(sql_add, [id, employee_id, job_id], (err) => {
         if (err) return res.status(500).json(err);
-        return res.json({ msg: "Successfully added to wishlist", result });
+
+        // ✅ Get updated wishlist after inserting
+        const getUpdated = `
+          SELECT job_id FROM applicants 
+          WHERE job_seeker_id = ? AND status = 'Wishlist'
+        `;
+        conn_sql.query(getUpdated, [id], (err, updated) => {
+          if (err) return res.status(500).json(err);
+          const jobIds = updated.map((row) => row.job_id);
+          return res.json({ msg: "Job added to wishlist", wishlist: jobIds });
+        });
       });
     });
   });
@@ -215,8 +259,9 @@ const AddToWishlist = (req, res) => {
 
 
 
+
 // Add skillset to fill form
-const Addskillset = (req, res) => {
+const Addskillset = async (req, res) => {
   const { id } = req.params;
   const { skills } = req.body;
 
@@ -224,60 +269,67 @@ const Addskillset = (req, res) => {
     return res.status(400).json({ msg: "Skills are required." });
   }
 
-  skills.forEach((skill) => {
-    const checkSkillExist = "SELECT id FROM skillset WHERE skills = ?";
-    conn_sql.query(checkSkillExist, [skill], (err, skillResult) => {
-      if (err) return console.error("Error checking skill:", err);
+  const responses = [];
 
-      if (skillResult.length === 0) {
-        // Skill doesn't exist, insert it
-        const insertSkillQuery = "INSERT INTO skillset (skills) VALUES (?)";
-        conn_sql.query(insertSkillQuery, [skill], (err, insertResult) => {
-          if (err) return console.error("Error inserting skill:", err);
-          const newSkillId = insertResult.insertId;
-          addSkillToUser(id, newSkillId, skill);
-        });
-      } else {
-        const existingSkillId = skillResult[0].id;
-        addSkillToUser(id, existingSkillId, skill, res);
-      }
-    });
-  });
+  const processSkill = (skill) => {
+    return new Promise((resolve, reject) => {
+      const checkSkillExist = "SELECT id FROM skillset WHERE skills = ?";
+      conn_sql.query(checkSkillExist, [skill], (err, skillResult) => {
+        if (err) return reject(`Error checking skill "${skill}"`);
 
-  function addSkillToUser(userId, skillId, skillName, res) {
-    const checkDuplicate = `
-      SELECT * FROM jobseeker_skills WHERE job_seeker_id = ? AND skillset_id = ?
-    `;
-  
-    conn_sql.query(checkDuplicate, [userId, skillId], (err, result) => {
-      if (err) {
-        console.error("Duplicate check error:", err);
-        return res.status(500).json({ msg: "Error checking duplicate", err });
-      }
-  
-      if (result.length > 0) {
-        return res.status(200).json({ msg: `Skill "${skillName}" is already added` });
-      }
-  
-      const insertUserSkill = `
-        INSERT INTO jobseeker_skills (job_seeker_id, skillset_id)
-        VALUES (?, ?)
-      `;
-  
-      conn_sql.query(insertUserSkill, [userId, skillId], (err) => {
-        if (err) {
-          console.error("Error inserting jobseeker skill:", err);
-          return res.status(500).json({ msg: "Error inserting skill", err });
+        if (skillResult.length === 0) {
+          // Skill doesn't exist, insert it
+          const insertSkillQuery = "INSERT INTO skillset (skills) VALUES (?)";
+          conn_sql.query(insertSkillQuery, [skill], (err, insertResult) => {
+            if (err) return reject(`Error inserting skill "${skill}"`);
+            const newSkillId = insertResult.insertId;
+            addSkillToUser(id, newSkillId, skill).then(resolve).catch(reject);
+          });
+        } else {
+          const existingSkillId = skillResult[0].id;
+          addSkillToUser(id, existingSkillId, skill).then(resolve).catch(reject);
         }
-  
-        return res.status(200).json({ msg: `Skill "${skillName}" added successfully` });
       });
     });
-  }
-  
+  };
 
-  // res.status(200).json({ msg: "Skills processing." });
+  const addSkillToUser = (userId, skillId, skillName) => {
+    return new Promise((resolve, reject) => {
+      const checkDuplicate = `
+        SELECT * FROM jobseeker_skills WHERE job_seeker_id = ? AND skillset_id = ?
+      `;
+
+      conn_sql.query(checkDuplicate, [userId, skillId], (err, result) => {
+        if (err) return reject(`Error checking duplicate for "${skillName}"`);
+
+        if (result.length > 0) {
+          responses.push({ skill: skillName, status: "already exists" });
+          return resolve();
+        }
+
+        const insertUserSkill = `
+          INSERT INTO jobseeker_skills (job_seeker_id, skillset_id)
+          VALUES (?, ?)
+        `;
+
+        conn_sql.query(insertUserSkill, [userId, skillId], (err) => {
+          if (err) return reject(`Error adding "${skillName}"`);
+          responses.push({ skill: skillName, status: "added" });
+          return resolve();
+        });
+      });
+    });
+  };
+
+  try {
+    await Promise.all(skills.map((skill) => processSkill(skill)));
+    return res.status(200).json({ msg: "Skills processed", results: responses });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: "Error processing skills", error });
+  }
 };
+
 
 
 
@@ -310,6 +362,7 @@ const Addskillset = (req, res) => {
 
 module.exports = {
   appliedTo,
+  GetWishlist,
   ApplyForJob,
   Addskillset,
   DeleteFromTable,

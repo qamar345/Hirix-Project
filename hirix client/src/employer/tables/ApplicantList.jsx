@@ -29,9 +29,9 @@ const ApplicantList = () => {
   const location = useLocation();
 
   const queryParams = new URLSearchParams(location.search);
-const filter = queryParams.get("filter") || "";
-const searchQuery = queryParams.get("search") || "";
-const sort = queryParams.get("sort") || "newest"; 
+  const filter = queryParams.get("filter") || "";
+  const searchQuery = queryParams.get("search") || "";
+  const sort = queryParams.get("sort") || "newest";
 
   const GetApplicants = async (page, search) => {
     // setLoading(true);
@@ -46,13 +46,11 @@ const sort = queryParams.get("sort") || "newest";
         }
       );
       setApplicants(res.data?.data || []);
-      // console.log(res.data);
-      setCurrentPage(res.data?.meta?.page ?? 1);
+      //       setCurrentPage(res.data?.meta?.page ?? 1);
       setTotalPages(res.data?.meta?.totalPages ?? 1);
       // setLoading(false);
     } catch (error) {
-      console.log(error);
-      setApplicants([]);
+            setApplicants([]);
       setCurrentPage(1);
       setTotalPages(1);
     }
@@ -69,20 +67,23 @@ const sort = queryParams.get("sort") || "newest";
   useEffect(() => {
     let filteredData =
       filter === ""
-        ? [...applicants] 
+        ? [...applicants]
         : applicants.filter((user) => user.application_status === filter);
 
     if (sort === "newest") {
-        filteredData = filteredData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      filteredData = filteredData.sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
     } else if (sort === "oldest") {
-        filteredData = filteredData.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      filteredData = filteredData.sort(
+        (a, b) => new Date(a.created_at) - new Date(b.created_at)
+      );
     }
     setfiltersUsers(filteredData || []);
-}, [filter, applicants, sort]);
+  }, [filter, applicants, sort]);
 
-useEffect(() => {
-  console.log("Applicants Data:", applicants);
-}, [applicants]);
+  useEffect(() => {
+      }, [applicants]);
 
   const Review = async (id) => {
     await axios
@@ -92,8 +93,7 @@ useEffect(() => {
         window.location.reload();
       })
       .catch((err) => {
-        console.log(err);
-      });
+              });
   };
   const Selected = async (id) => {
     await axios
@@ -103,8 +103,7 @@ useEffect(() => {
         window.location.reload();
       })
       .catch((err) => {
-        console.log(err);
-      });
+              });
   };
 
   const Rejected = async (id) => {
@@ -115,11 +114,9 @@ useEffect(() => {
         window.location.reload();
       })
       .catch((err) => {
-        console.log(err);
-      });
+              });
   };
 
- 
   return (
     <>
       <Table hover responsive>
@@ -134,58 +131,45 @@ useEffect(() => {
         <tbody>
           {filterUsers.length > 0 ? (
             filterUsers.map((applicant, index) => {
-              return (
-                <>
-                  <tr key={index}>
-                    <td className="info-user">
-                      <div className="image-applicants">
-                        <CiCamera />
-                      </div>
-                      <div className="info-details">
-                        <h3>{applicant.jobseeker_name}</h3>
-                        {/* <div className="applied">
+              if (applicant.application_status !== "Wishlist") {
+                return (
+                  <>
+                    <tr key={index}>
+                      <td className="info-user">
+                        <div className="image-applicants">
+                          <CiCamera />
+                        </div>
+                        <div className="info-details">
+                          <NavLink to={`/ApplicantDetails/${applicant.id}`}><h3>{applicant.jobseeker_name}</h3></NavLink>
+                          {/* <div className="applied">
                           Applied:
                           <a href="#" target="_blank" rel="noopener noreferrer">
                             <span> {applicant.qualification}</span>
                             <FaExternalLinkAlt className="externalIcon" />
                           </a>
                         </div> */}
-                      </div>
-                    </td>
-                    <td className="status">
-                      <div>
-                        {applicant.application_status === "Applied" ? (
-                          <span
-                            className="label label-open"
-                          >
-                            Applied
-                          </span>
-                        ) : applicant.application_status === "Review" ? (
-                          <span className="label label-pending"
-                          >
-                            Review
-                          </span>
-                        ) : applicant.application_status === "Selected" ? (
-                          <span className="label label-open"
-                          >
-                            Selected
-                          </span>
-                        ) : (
-                          <span
-                            className="label label-close"
-                          >
-                            Rejected
-                          </span>
-                        ) }
-                      </div>
-                    </td>
-                    <td className="info">
-                      <span className="gmail">{applicant.jobs_title}</span>
-                    </td>
-                    <td className="applicants-control action-setting">
-                      <div className="list-action">
-                        <div className="links">
-                          {/* {applicant.actions.downloadCV && (
+                        </div>
+                      </td>
+                      <td className="status">
+                        <div>
+                          {applicant.application_status === "Applied" ? (
+                            <span className="label label-open">Applied</span>
+                          ) : applicant.application_status === "Review" ? (
+                            <span className="label label-pending">Review</span>
+                          ) : applicant.application_status === "Selected" ? (
+                            <span className="label label-open">Selected</span>
+                          ) : (
+                            <span className="label label-close">Rejected</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="info">
+                        <span className="gmail">{applicant.jobs_title}</span>
+                      </td>
+                      <td className="applicants-control action-setting">
+                        <div className="list-action">
+                          <div className="links">
+                            {/* {applicant.actions.downloadCV && (
                       <Link
                         to=""
                         className="action icon-download"
@@ -199,121 +183,137 @@ useEffect(() => {
                         <FaEllipsisH />
                       </Link>
                      )} */}
+                          </div>
+                          <Dropdown>
+                            <Dropdown.Toggle as={CustomToggle} />
+                            <Dropdown.Menu>
+                              {applicant.application_status === "Applied" ? (
+                                <>
+                                  <Dropdown.Item>
+                                    <button
+                                      className="btn btn-light"
+                                      onClick={() =>
+                                        Review(applicant.Applicant_id)
+                                      }
+                                      style={{
+                                        display: "block",
+                                        width: "100%",
+                                        fontSize: "1.5rem",
+                                      }}
+                                    >
+                                      Review
+                                    </button>
+                                  </Dropdown.Item>
+                                  <Dropdown.Item>
+                                    <button
+                                      className="btn btn-light"
+                                      onClick={() =>
+                                        Selected(applicant.Applicant_id)
+                                      }
+                                      style={{
+                                        display: "block",
+                                        width: "100%",
+                                        fontSize: "1.5rem",
+                                      }}
+                                    >
+                                      Selected
+                                    </button>
+                                  </Dropdown.Item>
+                                  <Dropdown.Item>
+                                    <button
+                                      className="btn btn-light"
+                                      onClick={() =>
+                                        Rejected(applicant.Applicant_id)
+                                      }
+                                      style={{
+                                        display: "block",
+                                        width: "100%",
+                                        fontSize: "1.5rem",
+                                      }}
+                                    >
+                                      Rejected
+                                    </button>
+                                  </Dropdown.Item>
+                                </>
+                              ) : applicant.application_status === "Review" ? (
+                                <>
+                                  <Dropdown.Item>
+                                    <button
+                                      className="btn btn-light"
+                                      onClick={() =>
+                                        Selected(applicant.Applicant_id)
+                                      }
+                                      style={{
+                                        display: "block",
+                                        width: "100%",
+                                        fontSize: "1.5rem",
+                                      }}
+                                    >
+                                      Selected
+                                    </button>
+                                  </Dropdown.Item>
+                                  <Dropdown.Item>
+                                    <button
+                                      className="btn btn-light"
+                                      onClick={() =>
+                                        Rejected(applicant.Applicant_id)
+                                      }
+                                      style={{
+                                        display: "block",
+                                        width: "100%",
+                                        fontSize: "1.5rem",
+                                      }}
+                                    >
+                                      Reject
+                                    </button>
+                                  </Dropdown.Item>
+                                </>
+                              ) : applicant.application_status ===
+                                "Selected" ? (
+                                <>
+                                  <Dropdown.Item>
+                                    <button
+                                      className="btn btn-light"
+                                      onClick={() =>
+                                        Rejected(applicant.Applicant_id)
+                                      }
+                                      style={{
+                                        display: "block",
+                                        width: "100%",
+                                        fontSize: "1.5rem",
+                                      }}
+                                    >
+                                      Reject
+                                    </button>
+                                  </Dropdown.Item>
+                                </>
+                              ) : (
+                                <>
+                                  <Dropdown.Item>
+                                    <button
+                                      className="btn btn-light"
+                                      onClick={() =>
+                                        Review(applicant.Applicant_id)
+                                      }
+                                      style={{
+                                        display: "block",
+                                        width: "100%",
+                                        fontSize: "1.5rem",
+                                      }}
+                                    >
+                                      Review
+                                    </button>
+                                  </Dropdown.Item>
+                                </>
+                              )}
+                            </Dropdown.Menu>
+                          </Dropdown>
                         </div>
-                        <Dropdown>
-                          <Dropdown.Toggle as={CustomToggle} />
-                          <Dropdown.Menu>
-                            {applicant.application_status === "Applied" ? (
-                              <>
-                                <Dropdown.Item>
-                                  <button
-                                    className="btn btn-light"
-                                    onClick={() => Review(applicant.Applicant_id)}
-                                     style={{
-                                      display: "block",
-                                      width: "100%",
-                                      fontSize: "1.5rem",
-                                    }} 
-                                  >
-                                    Review
-                                  </button>
-                                </Dropdown.Item>
-                                <Dropdown.Item>
-                                  <button
-                                    className="btn btn-light"
-                                    onClick={() => Selected(applicant.Applicant_id)}
-                                    style={{
-                                      display: "block",
-                                      width: "100%",
-                                      fontSize: "1.5rem",
-                                    }}
-                                  >
-                                    Selected
-                                  </button>
-                                </Dropdown.Item>
-                                <Dropdown.Item>
-                                  <button
-                                    className="btn btn-light"
-                                    onClick={() => Rejected(applicant.Applicant_id)}
-                                    style={{
-                                      display: "block",
-                                      width: "100%",
-                                      fontSize: "1.5rem",
-                                    }}
-                                  >
-                                    Rejected
-                                  </button>
-                                </Dropdown.Item>
-                              </>
-                            ) : applicant.application_status === "Review" ? (
-                              <>
-                                <Dropdown.Item>
-                                  <button
-                                    className="btn btn-light"
-                                    onClick={() => Selected(applicant.Applicant_id)}
-                                    style={{
-                                      display: "block",
-                                      width: "100%",
-                                      fontSize: "1.5rem",
-                                    }}
-                                  >
-                                    Selected
-                                  </button>
-                                </Dropdown.Item>
-                                <Dropdown.Item>
-                                  <button
-                                    className="btn btn-light"
-                                    onClick={() => Rejected(applicant.Applicant_id)}
-                                    style={{
-                                      display: "block",
-                                      width: "100%",
-                                      fontSize: "1.5rem",
-                                    }}
-                                  >
-                                    Reject
-                                  </button>
-                                </Dropdown.Item>
-                              </>
-                            ) : applicant.application_status === "Selected" ? (
-                              <>
-                                <Dropdown.Item>
-                                  <button
-                                    className="btn btn-light"
-                                    onClick={() => Rejected(applicant.Applicant_id)}
-                                    style={{
-                                      display: "block",
-                                      width: "100%",
-                                      fontSize: "1.5rem",
-                                    }}
-                                  >
-                                    Reject
-                                  </button>
-                                </Dropdown.Item>
-                              </>
-                            ) : (
-                              <>
-                                <Dropdown.Item>
-                                  <button
-                                    className="btn btn-light"
-                                    onClick={() => Review(applicant.Applicant_id)}
-                                    style={{
-                                      display: "block",
-                                      width: "100%",
-                                      fontSize: "1.5rem",
-                                    }}
-                                  >
-                                    Review
-                                  </button>
-                                </Dropdown.Item>
-                              </>
-                            )}
-                          </Dropdown.Menu>
-                        </Dropdown>
-                      </div>
-                    </td>
-                  </tr>
-                </>
-              );
+                      </td>
+                    </tr>
+                  </>
+                );
+              }
             })
           ) : (
             <tr>

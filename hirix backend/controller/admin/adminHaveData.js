@@ -67,7 +67,7 @@ const Getusers = (req, res) => {
 
 // get dashboard data
 const GetDashboard = (req, res) => {
-  const sql_get = "SELECT 'total jobs' AS label, COUNT(*) AS num FROM `jobs` UNION SELECT 'candidates' AS label, COUNT(*) AS num FROM `user_accounts` WHERE role = 'jobseeker' UNION SELECT 'Employees' AS label, COUNT(*) AS num FROM `user_accounts` WHERE role = 'employee' UNION SELECT 'total companies' AS label, COUNT(*) AS num FROM `companies` WHERE `status_delete` = 1";
+  const sql_get = "SELECT 'Total jobs' AS label, COUNT(*) AS num FROM `jobs` UNION SELECT 'candidates' AS label, COUNT(*) AS num FROM `user_accounts` WHERE role = 'jobseeker' UNION SELECT 'Employees' AS label, COUNT(*) AS num FROM `user_accounts` WHERE role = 'employee' UNION SELECT 'Total companies' AS label, COUNT(*) AS num FROM `companies` WHERE `status_delete` = 1";
   conn_sql.query(sql_get, (err, result) => {
     if (err) {
       console.log(err);

@@ -3,14 +3,17 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaSpinner, FaCheckCircle } from "react-icons/fa";
 import { PiMapPin } from "react-icons/pi";
 import { CiCamera } from "react-icons/ci";
-import { RiUploadLine } from "react-icons/ri";
+import { RiNumbersFill, RiUploadLine } from "react-icons/ri";
 import { IoCloseSharp } from "react-icons/io5";
 import Select from "react-select";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { EmpFooter } from "../index.js";
 import axios from "axios";
-
+import PhoneInput from "react-phone-number-input";
+import 'react-phone-number-input/style.css'
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 const AddCompany = () => {
   const navigate = useNavigate();
   const id = sessionStorage.getItem("id");
@@ -25,9 +28,9 @@ const AddCompany = () => {
   const [category, setCategory] = useState("");
   const [des, setDes] = useState("");
   const [websiteLink, setWebsiteLink] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState("");
-  const [foundedIn, setFoundedIn] = useState("");
+  const [foundedIn, setFoundedIn] = useState(null);
   const [companySize, setCompanySize] = useState("");
   const [Twitter, setTwitter] = useState("");
   const [facebook, setFacebook] = useState("");
@@ -35,7 +38,8 @@ const AddCompany = () => {
   const [LinkedIn, setLinkedIn] = useState("");
   const [Province, setProvince] = useState("");
   const [City, setCity] = useState("");
-  const [PC, setPC] = useState("");
+  const [Ntn, setNtn] = useState("");
+  const today = new Date();
   const handleLogoUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -83,12 +87,12 @@ const AddCompany = () => {
     formData.append("facebook", facebook?.trim());
     formData.append("instagram", instagram?.trim());
     formData.append("linkedIn", LinkedIn?.trim());
-    formData.append("founded_in", foundedIn?.trim());
+    formData.append("founded_in", foundedIn);
     formData.append("total_members", companySize?.trim());
-    formData.append("Contact", phone?.trim());
+    formData.append("Contact", phone);
     formData.append("city", City?.trim());
     formData.append("province", Province?.trim());
-    formData.append("postalCode", PC?.trim());
+    formData.append("Ntn", Ntn?.trim());
 
     // Append image if selected
     if (selectedFile) {
@@ -108,8 +112,7 @@ const AddCompany = () => {
       alert(res.data.msg);
       navigate(`/employer/company`);
     } catch (error) {
-      console.error("Error:", error);
-    }
+          }
   };
 
   const cats = [
@@ -122,31 +125,21 @@ const AddCompany = () => {
     { value: "software", label: "Software" },
     { value: "webDev", label: "Web Development" },
   ];
-  const nums = [
-    { value: "lhr", label: "Lahore" },
-    { value: "rwp", label: "Rawalpindi" },
-    { value: "khi", label: "Karachi" },
-    { value: "isb", label: "Islamabad" },
-  ];
+  // const nums = [
+  //   { value: "PK", label: "PK" },
+  //   { value: "US", label: "US" },
+  // ];
   const city = [
-    { value: "lhr", label: "Lahore" },
-    { value: "rwp", label: "Rawalpindi" },
-    { value: "khi", label: "Karachi" },
-    { value: "isb", label: "Islamabad" },
+    { value: "Lahore", label: "Lahore" },
+    { value: "Rawalpindi", label: "Rawalpindi" },
+    { value: "Karachi", label: "Karachi" },
+    { value: "Islamabad", label: "Islamabad" },
   ];
   const province = [
     { value: "kpk", label: "Khyber Pakhtunkhwa" },
     { value: "punjab", label: "Punjab" },
     { value: "sindh", label: "Sindh" },
     { value: "balochistan", label: "Balochistan" },
-  ];
-  const yrs = [
-    { value: "2019", label: "2019" },
-    { value: "2020", label: "2020" },
-    { value: "2021", label: "2021" },
-    { value: "2022", label: "2022" },
-    { value: "2023", label: "2023" },
-    { value: "2024", label: "2024" },
   ];
   const ppl = [
     { value: "10-50", label: "10-50" },
@@ -266,17 +259,16 @@ const AddCompany = () => {
                       <div className="entryGroup col-md-6">
                         <label>Phone Number</label>
                         <div className=" d-flex">
-                          <Select
+                          {/* <Select
                             options={nums}
                             styles={customStyles}
                             className="border p-1 rounded-2"
-                          />
-                          <input
-                            type="tel"
-                            name="phone"
-                            placeholder="+00 12 334 5678"
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
+                          /> */}
+                          <PhoneInput
+                            className="mt-1"
+                            value={phone?.toString() || ''}
+                            onChange={setPhone}
+                            defaultCountry="PK"
                           />
                         </div>
                       </div>
@@ -295,17 +287,17 @@ const AddCompany = () => {
                       </div>
 
                       <div className="entryGroup col-md-6">
-                        <label>Founded in</label>
-                        <Select
-                          options={yrs}
-                          styles={customStyles}
-                          className="border p-1 rounded-2"
-                          value={yrs.find(
-                            (option) => option.value === foundedIn
-                          )}
-                          onChange={(selectedOption) =>
-                            setFoundedIn(selectedOption.value)
-                          }
+                        <label>
+                          Founded in <sup>*</sup>
+                        </label>
+                        <DatePicker
+                          selected={foundedIn}
+                          onChange={(date) => setFoundedIn(date)}
+                          dateFormat="yyyy"
+                          showYearPicker
+                          className="form-control border p-1 rounded-2 "
+                          placeholderText="Select year"
+                          maxDate={new Date(today.getFullYear(), 11, 31)}
                         />
                       </div>
                       <div className="entryGroup col-md-6">
@@ -480,12 +472,12 @@ const AddCompany = () => {
                       </div>
 
                       <div className="entryGroup col-lg-6">
-                        <label htmlFor="postalCode">Postal Code</label>
+                        <label htmlFor="Ntn">Ntn</label>
                         <input
-                          type="number"
-                          name="postalCode"
-                          value={PC}
-                          onChange={(e) => setPC(e.target.value)}
+                          type="text"
+                          name="Ntn"
+                          value={Ntn}
+                          onChange={(e) => setNtn(e.target.value)}
                         />
                       </div>
 

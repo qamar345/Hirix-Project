@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Table from "react-bootstrap/Table";
-import { Link, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { CiCamera } from "react-icons/ci";
 import { FaExternalLinkAlt, FaDownload, FaEllipsisH } from "react-icons/fa";
 import axios from "axios";
@@ -31,7 +31,7 @@ const EmployeeList = () => {
 
   const querysearch = new URLSearchParams(location.search);
   const searchQuery = querysearch.get("search") || "";
-
+const sort = queryParams.get("sort") || "newest"; 
   const GetEmployee = async (page, search = "") => {
     // setLoading(true);
     try {
@@ -47,8 +47,7 @@ const EmployeeList = () => {
       setTotalPages(res.data.meta.totalPages);
       // setLoading(false);
     } catch (error) {
-      console.log(error);
-    }
+          }
   };
 
   const handlePageChange = (page) => {
@@ -60,12 +59,17 @@ const EmployeeList = () => {
   }, [currentPage, searchQuery]);
 
   useEffect(() => {
-    const filteredData =
+    let filteredData =
       filter == ""
         ? datauser
         : datauser.filter((user) => user.account_status == filter);
+         if (sort === "newest") {
+      filteredData = filteredData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    } else if (sort === "oldest") {
+      filteredData = filteredData.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    }
     setfiltersUsers(filteredData);
-  }, [filter, datauser]);
+  }, [filter, datauser, sort]);
 
   const ActiveAccount = async (id) => {
     await axios
@@ -75,8 +79,7 @@ const EmployeeList = () => {
         window.location.reload();
       })
       .catch((err) => {
-        console.log(err);
-      });
+              });
   };
 
   const FreezeAccount = async (id) => {
@@ -87,8 +90,7 @@ const EmployeeList = () => {
         window.location.reload();
       })
       .catch((err) => {
-        console.log(err);
-      });
+              });
   };
 
   // const applicantsData = [
@@ -176,6 +178,7 @@ const EmployeeList = () => {
                           <CiCamera />
                         )}
                       </div>
+                      <NavLink to={`/employeeDetails/${applicant.id}`}>
                       <div className="info-details">
                         <h3>{applicant.username}</h3>
                         {/* <div className="applied">
@@ -186,6 +189,7 @@ const EmployeeList = () => {
                         </a>
                       </div> */}
                       </div>
+                      </NavLink>
                     </td>
                     <td className="status">
                       <div>

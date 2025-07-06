@@ -4,7 +4,8 @@ import Dropdown from "react-bootstrap/Dropdown";
 import { FaEllipsisH } from "react-icons/fa";
 import axios from "axios";
 import { Pagination } from "../components/Pagination";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Nav } from "react-bootstrap";
 
 // Custom Toggle Component
 const CustomToggle = React.forwardRef(({ onClick }, ref) => (
@@ -70,8 +71,7 @@ const [companydata, setcompanydata] = useState([]);
       setTotalPages(res.data.meta.totalPages);
       // setLoading(false);
     } catch (error) {
-      console.log(error);
-    }
+          }
   };
 
   const handlePageChange = (page) => {
@@ -83,8 +83,7 @@ const [companydata, setcompanydata] = useState([]);
   }, [currentPage]);
 
   const EditCompany = async (id) => {
-    console.log(id);
-    sessionStorage.setItem("editCompanyData", JSON.stringify(id));
+        sessionStorage.setItem("editCompanyData", JSON.stringify(id));
     navigate("/employer/Edit_Company");
   }
   const DeleteCompany = async (did) => {
@@ -97,8 +96,7 @@ const [companydata, setcompanydata] = useState([]);
       // Instead of reloading, remove the deleted item from the state if using React
       // Example: setCompanies(companies.filter(company => company.id !== did));
     } catch (err) {
-      console.error("Error deleting company:", err);
-      alert("Failed to delete company. Please try again.");
+            alert("Failed to delete company. Please try again.");
     }
   };
   
@@ -152,7 +150,9 @@ const [companydata, setcompanydata] = useState([]);
                           )}
                         </div>
                         <div>
-                          <h6>{company.name}</h6>
+                          <Link to={`/CompanyDetails/${company.id}`}>
+                            <h6>{company.name}</h6>
+                          </Link>
                           <small>{company.E_mail}</small>
                         </div>
                       </div>

@@ -8,6 +8,7 @@ import { ClerkProvider } from "@clerk/clerk-react";
 // Candidate
 import {
   HomePage,
+  JobPage,
   CanDashboard,
   CanFollow,
   CanJobs,
@@ -62,6 +63,10 @@ import {
   Route,
   RouterProvider,
 } from "react-router-dom";
+import JobDetail from "./Admin/tables/jobdetail.jsx";
+import EmployeeDetail from "./Admin/tables/EmployeesDetails.jsx";
+import CompanyDetail from "./Admin/tables/CompanyDetails.jsx";
+import ApplicantDetail from "./Admin/tables/ApplicantsDetail.jsx";
 
 // Import your Publishable Key
 // const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -76,6 +81,7 @@ const router = createBrowserRouter(
     <>
       {/* Home Routes */}
       <Route path="/" element={<HomePage />} />
+      <Route path="/JobPage/:id" element={<JobPage />} />
       <Route path="*" element={<Error />} />
       {/* Candidate */}
       <Route path="candidate" element={<Candidate />}>
@@ -120,11 +126,16 @@ const router = createBrowserRouter(
       </Route>
       <Route path="/admin/jobs" element={<AdJobs />} />
       <Route path="/admin/jobs/list" element={<JobList />} />
+      <Route path="/jobdetail/:id" element={<JobDetail />} />
+
       <Route path="/admin/company" element={<AdCompany />} />
+      <Route path="/CompanyDetails/:id" element={<CompanyDetail/>}/>
       <Route path="/admin/candidates" element={<AdCandidates />} />
       <Route path="/admin/candidates/list" element={<ApplicantList />} />
+      <Route path="/ApplicantDetails/:id" element={<ApplicantDetail />} />
       <Route path="/admin/employees" element={<AdEmployee />} />
       <Route path="/admin/employees/list" element={<EmployeeList />} />
+      <Route path="/employeeDetails/:id" element={<EmployeeDetail />} />
       <Route path="/admin/user-management" element={<AdManagement />} /> 
    </>
   )

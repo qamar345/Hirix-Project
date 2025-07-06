@@ -98,26 +98,32 @@ const EmployeeProfile = (req, res) => {
   const bodyData = Object.assign({}, req.body);
   const { id } = req.params;
   const { first_name, last_name, email } = bodyData;
-
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
-  console.log(bodyData);
-  console.log(imageUrl);
-  // bcrypt.hash(password, 10, function (err, hash) {
-  const sqladmin =
-    "UPDATE `user_accounts` SET `first_name`=? , `last_name`=? , `email`= ?, `image` = ? WHERE id=?";
-    conn_sql.query(
-    sqladmin,
-    [first_name, last_name, email, imageUrl, id],
-    (err, result) => {
-      if (err) {
-        return res.json(err);
-      } else {
-        return res.json({ message: "Profile updated...", result});
-      }
+
+  const sqlUpdate = `
+    UPDATE user_accounts 
+    SET first_name = ?, last_name = ?, email = ?, image = ?
+    WHERE id = ?
+  `;
+
+  conn_sql.query(sqlUpdate, [first_name, last_name, email, imageUrl, id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ message: "Update failed", error: err });
     }
-  );
-// });
+    const sqlSelect = "SELECT id, first_name, image FROM user_accounts WHERE id = ?";
+    conn_sql.query(sqlSelect, [id], (selectErr, selectResult) => {
+      if (selectErr) {
+        return res.status(500).json({ message: "Error fetching updated user", error: selectErr });
+      }
+
+      return res.json({
+        message: "Profile updated...",
+        result: selectResult[0], // 👈 updated user
+      });
+    });
+  });
 };
+
 
 
 const EmployeeChangePassword = (req, res) => {
@@ -178,6 +184,30 @@ const GetEmployee = (req, res) => {
     }
   });
 };
+
+// Get Employee with his registerd companies
+const GetEmpAndCom = (req, res) => {
+  const { id } = req.params;
+
+  const sql_get_employee = "SELECT * FROM `user_accounts` WHERE id = ?";
+  const sql_get_companies = "SELECT * FROM `companies` WHERE user_account_id = ?";
+  conn_sql.query(sql_get_employee, [id], (err, employeeResult) => {
+    if (err) return res.status(500).json({ error: err });
+
+    if (employeeResult.length === 0) {
+      return res.status(404).json({ message: "Employee not found" });
+    }
+    conn_sql.query(sql_get_companies, [id], (err2, companyResult) => {
+      if (err2) return res.status(500).json({ error: err2 });
+
+      return res.json({
+        employee: employeeResult[0],
+        companies: companyResult    
+      });
+    });
+  });
+};
+
 
 // Employer Dasboard Graph
 const EmployerGraph = (req, res) => {
@@ -264,4 +294,4 @@ const GenerateUserName = (req, res) => {
 
 
 
-module.exports = { employeesignup, employeelogin, EmployeeProfile , GetEmployee, EmployeeChangePassword, EmployerGraph, GenerateUserName};
+module.exports = { employeesignup, employeelogin, EmployeeProfile , GetEmployee, GetEmpAndCom, EmployeeChangePassword, EmployerGraph, GenerateUserName};

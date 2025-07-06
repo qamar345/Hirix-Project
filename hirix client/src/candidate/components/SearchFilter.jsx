@@ -14,6 +14,7 @@ const SearchFilter = () => {
   const [category, setcategory] = useState("");
   const [city, setcity] = useState("");
   const [skillsList, setSkillsList] = useState([]);
+  // const [jobData, setJobData] = useState(false)
 
   const navigate = useNavigate();
   const handleSearchSubmit = (e) => {
@@ -36,8 +37,7 @@ const SearchFilter = () => {
         const res = await axios.get(`http://localhost:9000/getSkills`);
         setSkillsList(res.data);
       } catch (err) {
-        console.error("Error fetching skills:", err);
-      }
+              }
     };
 
     fetchSkills();
@@ -177,6 +177,7 @@ const SearchFilter = () => {
 
                 <button
                   type="submit"
+                  onClick={onclick}
                   className="btn-top-filter civi-button ms-lg-4"
                 >
                   Search

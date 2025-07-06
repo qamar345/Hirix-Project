@@ -8,11 +8,15 @@ const bcrypt = require('bcrypt');
 
 const { databaseconfig } = require('./config/connection');
 
+const {AdminSetup} = require('./controller/admin/adminlogin');
+
 const dotenv = require("dotenv").config();
 
 const port = process.env.PORT;
 
 const app= express();
+
+AdminSetup();
 
 app.use(express.json());
 
@@ -22,6 +26,7 @@ app.use(cors({
 databaseconfig();
 app.use("/uploads", express.static("uploads"));
 app.use(router);
+
 
 app.listen(port, ()=>{
     console.log("express app running on port 9000");

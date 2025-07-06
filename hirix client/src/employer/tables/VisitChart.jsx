@@ -32,11 +32,9 @@ function VisitChart({days}) {
         const res = await axios.get(
           `http://localhost:9000/EmployerGraph/${id}/${days}`
         );
-        console.log(res.data);
-        setGraph(res.data);
+                setGraph(res.data);
       } catch (error) {
-        console.log("Error:", error);
-      }
+              }
     };
 
     fetchDataGraph();

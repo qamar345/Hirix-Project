@@ -81,17 +81,27 @@ const AdJobs = () => {
               />
 
               <div className="action-search selectFull">
-                <form onSubmit={handleSearchSubmit}>
                   <input
                     type="text"
                     // name="jobs_search"
                     placeholder="Search jobs title"
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}/>                 
-                </form>
-                <NavLink className="btn-search d-flex" type="submit">
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                <button
+                    onClick={handleSearchSubmit}
+                    className="btn-search d-flex"
+                    style={{ all: "unset", cursor: "pointer" }}
+                  >
                     <IoIosSearch className="mx-3" />
-                  </NavLink>
+                  </button>
+ 
+                {/* <NavLink
+                  className="btn-search d-flex"
+                  to={`/search?query=${encodeURIComponent(searchQuery)}`}
+                >
+                  <IoIosSearch className="mx-3" />
+                </NavLink> */}
               </div>
             </div>
             <div className="d-flex align-items-center gap-3 selectFull">

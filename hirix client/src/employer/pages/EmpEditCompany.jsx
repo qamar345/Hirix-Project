@@ -14,8 +14,7 @@ import axios from "axios";
 const EmpEditCompany = () => {
   const navigate = useNavigate();
   const editId = sessionStorage.getItem("editCompanyData");
-  console.log(editId);
-  const id = sessionStorage.getItem("id");
+    const id = sessionStorage.getItem("id");
   const check = sessionStorage.getItem("isLoggedIn");
   useEffect(() => {
     if (!check) navigate("/");
@@ -35,7 +34,7 @@ const EmpEditCompany = () => {
   const [LinkedIn, setLinkedIn] = useState("");
   const [Province, setProvince] = useState("");
   const [City, setCity] = useState("");
-  const [PC, setPC] = useState("");
+  const [Ntn, setNtn] = useState("");
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 150) {
@@ -58,35 +57,6 @@ const EmpEditCompany = () => {
       axios
         .get(`http://localhost:9000/getSpecificCompany/${editId}`)
         .then((res) => {
-          console.log("Full API Response:", res.data); // ✅ Check the structure
-
-          if (Array.isArray(res.data) && res.data.length > 0) {
-            const data = res.data[0]; // 👈 First object extract karo
-            console.log("Extracted Data:", data);
-
-            setName(data.name || "");
-            setCategory(data.categories || "");
-            setDes(data.About || "");
-            setWebsiteLink(data.website_link || "");
-            setPhone(data.Contact || "");
-            setEmail(data.E_mail || []);
-            setFoundedIn(data.founded_in || "");
-            setCompanySize(data.total_members || "");
-            setTwitter(data.twitter || "");
-            setFacebook(data.facebook || "");
-            setInstagram(data.instagram || "");
-            setLinkedIn(data.linkedIn || "");
-            setProvince(data.province || "");
-            setCity(data.city || "");
-            setPC(data.postalCode || "");
-          } else {
-            console.warn("⚠️ No data found for this ID!");
-          }
-        })
-        .catch((err) => console.error("Error fetching Company data:", err));
-    }
-  }, [editId]);
-
   // submit
   const submit = async (e) => {
     e.preventDefault();
@@ -102,11 +72,11 @@ const EmpEditCompany = () => {
       instagram: instagram?.trim(),
       linkedIn: LinkedIn?.trim(),
       founded_in: foundedIn?.trim(),
-      total_members: companySize?.trim(),
+      total_members: companySize,
       Contact: phone,
       city: City?.trim(),
       province: Province?.trim(),
-      postalCode: PC?.trim(),
+      Ntn: Ntn?.trim(),
     };
 
     try {
@@ -114,8 +84,7 @@ const EmpEditCompany = () => {
       alert(res.data.msg);
       navigate(`/employer/company`);
     } catch (error) {
-      console.error("Error:", error.message);
-    }
+          }
   };
 
   return (
@@ -348,12 +317,12 @@ const EmpEditCompany = () => {
                       </div>
 
                       <div className="entryGroup col-lg-6">
-                        <label htmlFor="postalCode">Postal Code</label>
+                        <label htmlFor="Ntn">Ntn</label>
                         <input
-                          type="number"
-                          name="postalCode"
-                          value={PC}
-                          onChange={(e) => setPC(e.target.value)}
+                          type="text"
+                          name="Ntn"
+                          value={Ntn}
+                          onChange={(e) => setNtn(e.target.value)}
                         />
                       </div>
 

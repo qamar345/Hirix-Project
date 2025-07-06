@@ -54,10 +54,10 @@ const AdSettings = () => {
   const handleLogoUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setSelectedFile(file); // Backend ke liye image store karna
+      setSelectedFile(file); 
       const reader = new FileReader();
       reader.onload = () => {
-        setUploadedImage(reader.result); // Frontend preview ke liye
+        setUploadedImage(reader.result); 
       };
       reader.readAsDataURL(file);
     }
@@ -80,19 +80,18 @@ const AdSettings = () => {
         setUserData(res.data);
         setEditUserData(res.data);
       } catch (error) {
-        console.log(error);
-      }
+              }
     };
     GetUserData();
   }, []);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setEditUserData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
+  // const handleChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setEditUserData((prevData) => ({
+  //     ...prevData,
+  //     [name]: value,
+  //   }));
+  // };
 
   const handlePasswordChange = (e) => {
     setEditPasswordData({
@@ -105,9 +104,6 @@ const AdSettings = () => {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append("FirstName", editUserData.FirstName);
-    formData.append("LastName", editUserData.LastName);
-    formData.append("email", editUserData.email);
 
     // Image ko sirf tab append karein jab user ne naya image select kiya ho
     if (selectedFile) {
@@ -120,12 +116,14 @@ const AdSettings = () => {
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
-
+        if (res.data.imageUrl) {
+              sessionStorage.setItem("image", res.data.imageUrl);
+    window.dispatchEvent(new Event("profileUpdated"));
+  }
       alert(res.data.message);
-      window.location.reload();
+      navigate("/admin/dashboard");
     } catch (err) {
-      console.error("Error:", err);
-    }
+          }
   };
 
   const handlePasswordSubmit = async (e) => {
@@ -154,8 +152,7 @@ const AdSettings = () => {
 
       alert(response.data.msg);
       setEditPasswordData({ currentPass: "", newPass: "", confirmPass: "" });
-      console.log(setEditPasswordData);
-    } catch (error) {
+          } catch (error) {
       alert("Error updating password: ", error);
     }
   };
@@ -234,40 +231,6 @@ const AdSettings = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="entryGroup col-md-6">
-                    <label htmlFor="firstName">First name</label>
-                    <input
-                      type="text"
-                      id="firstName"
-                      name="FirstName"
-                      placeholder="First Name"
-                      value={editUserData.FirstName}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div className="entryGroup col-md-6">
-                    <label htmlFor="lastName">Last name</label>
-                    <input
-                      type="text"
-                      id="lastName"
-                      name="LastName"
-                      placeholder="Last Name"
-                      value={editUserData.LastName}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div className="entryGroup col-md-6">
-                    <label htmlFor="email">Email Address</label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      placeholder="email@test.com"
-                      value={editUserData.email}
-                      onChange={handleChange}
-                    />
-                  </div>
-
                   <div className="entryGroup col-md-6">
                     <button className="civi-button" type="submit">
                       Save changes

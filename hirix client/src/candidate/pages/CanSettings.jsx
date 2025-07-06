@@ -94,8 +94,7 @@ const CanSettings = () => {
 
       alert(response.data.msg);
       setEditPasswordData({ currentPass: "", newPass: "", confirmPass: "" });
-      console.log(setEditPasswordData);
-    } catch (error) {
+          } catch (error) {
       alert("Error updating password: ", error);
     }
   };

@@ -10,6 +10,7 @@ const AdLogin = ({ ...props }) => {
   const [error, setError] = useState(""); // Define error state
   const [loading, setLoading] = useState(false); // Define loading state
   const [showPassword, setShowPassword] = useState(false);
+
   const [showForgotPassword, setShowForgotPassword] = useState(false); // To toggle forgot password view
   const [resetEmail, setResetEmail] = useState(""); // Email for reset
   const [resetError, setResetError] = useState(""); // Error for reset email
@@ -27,11 +28,10 @@ const AdLogin = ({ ...props }) => {
         "http://localhost:9000/admin-login",
         payload
       );
-      console.log("API Response:", res.data.admin);
-      if (res.data.loginStatus) {
+            if (res.data.loginStatus) {
         sessionStorage.setItem("id", res.data.admin.id);
-        sessionStorage.setItem("FirstName", res.data.admin.FirstName);
-        sessionStorage.setItem("AdminImage", res.data.admin.image);
+        sessionStorage.setItem("name", res.data.admin.name);
+        sessionStorage.setItem("image", res.data.admin.image);
         // sessionStorage.setItem("token", res.data.token);
         sessionStorage.setItem("isLoggedIn", res.data.loginStatus);
         navigate("/admin/dashboard");
@@ -41,8 +41,7 @@ const AdLogin = ({ ...props }) => {
       }
     } catch (error) {
       setError(error.message); // Show error message
-      console.error("Error:", error.message);
-    } finally {
+          } finally {
       setLoading(false);
     }
   };
@@ -169,7 +168,7 @@ const AdLogin = ({ ...props }) => {
                       Password
                     </label>
                     <input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       id="ip_password"
                       className="form-control input-field valid"
                       name="password"
@@ -182,6 +181,7 @@ const AdLogin = ({ ...props }) => {
                     <span
                       toggle="#ip_password"
                       className="field-icon civi-toggle-password"
+                       onClick={() => setShowPassword(!showPassword)}
                     >
                       <FaRegEye className="mb-3" />
                     </span>
@@ -248,7 +248,7 @@ const AdLogin = ({ ...props }) => {
                       Password
                     </label>
                     <input
-                      type="password"
+                     type={showPassword ? "text" : "password"}
                       className="form-control input-field valid"
                       name="password"
                       autoComplete="on"
@@ -260,6 +260,7 @@ const AdLogin = ({ ...props }) => {
                     <span
                       toggle="#ip_password"
                       className="field-icon civi-toggle-password"
+                       onClick={() => setShowPassword(!showPassword)}
                     >
                       <FaRegEye className="mb-3" />
                     </span>

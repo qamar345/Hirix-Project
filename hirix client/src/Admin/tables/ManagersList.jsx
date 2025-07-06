@@ -38,8 +38,7 @@ const ManagersList = () => {
       setTotalPages(res.data.meta.totalPages);
       // setLoading(false);
     } catch (error) {
-      console.log(error);
-    }
+          }
   };
 
   const handlePageChange = (page) => {
@@ -57,8 +56,7 @@ const ManagersList = () => {
         window.location.reload();
       })
       .catch((err) => {
-        console.log(err);
-      });
+              });
   };
 
   const InActiveAccount = async (id) => {
@@ -69,8 +67,7 @@ const ManagersList = () => {
         window.location.reload();
       })
       .catch((err) => {
-        console.log(err);
-      });
+              });
   };
   // const applicantsData = [
   //   {
@@ -104,9 +101,9 @@ const ManagersList = () => {
         <tbody>
           {managersData.map((manager, index) => (
             <tr key={index}>
-              <td className="info-user">
+              <td className="info">
                 <div className="info-details">
-                  <h3>{manager.FirstName}</h3>
+                  <h5>{manager.FirstName}</h5>
                 </div>
               </td>
               <td className="status">

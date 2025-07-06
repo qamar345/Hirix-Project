@@ -19,6 +19,11 @@ const AdEmployee = () => {
     setIsCollapsed(!isCollapsed);
   };
 
+   const handleSortChange = (selectedOption) => {
+    const sort = selectedOption.value;
+    navigate(`/admin/employees?sort=${sort}`);
+  };
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim() !== "") {
@@ -80,10 +85,17 @@ const AdEmployee = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
+<button
+                    type="submit"
+                    className="btn-search d-flex"
+                    style={{ all: "unset", cursor: "pointer" }}
+                  >
+                    <IoIosSearch className="mx-3" />
+                  </button>
                 </form>
-                <NavLink className="btn-search d-flex" type="submit">
+                {/* <NavLink className="btn-search d-flex" type="submit">
                   <IoIosSearch className="mx-3" />
-                </NavLink>
+                </NavLink> */}
               </div>
             </div>
             <div className="d-flex align-items-center gap-3 selectFull">
@@ -95,6 +107,7 @@ const AdEmployee = () => {
                 defaultValue={jobAge.find(
                   (option) => option.value === "newest"
                 )}
+                 onChange={handleSortChange}
               />
             </div>
           </div>

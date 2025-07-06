@@ -60,8 +60,7 @@ const ListFilter = () => {
         const data = await res.json();
         setFilterOptions(data); // set this to state
       } catch (error) {
-        console.error("Failed to fetch filter options", error);
-      }
+              }
     };
 
     fetchFilterOptions();
@@ -112,7 +111,7 @@ const ListFilter = () => {
                             <label htmlFor={`jobtype_${index}`}>
                               {type.value === "full"
                                 ? "Full Time"
-                                : type.value === "intern"
+                                : type.value === "internship"
                                 ? "Internship"
                                 : "Part Time"}
                               <span className="count">({type.count})</span>
@@ -241,14 +240,15 @@ const ListFilter = () => {
                             type="checkbox"
                             className="custom-checkbox input-control"
                             name="jobs-experience_id[]"
-                            id={`jobs_experiences_${index}`}
+                            id={`experiences_${index}`}
                             value={type.value}
-                            checked={experiences === type.value}
+                           checked={experiences === String(type.value)}
+
                             onChange={(e) =>
                               handleSingleCheckboxChange(e, setExperiences)
                             }
                           />
-                          <label htmlFor={`jobs-experiences_${index}`}>
+                          <label htmlFor={`experiences_${index}`}>
                             {type.value === 2
                               ? "1 - 2 Years"
                               : type.value === 5
@@ -266,7 +266,7 @@ const ListFilter = () => {
               </div>
               <button
                 style={{
-                  backgroundColor: "#4CAF50",
+                  backgroundColor: "#4169E1",
                   color: "white",
                   padding: "10px 20px",
                   border: "none",

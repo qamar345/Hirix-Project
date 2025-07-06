@@ -58,8 +58,7 @@ const JobList = ({ onSelectJob }) => {
       setTotalPages(res.data.meta.totalPages);
       setCompanies(res.data.data.company);
     } catch (error) {
-      console.log(error);
-    }
+          }
   };
 
   const handlePageChange = (page) => {
@@ -96,7 +95,7 @@ const JobList = ({ onSelectJob }) => {
         return (
           <JobCard
             key={job.id}
-            onClick={() => onSelectJob({ ...job, companyDetail })}
+            onClick={() => onSelectJob({ ...job, companyDetail})}
             {...job}
           />
         );

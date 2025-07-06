@@ -68,6 +68,74 @@ const PostJob = (req, res) => {
     }
   });
 };
+// job save as a draft
+const draftJob = (req, res) => {
+  const { id } = req.params;
+  
+  const {
+    title,job_category,description,job_type,workplace_type,career_level,Experience,qualification,available_seats,gender,
+    currency, minimum_currency,maximum_currency,Rate,Email,Url,Phone,company_name,required_skills,expiry_date,
+    salary,ApplyType,province,city
+  } = req.body; 
+  let skillsString = Array.isArray(required_skills) ? required_skills.join(",") : required_skills;
+  const sql_getpost =
+    "SELECT user_account_id FROM companies WHERE user_account_id = ?";
+  conn_sql.query(sql_getpost, [id], (err, result) => {
+    if (err) {
+      return res.json(err);
+    } else {
+      console.log(id);
+      if (result.length > 0) {
+        const sqlpost =
+          "INSERT INTO `jobs` (`employee_id`,`title`,`job_category`, `description`, `job_type`,`workplace_type` ,`career_level`, `Experience`, `qualification`,`available_seats`, `gender`,`currency`, `minimum_currency`, `maximum_currency`,`Rate`,`Email`,`Url`,`Phone`,`company_name`,`required_skills`,`expiry_date`,`salary`,`ApplyType`,`province`,`city`,`status`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Draft')";
+          
+        conn_sql.query(
+          sqlpost,
+          [
+            id,
+            title,
+            job_category,
+            description,
+            job_type,
+            workplace_type,
+            career_level,
+            Experience,
+            qualification,
+            available_seats,
+            gender,
+            currency,
+            minimum_currency,
+            maximum_currency,
+            Rate,
+            Email,
+            Url,
+            Phone,
+            company_name,
+            skillsString,
+            expiry_date,
+            salary,
+            ApplyType,
+            province,
+            city,
+            // location,
+          ],
+          (err, result) => {
+            if (err) {
+              // return res.json(err);
+              console.log(err);
+              return res.json({ msg: "Something went wrong..." });
+            } else {
+              console.log(result);
+              return res.json({ msg: "Job saved as draft successfully", result });
+            }
+          }
+        );
+      } else {
+        return res.json({ msg: "Please! Add your company first" });
+      }
+    }
+  });
+};
 
 // Edit job Posts
 const editposts = (req, res) => {
@@ -203,7 +271,7 @@ const jobDel = (req, res) => {
 // Get specific Post
 const GetJob = (req, res) => {
   const {id} = req.params;
-  const sql_get = "SELECT * FROM `jobs` WHERE id = ?";
+  const sql_get = " SELECT j.*, c.name AS company_name FROM jobs j LEFT JOIN companies c ON j.company_name = c.id WHERE j.id = ?";
   conn_sql.query(sql_get, [id],(err, result) => {
     if (err) {
       return res.json(err);
@@ -297,5 +365,6 @@ module.exports = {
   Gethisposts,
   jobDel,
    GetJob,
-   SelectCompanies
+   SelectCompanies, 
+   draftJob
 };

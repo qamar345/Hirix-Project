@@ -17,8 +17,7 @@ const Editor = () => {
 
   // Handler to handle button clicked
   function handler() {
-    console.log(value);
-  }
+      }
 
   const imageHandler = useCallback(() => {
     // Create an input element of type 'file'

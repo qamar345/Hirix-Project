@@ -80,11 +80,9 @@ const AddManager = () => {
           navigate(`/admin/user-management`);
         })
         .catch((err) => {
-          console.log(err);
-        });
+                  });
     } catch (error) {
-      console.error("Error:", error.message);
-    } finally {
+          } finally {
       setIsLoading(false);
     }
   };

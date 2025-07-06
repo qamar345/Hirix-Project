@@ -27,15 +27,13 @@ const EmpDashboard = () => {
   useEffect(() => {
     const GetData = async () => {
       if (!id) {
-        console.error("User ID not found in session storage");
-        return;
+                return;
       }
       try {
         const res = await axios.get(`http://localhost:9000/DashEmpData/${id}`);
         setData(res.data.data);
       } catch (err) {
-        console.error("Error fetching data:", err);
-      }
+              }
     };
 
     GetData();
@@ -47,11 +45,9 @@ const EmpDashboard = () => {
         const res = await axios.get(
           `http://localhost:9000/dashDataEmployer/${id}`
         );
-        console.log("Backend Response:", res.data);
-        setColData(res.data.data || []);
+                setColData(res.data.data || []);
       } catch (err) {
-        console.error("Error fetching data:", err);
-      }
+              }
     };
 
     Data();
@@ -62,28 +58,30 @@ const EmpDashboard = () => {
     { value: 30, label: "Last 30 Days" },
   ];
 
-  const groupedJobs = ColData.reduce((acc, item) => {
-  let job = acc.find((j) => j.job_name === item.job_name);
-  
-  if (!job) {
-    job = {
-      job_name: item.job_name,
-      total_applicants: item.total_applicants,
-      applicants: [],
-    };
-    acc.push(job);
-  }
+  const jobMap = new Map();
 
-  // Add applicant details (limit 3 applicants per job)
-  if (job.applicants.length < 3) {
-    job.applicants.push({
-      applicant_name: item.applicant_name,
-      applied_date: item.applied_date,
-    });
-  }
+  ColData.forEach((item) => {
+    const key = item.job_title;
+    if (!jobMap.has(key)) {
+      jobMap.set(key, {
+        job_title: key,
+        total_applicants: item.total_applicants,
+        status: item.status,
+        applicants: [],
+      });
+    }
 
-  return acc;
-}, []);
+    const job = jobMap.get(key);
+    if (job.applicants.length < 3) {
+      job.applicants.push({
+        first_name: item.first_name,
+        last_name: item.last_name,
+        applied_date: item.applied_date,
+      });
+    }
+  });
+
+  const groupedJobs = Array.from(jobMap.values());
 
   return (
     <>
@@ -218,7 +216,8 @@ const EmpDashboard = () => {
 
                   <div className="applicants-inner">
                     {groupedJobs?.map((job, index) => {
-                      // Ensure applicants is always an array
+                      if (job.status !== "Applied") return null;
+
                       const applicantsArray = Array.isArray(job.applicants)
                         ? job.applicants
                         : [];
@@ -226,7 +225,7 @@ const EmpDashboard = () => {
                       return (
                         <div key={index}>
                           <div className="applicants-heading">
-                            <h3>{job.job_name}</h3>
+                            <h3>{job.job_title}</h3>
                             <span>{job.total_applicants}</span>
                           </div>
                           {applicantsArray.slice(0, 3).map((applicant, i) => (
@@ -235,7 +234,9 @@ const EmpDashboard = () => {
                                 <CiCamera />
                               </div>
                               <div>
-                                <h6>{applicant.applicant_name}</h6>
+                                <h6>
+                                  {applicant.first_name} {applicant.last_name}
+                                </h6>
                                 <p>
                                   Applied date:{" "}
                                   {new Date(

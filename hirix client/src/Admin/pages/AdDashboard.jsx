@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { edit, applicant, text, candidate } from "../assets/icons/index.js";
+
 import { CiCamera } from "react-icons/ci";
 import { NavLink, useNavigate } from "react-router-dom";
 import Select from "react-select";
@@ -11,7 +12,7 @@ const EmpDashboard = () => {
   const [selectedDays, setSelectedDays] = useState();
   const navigate = useNavigate();
   const [data, setData] = useState([
-    { src: edit, num: 0, label: "total jobs", color: "#b3e5fb" },
+    { src: edit, num: 0, label: "Total jobs", color: "#b3e5fb" },
     {
       src: applicant,
       num: 0,
@@ -30,33 +31,47 @@ const EmpDashboard = () => {
     if (!check) navigate("/admin-login");
   });
 
-  useEffect(() => {
-    const GetUsers = async () => {
-      await axios
-        .get("http://localhost:9000/DashboardData")
-        .then((res) => {
-          setData(res.data);
-        })
-        .then((fetchedData) => {
-          // fetchedData format example: { totalJobs: 47, candidates: 71, Employees: 41, totalCompanies: 7 }
-          const updatedData = data.map((item) => {
-            let num = 0;
-            if (item.label === "total jobs") num = fetchedData.totalJobs;
-            if (item.label === "candidates") num = fetchedData.candidates;
-            if (item.label === "Employees") num = fetchedData.Employees;
-            if (item.label === "total companies")
-              num = fetchedData.totalCompanies;
-            return { ...item, num };
-          });
-          setData(updatedData);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    };
+ useEffect(() => {
+  const GetUsers = async () => {
+    try {
+      const res = await axios.get("http://localhost:9000/DashboardData");
+      const fetchedData = res.data;
 
-    GetUsers();
-  }, []);
+      const updatedData = [
+        {
+          src: edit,
+          label: "Total jobs",
+          color: "#b3e5fb",
+          num: fetchedData.find((item) => item.label === "Total jobs")?.num || 0,
+        },
+        {
+          src: applicant,
+          label: "Candidates",
+          color: "#cabffd",
+          num: fetchedData.find((item) => item.label.toLowerCase() === "candidates")?.num || 0,
+        },
+        {
+          src: text,
+          label: "Employees",
+          color: "#febc9c",
+          num: fetchedData.find((item) => item.label === "Employees")?.num || 0,
+        },
+        {
+          src: candidate,
+          label: "Total companies",
+          color: "#b7e4cb",
+          num: fetchedData.find((item) => item.label === "Total companies")?.num || 0,
+        },
+      ];
+
+      setData(updatedData);
+    } catch (err) {
+          }
+  };
+
+  GetUsers();
+}, []);
+
   const days = [
     { value: 7, label: "Last 7 Days" },
     { value: 15, label: "Last 15 Days" },
@@ -85,7 +100,7 @@ const EmpDashboard = () => {
                     className="entryImg"
                     style={{ background: `${item.color}` }}
                   >
-                    <img src={item.src} />
+                    <img src={item.src}></img>
                   </div>
                 </div>
               </li>
@@ -124,7 +139,7 @@ const EmpDashboard = () => {
                         styles={customStyles}
                         className="border p-1 rounded-2 text-nowrap mb-2 selectFull"
                         defaultValue={days.find(
-                          (option) => option.value === "7"
+                          (option) => option.value === 7
                         )}
                       />
                     </div>

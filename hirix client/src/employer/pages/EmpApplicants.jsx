@@ -76,15 +76,13 @@ const EmpApplicants = () => {
               />
 
               <div className="action-search selectFull">
-              <form onSubmit={handleSearchSubmit}>
                 <input
                   type="text"
                   placeholder="Find by jobs"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                 </form>
-                <NavLink className="btn-search d-flex" type="submit">
+                <NavLink className="btn-search d-flex" onClick={handleSearchSubmit}>
                   <IoIosSearch className="mx-3" />
                 </NavLink>
                

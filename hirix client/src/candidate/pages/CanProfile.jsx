@@ -6,6 +6,9 @@ import ReactQuill from "react-quill";
 import { RiUploadLine } from "react-icons/ri";
 import { IoCloseSharp } from "react-icons/io5";
 import "react-quill/dist/quill.snow.css";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
 import {
   FaTimes,
   FaChevronUp,
@@ -22,6 +25,8 @@ import axios from "axios";
 const CanProfile = () => {
   const navigate = useNavigate();
   const id = sessionStorage.getItem("id");
+  const [isPresent, setIsPresent] = useState(false);
+
   const check = sessionStorage.getItem("isLoggedIn");
   useEffect(() => {
     if (!check) navigate("/");
@@ -37,7 +42,7 @@ const CanProfile = () => {
   const [currentPosition, setcurrentPosition] = useState("");
   const [categories, setcategories] = useState("");
   const [des, setdes] = useState("");
-  const [dop, setdop] = useState("");
+  const [dop, setdop] = useState(null);
   const [age, setage] = useState("");
   const [GenderIs, setGenderIs] = useState("");
   const [languages, setlanguages] = useState("");
@@ -51,20 +56,20 @@ const CanProfile = () => {
   const [linkedin, setlinkedIn] = useState("");
   const [title, setTitle] = useState("");
   const [EduLevel, setEduLevel] = useState("");
-  const [EduFrom, setEduFrom] = useState("");
-  const [EduTo, setEduTo] = useState("");
+  const [EduFrom, setEduFrom] = useState(null);
+  const [EduTo, setEduTo] = useState(null);
   const [EduDes, setEduDes] = useState("");
   const [jobtitle, setjobTitle] = useState("");
   const [ExpCompany, setExpCompany] = useState("");
-  const [ExpFrom, setExpFrom] = useState("");
-  const [ExpTo, setExpTo] = useState("");
+  const [ExpFrom, setExpFrom] = useState(null);
+  const [ExpTo, setExpTo] = useState(null);
   const [ExpDes, setExpDes] = useState("");
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [ProjectTitle, setProjectTitle] = useState("");
   const [link, setLink] = useState("");
   const [ProjectDes, setProjectDes] = useState("");
   const [AwardTitle, setAwardTitle] = useState("");
-  const [dateAwarded, setdateAwarded] = useState("");
+  const [dateAwarded, setdateAwarded] = useState(null);
   const [AwardDes, setAwardDes] = useState("");
   const [percentage, setPercentage] = useState(0);
   const [checkStatus, setCheckStatus] = useState({
@@ -116,6 +121,45 @@ const CanProfile = () => {
   const handleCancelUpload = () => {
     setUploadedImage(null);
   };
+  // useEffect(() => {
+  //   const fetchUserData = async () => {
+  //     const res = await fetch(""); // 🔁 Your actual API
+  //     const data = await res.json();
+
+  //     setfirstName(data.firstName);
+  //     setLastName(data.lastName);
+  //     setemail(data.email);
+  //     setphone(data.phone);
+  //   };
+
+  //   fetchUserData();
+  // }, []);
+  useEffect(() => {
+    axios
+      .get(`http://localhost:9000/getProfile/${id}`)
+      .then((res) => {
+        const data = res.data;
+        setfirstName(data.first_name);
+        setLastName(data.last_name);
+        setemail(data.email);
+        setphone(data.phone);
+        setQualification(data.qualification);
+        setcurrentPosition(data.CurrentPosition);
+        setcategories(data.Category);
+        setdes(data.Description);
+        setdop(data.DOP);
+        setage(data.Age);
+        setGenderIs(data.Gender);
+        setlanguages(data.Language);
+        setExperience(data.Experience);
+        setsalary(data.offer_salary);
+        setsalaryType(data.Salary_type);
+        setCurrency(data.Currency);
+        setProvince(data.province);
+        setCity(data.location);
+        setlinkedIn(data.LinkedIn);
+      })
+      .catch((err) =>   }, []);
   const submit = async (e) => {
     e.preventDefault();
 
@@ -129,8 +173,8 @@ const CanProfile = () => {
     formData.append("CurrentPosition", currentPosition?.trim());
     formData.append("Category", categories?.trim());
     formData.append("Description", des?.trim());
-    formData.append("DOP", dop?.trim());
-    formData.append("Age", age?.trim());
+    formData.append("DOP", dop);
+    formData.append("Age", age);
     formData.append("Gender", GenderIs?.trim());
     formData.append("Language", languages?.trim());
     formData.append("Experience", Experience?.trim());
@@ -154,25 +198,39 @@ const CanProfile = () => {
           },
         }
       );
+       if (res.data.image) {
+    sessionStorage.setItem("image", res.data.image);
+    window.dispatchEvent(new Event("profileUpdated"));
+  }
+
+  if (res.data.firstName) {
+  sessionStorage.setItem("first_name", res.data.firstName);
+}
       alert(res.data.msg);
-      navigate(`/candidate/dashboard`);
+     window.location.reload();
     } catch (error) {
-      console.error("Error:", error);
-    }
+          }
   };
 
   const EduSubmit = async (e) => {
     e.preventDefault();
-
+ if (!EduFrom) {
+    alert("Please select the 'From' date. It is required.");
+    return; // Stop form submission
+  }
     const formData = new FormData();
 
     formData.append("Title", title?.trim());
     formData.append("Level", EduLevel?.trim());
-    formData.append("From", EduFrom?.trim());
-    formData.append("To", EduTo?.trim());
+    formData.append("From", EduFrom);
+    if (isPresent) {
+  formData.append("To", "Present");
+} else if (EduTo) {
+  formData.append("To", EduTo);
+}
     formData.append("Description", EduDes?.trim());
-    console.log(formData);
-    try {
+
+        try {
       const res = await axios.post(
         `http://localhost:9000/AddEducation/${id}`,
         formData,
@@ -183,20 +241,24 @@ const CanProfile = () => {
         }
       );
       alert(res.data.msg);
-      navigate(`/candidate/dashboard`);
+     window.location.reload();
     } catch (error) {
-      console.error("Error:", error);
-    }
+          }
   };
 
   const ExperienceSumit = async (e) => {
     e.preventDefault();
 
+     if (!ExpFrom) {
+    alert("Please select the 'From' date. It is required.");
+    return; // Stop form submission
+  }
+
     const payload = {
       Title: jobtitle?.trim(),
       Company: ExpCompany?.trim(),
-      From: ExpFrom?.trim(),
-      To: ExpTo?.trim(),
+      From: ExpFrom,
+      To: isPresent ? "Present" : ExpTo || "",
       Description: ExpDes?.trim(),
     };
 
@@ -211,10 +273,9 @@ const CanProfile = () => {
         }
       );
       alert(res.data.msg);
-      navigate(`/candidate/dashboard`);
+     window.location.reload();
     } catch (error) {
-      console.error("Error:", error);
-    }
+          }
   };
 
   const skillsSubmit = async (e) => {
@@ -235,10 +296,9 @@ const CanProfile = () => {
         }
       );
       alert(res.data.msg);
-      navigate(`/candidate/dashboard`);
+      window.location.reload();
     } catch (error) {
-      console.error("Error:", error);
-    }
+          }
   };
 
   const ProjectSubmit = async (e) => {
@@ -261,10 +321,9 @@ const CanProfile = () => {
         }
       );
       alert(res.data.msg);
-      navigate(`/candidate/dashboard`);
+     window.location.reload();
     } catch (error) {
-      console.error("Error:", error);
-    }
+          }
   };
 
   const AwardSubmit = async (e) => {
@@ -272,7 +331,7 @@ const CanProfile = () => {
 
     const payload = {
       Title: AwardTitle?.trim(),
-      date_awarded: dateAwarded?.trim(),
+      date_awarded: dateAwarded,
       Description: AwardDes?.trim(),
     };
 
@@ -287,10 +346,9 @@ const CanProfile = () => {
         }
       );
       alert(res.data.msg);
-      navigate(`/candidate/dashboard`);
+     window.location.reload();
     } catch (error) {
-      console.error("Error:", error);
-    }
+          }
   };
 
   useEffect(() => {
@@ -310,9 +368,6 @@ const CanProfile = () => {
           projects: projects,
           awards: awards,
         };
-
-        console.log(newStatus)
-
         setCheckStatus(newStatus);
 
         // Calculate percentage based on how many sections have data
@@ -325,54 +380,38 @@ const CanProfile = () => {
             : "0.0";
 
         setPercentage(newPercentage);
-        console.log(completedSections);
+        sessionStorage.setItem("Percent", newPercentage);
+         window.dispatchEvent(new Event("percentUpdated"));
       } catch (error) {
-        console.error("Error fetching profile data", error);
-      }
+              }
     };
 
     fetchProfileData();
   }, [id]);
 
-  // const toggleCheck = (key) => {
-  //   setCheckStatus((prevStatus) => {
-  //     const updatedStatus = {
-  //       ...prevStatus,
-  //       [key]: !prevStatus[key],
-  //     };
-
-  //     // Debugging: Log updated status
-  //     console.log("Updated Status:", updatedStatus);
-
-  //     // Recalculate percentage after updating checkStatus
-  //     const total = Object.keys(updatedStatus).length;
-  //     const checked = Object.values(updatedStatus).filter((val) => val).length;
-
-  //     // Debugging: Log total and checked counts
-  //     console.log("Total sections:", total);
-  //     console.log("Checked sections:", checked);
-
-  //     const newPercentage = Math.round((checked / total) * 100);
-  //     console.log("New Percentage:", newPercentage);  // Log calculated percentage
-
-  //     setPercentage(newPercentage);
-
-  //     return updatedStatus;
-  //   });
-  // };
-
   const cats = [
-    { value: "analytics", label: "Analytics" },
-    { value: "customerService", label: "Customer Service" },
-    { value: "designCreative", label: "Design & Creative" },
-    { value: "developmentIT", label: "Development & IT" },
-  ];
-  const canAge = [
-    { value: "18_25", label: "18 - 25" },
-    { value: "25_30", label: "25 - 30" },
-    { value: "30_35", label: "30 - 35" },
-    { value: "35_40", label: "35 - 40" },
-    { value: "40+", label: "40+" },
+    { value: "Healthcare", label: "Healthcare" },
+    { value: "Education", label: "Education" },
+    { value: "Engineering", label: "Engineering" },
+    { value: "IT & Software", label: "IT & Software" },
+    { value: "Finance & Accounting", label: "Finance & Accounting" },
+    { value: "Marketing", label: "Marketing" },
+    { value: "Sales & Retail", label: "Sales & Retail" },
+    { value: "Admin & Office", label: "Admin & Office" },
+    { value: "Legal", label: "Legal" },
+    { value: "Media & Design", label: "Media & Design" },
+    { value: "Construction", label: "Construction" },
+    { value: "Transport & Logistics", label: "Transport & Logistics" },
+    { value: "Freelance / Remote", label: "Freelance / Remote" },
+    { value: "Hospitality", label: "Hospitality" },
+    { value: "Beauty & Personal Care", label: "Beauty & Personal Care" },
+    { value: "Agriculture", label: "Agriculture" },
+    { value: "Security Services", label: "Security Services" },
+    {
+      value: "Production / Manufacturing",
+      label: "Production / Manufacturing",
+    },
+    { value: "Other", label: "Other" },
   ];
   const gender = [
     { value: "female", label: "Female" },
@@ -385,12 +424,27 @@ const CanProfile = () => {
     { value: "Punjabi", label: "Punjabi" },
   ];
   const qualification = [
-    { value: "associate", label: "Associate" },
-    { value: "bachelor", label: "Bachelor Degree" },
-    { value: "certificate", label: "Certificate" },
-    { value: "degree", label: "Degree" },
-    { value: "doctorate", label: "Doctorate Degree" },
-    { value: "master", label: "Master's Degree" },
+    { value: "Matric/Secondary School", label: "Matric / Secondary School" },
+    {
+      value: "Intermediate/Higher Secondary",
+      label: "Intermediate / Higher Secondary",
+    },
+    { value: "Diploma/Certification", label: "Diploma / Certification" },
+    { value: "Associate Degree", label: "Associate Degree" },
+    { value: "Bachelor’s Degree", label: "Bachelor’s Degree" },
+    { value: "Master’s Degree", label: "Master’s Degree" },
+    { value: "MPhil/Postgraduate", label: "MPhil / Postgraduate" },
+    { value: "PhD/Doctorate", label: "PhD / Doctorate" },
+    { value: "Medical Professional", label: "Medical Professional" },
+    { value: "Engineering Degree", label: "Engineering Degree" },
+    { value: "Religious Education", label: "Religious Education" },
+    {
+      value: "Technical/Vocational Training",
+      label: "Technical / Vocational Training",
+    },
+    { value: "No Formal Education", label: "No Formal Education" },
+    { value: "Currently Enrolled", label: "Currently Enrolled" },
+    { value: "Other", label: "Other" },
   ];
   const experience = [
     { value: "1_2", label: "1-2 Years" },
@@ -410,10 +464,10 @@ const CanProfile = () => {
     { value: "month", label: "Per Month" },
   ];
   const city = [
-    { value: "lhr", label: "Lahore" },
-    { value: "rwp", label: "Rawalpindi" },
+    { value: "Lahore", label: "Lahore" },
+    { value: "Rawalpindi", label: "Rawalpindi" },
     { value: "karachi", label: "Karachi" },
-    { value: "isb", label: "Islamabad" },
+    { value: "Islamabad", label: "Islamabad" },
   ];
   const province = [
     { value: "kpk", label: "Khyber Pakhtunkhwa" },
@@ -446,7 +500,20 @@ const CanProfile = () => {
     { id: "projects", label: "Projects" },
     { id: "awards", label: "Awards" },
   ];
-  console.log("listItems:", listItems);
+    useEffect(() => {
+    if (dop) {
+      const today = new Date();
+      const birthDate = new Date(dop);
+      let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        calculatedAge--;
+      }
+      setage(calculatedAge);
+    } else {
+      setage("");
+    }
+  }, [dop]);
   return (
     <div id="candidate-profile" className="dashboardWrapper addCompany">
       <div className="entry-my-page candidate-profile-dashboard">
@@ -610,7 +677,7 @@ const CanProfile = () => {
                       <label htmlFor="candidate_phone">Phone number</label>
 
                       <input
-                      type="number"
+                        type="number"
                         className="candidate-phone"
                         value={phone}
                         onChange={(e) => setphone(e.target.value)}
@@ -657,28 +724,28 @@ const CanProfile = () => {
                     </div>
                     <div className="entryGroup col-md-6">
                       <label htmlFor="candidate_dob">Date of Birth</label>
-                      <input
-                        className="point-mark datepicker point-active hasDatepicker"
-                        type="text"
-                        placeholder="1998-01-01"
+                      <DatePicker
+                        selected={dop}
+                        onChange={(date) => setdop(date)}
+                        className="point-mark datepicker point-active"
+                        placeholderText="1998-01-01"
+                        dateFormat="yyyy-MM-dd"
                         id="candidate_dob"
                         name="candidate_dob"
-                        value={dop}
-                        onChange={(e) => setdop(e.target.value)}
+                        maxDate={new Date()} // restrict to today and past
+                        showYearDropdown
+                        scrollableYearDropdown
+                        yearDropdownItemNumber={100} // show last 100 years for DOB
                       />
                     </div>
                     <div className="entryGroup col-md-6">
                       <label htmlFor="candidate_age">Age</label>
-                      <Select
-                        options={canAge}
-                        styles={customStyles}
-                        className="border p-1 rounded-2"
-                        name="age"
-                        id="age"
-                        value={canAge.find((option) => option.value === age)}
-                        onChange={(selectedOption) =>
-                          setage(selectedOption.value)
-                        }
+                      <input
+                        type="text"
+                        value={age}
+                        readOnly
+                        className="form-control"
+                        placeholder="Your age will appear here"
                       />
                     </div>
                     <div className="entryGroup col-md-6">
@@ -808,7 +875,9 @@ const CanProfile = () => {
                         value={province.find(
                           (option) => option.value === Province
                         )}
-                        onChange={setProvince}
+                        onChange={(selectedOption) =>
+                          setProvince(selectedOption.value)
+                        }
                       />
                     </div>
 
@@ -821,7 +890,9 @@ const CanProfile = () => {
                         name="city"
                         id="city"
                         value={city.find((option) => option.value === City)}
-                        onChange={setCity}
+                        onChange={(selectedOption) =>
+                          setCity(selectedOption.value)
+                        }
                       />
                     </div>
                   </div>
@@ -910,38 +981,43 @@ const CanProfile = () => {
                           className="point-mark point-active"
                         />
                       </div>
-                      {/* <div className="entryGroup col-md-12">
-                          <input
-                            type="checkbox"
-                            className="custom-checkbox input-control point-mark point-active"
-                            name="candidate_education_check[]"
-                            defaultValue="present"
-                          />
-                          <label className="label-present ms-3">
-                            Choose at the present time
-                          </label>
-                        </div> */}
-                      <div className="entryGroup col-md-6">
-                        <label>From</label>
+                      <div className="entryGroup col-md-12">
                         <input
-                          type="text"
-                          className="datepicker point-mark point-active hasDatepicker"
-                          placeholder="Starting Date"
-                          name="EduFrom"
-                          value={EduFrom}
-                          onChange={(e) => setEduFrom(e.target.value)}
+                          type="checkbox"
+                          className="custom-checkbox input-control point-mark point-active"
+                          name="candidate_education_check[]"
+                          defaultValue="present"
+                          checked={isPresent}
+                          onChange={() => setIsPresent(!isPresent)}
+                        />
+                        <label className="label-present ms-3">
+                          Choose at the present time
+                        </label>
+                      </div>
+                      <div className="entryGroup col-md-6">
+                        <label>From <span style={{ color: "red" }}>*</span></label>
+                        <br></br>
+                        <DatePicker
+                          selected={EduFrom}
+                          onChange={(date) => setEduFrom(date)}
+                          dateFormat="yyyy-MM-dd"
+                          className="datepicker point-mark point-active"
+                          placeholderText="Starting Date"
                           id="fromId"
+                          maxDate={new Date()} // 👈 Prevents selection of future dates
+                          showYearDropdown
+                          scrollableYearDropdown
                         />
                       </div>
                       <div className="entryGroup col-md-6 present-to">
                         <label>To</label>
-                        <input
-                          type="text"
-                          className="datepicker point-mark point-active hasDatepicker"
-                          placeholder="Ending Date"
-                          name="EduTo"
-                          value={EduTo}
-                          onChange={(e) => setEduTo(e.target.value)}
+                        <br></br>
+                        <DatePicker
+                          selected={EduTo}
+                          onChange={(date) => setEduTo(date)}
+                          dateFormat="yyyy-MM-dd"
+                          className="datepicker point-mark point-active"
+                          placeholderText="Ending Date"
                           id="toId"
                         />
                       </div>
@@ -1047,33 +1123,41 @@ const CanProfile = () => {
                           className="custom-checkbox input-control point-mark point-active"
                           name="candidate_experience_check"
                           defaultValue="present"
+                           checked={isPresent}
+                          onChange={() => setIsPresent(!isPresent)}
                         />
                         <label className="label-present ms-3">
                           Choose at the present time
                         </label>
                       </div>
                       <div className="entryGroup col-md-6">
-                        <label>From</label>
-                        <input
-                          type="text"
-                          className="datepicker point-mark point-active hasDatepicker"
-                          placeholder="Start Date"
-                          name="candidate_experience_from"
-                          value={ExpFrom}
-                          onChange={(e) => setExpFrom(e.target.value)}
+                        <label>From <span style={{ color: "red" }}>*</span></label>
+                        <br></br>
+                        <DatePicker
+                          selected={ExpFrom}
+                          onChange={(date) => setExpFrom(date)}
+                          dateFormat="yyyy-MM-dd"
+                          className="datepicker point-mark point-active"
+                          placeholderText="Start Date"
                           id="fromId"
+                          maxDate={new Date()}
+                          showYearDropdown
+                          scrollableYearDropdown
                         />
                       </div>
                       <div className="entryGroup col-md-6 present-to">
                         <label>To</label>
-                        <input
-                          type="text"
-                          className="datepicker point-mark point-active hasDatepicker"
-                          placeholder="End Date"
-                          name="candidate_experience_to"
-                          value={ExpTo}
-                          onChange={(e) => setExpTo(e.target.value)}
-                          id="toId"
+                        <br></br>
+                        <DatePicker
+                          selected={ExpTo}
+                          onChange={(date) => setExpTo(date)}
+                          dateFormat="yyyy-MM-dd"
+                          className="datepicker point-mark point-active"
+                          placeholderText="End Date"
+                          id="fromId"
+                          maxDate={new Date()}
+                          showYearDropdown
+                          scrollableYearDropdown
                         />
                       </div>
                       <div className="entryGroup col-md-12">
@@ -1282,14 +1366,16 @@ const CanProfile = () => {
                       </div>
                       <div className="entryGroup col-md-6">
                         <label>Date awarded</label>
-                        <input
-                          type="text"
-                          className="datepicker point-mark point-active hasDatepicker"
-                          placeholder="Award Date"
-                          name="candidate_award_date"
-                          value={dateAwarded}
-                          onChange={(e) => setdateAwarded(e.target.value)}
+                        <DatePicker
+                          selected={dateAwarded}
+                          onChange={(date) => setdateAwarded(date)}
+                          dateFormat="yyyy-MM-dd"
+                          className="datepicker point-mark point-active"
+                          placeholderText="Award Date"
                           id="awardDate"
+                          maxDate={new Date()}
+                          showYearDropdown
+                          scrollableYearDropdown
                         />
                       </div>
                       <div className="entryGroup col-md-12">

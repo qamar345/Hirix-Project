@@ -18,9 +18,9 @@ const EmpJobs = () => {
     setIsCollapsed(!isCollapsed);
   };
 
-  const handleSearchSubmit = (e) =>{
+  const handleSearchSubmit = (e) => {
     e.preventDefault();
-    if(searchQuery.trim()!== ""){
+    if (searchQuery.trim() !== "") {
       navigate(`/employer/jobs?search=${encodeURIComponent(searchQuery)}`);
       setSearchQuery("");
     }
@@ -42,7 +42,7 @@ const EmpJobs = () => {
 
   const handleFilterChange = (selectedOption) => {
     const filter = selectedOption.value;
-    navigate(`/employer/jobs?filter=${filter}`); 
+    navigate(`/employer/jobs?filter=${filter}`);
   };
 
   const handleSortChange = (selectedOption) => {
@@ -78,7 +78,6 @@ const EmpJobs = () => {
               />
 
               <div className="action-search selectFull">
-              <form onSubmit={handleSearchSubmit}>
                 <input
                   type="text"
                   // name="jobs_search"
@@ -86,12 +85,18 @@ const EmpJobs = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
-                </form>
-               
-                <NavLink type="submit" className="btn-search d-flex">
+                <button
+                  onClick={handleSearchSubmit}
+                  className="btn-search d-flex"
+                  style={{ all: "unset", cursor: "pointer" }}
+                >
+                  <IoIosSearch className="mx-3" />
+                </button>
+
+                {/* <NavLink type="submit" className="btn-search d-flex">
                   <IoIosSearch className="mx-3" />
                 </NavLink>
-                
+                 */}
               </div>
             </div>
             <div className="d-flex align-items-center gap-3 selectFull">
@@ -101,13 +106,14 @@ const EmpJobs = () => {
                 styles={customStyles}
                 className="border p-1 rounded-2 text-nowrap mb-2 selectFull"
                 defaultValue={jobAge.find(
-                  (option) => option.value === "newest")}
-                  onChange={handleSortChange}
+                  (option) => option.value === "newest"
+                )}
+                onChange={handleSortChange}
               />
             </div>
           </div>
           <div className=" d-grid">
-          <JobList/>
+            <JobList />
           </div>
           <div className="page-list">
             <Pagination />

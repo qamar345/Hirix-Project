@@ -27,15 +27,13 @@ const CanDashboard = () => {
     useEffect(() => {
       const GetData = async () => {
         if (!id) {
-          console.error("User ID not found in session storage");
-          return;
+                    return;
         }
         try {
           const res = await axios.get(`http://localhost:9000/DasboardJobseeker/${id}`);
           setData(res.data.data);
         } catch (err) {
-          console.error("Error fetching data:", err);
-        }
+                  }
       };
   
       GetData();
@@ -46,11 +44,9 @@ const CanDashboard = () => {
     //       const res = await axios.get(
     //         `http://localhost:9000//${id}`
     //       );
-    //       console.log("Backend Response:", res.data);
-    //       setColData(res.data.data || []);
+    //           //       setColData(res.data.data || []);
     //     } catch (err) {
-    //       console.error("Error fetching data:", err);
-    //     }
+    //           //     }
     //   };
   
     //   Data();

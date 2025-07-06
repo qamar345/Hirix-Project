@@ -2,6 +2,25 @@ const { conn_sql } = require("../../config/connection");
 
 const upload = require("../../middleware/upload");
 
+// Get Profile data
+const GetProfile = (req, res) => {
+  const { id } = req.params;
+  const getdata =
+    " SELECT ua.id, ua.first_name, ua.last_name, ua.email,ua.phone, ua.qualification, ua.location, ua.province, ud.CurrentPosition, ud.Category, ud.Description, ud.DOP, ud.Age, ud.LinkedIn, ud.Gender,ud.Language, ud.Experience,ud.offer_salary, ud.Salary_type, ud.Currency FROM user_accounts ua LEFT JOIN user_details ud ON ua.id = ud.user_id WHERE ua.id = ?";
+  conn_sql.query(getdata, [id], (error, results) => {
+    if (error) {
+      console.error("Error fetching profile:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    return res.status(200).json(results[0]);
+  });
+};
+
 // Add Profile basic info
 const ProfileBasicInfo = (req, res) => {
   const bodyData = { ...req.body };
@@ -62,37 +81,103 @@ const ProfileBasicInfo = (req, res) => {
           if (err) {
             return res.json({ msg: "Error", err });
           }
-          const sql_insertDetails = `
-              INSERT INTO user_details (user_id, CurrentPosition, Category, Description, DOP, Age, Gender, Language, Experience, offer_salary, Salary_type, Currency, LinkedIn)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `;
+          const sql_checkDetails =
+            "SELECT * FROM user_details WHERE user_id = ?";
 
-          conn_sql.query(
-            sql_insertDetails,
-            [
-              id,
-              CurrentPosition,
-              Category,
-              Description,
-              DOP,
-              Age,
-              Gender,
-              Language,
-              Experience,
-              offer_salary,
-              Salary_type,
-              Currency,
-              LinkedIn,
-            ],
-            (err, detailsResult) => {
-              if (err) {
-                console.log(err);
-                return res.json({ msg: "Error inserting user details", err });
-              }
-
-              return res.json({ msg: "Profile Publish", detailsResult });
+          conn_sql.query(sql_checkDetails, [id], (err, checkDetailsResult) => {
+            if (err) {
+              console.log(err);
+              return res.json({ msg: "Error checking user details", err });
             }
-          );
+
+            if (checkDetailsResult.length > 0) {
+              // ✅ UPDATE existing details
+              const sql_updateDetails = `
+      UPDATE user_details
+      SET 
+        CurrentPosition = ?, 
+        Category = ?, 
+        Description = ?, 
+        DOP = ?, 
+        Age = ?, 
+        Gender = ?, 
+        Language = ?, 
+        Experience = ?, 
+        offer_salary = ?, 
+        Salary_type = ?, 
+        Currency = ?, 
+        LinkedIn = ?
+      WHERE user_id = ?
+    `;
+
+              conn_sql.query(
+                sql_updateDetails,
+                [
+                  CurrentPosition,
+                  Category,
+                  Description,
+                  DOP,
+                  Age,
+                  Gender,
+                  Language,
+                  Experience,
+                  offer_salary,
+                  Salary_type,
+                  Currency,
+                  LinkedIn,
+                  id,
+                ],
+                (err, updateResult) => {
+                  if (err) {
+                    console.log(err);
+                    return res.json({
+                      msg: "Error updating user details",
+                      err,
+                    });
+                  }
+
+                  return res.json({ msg: "Profile Updated", image: imageUrl, firstName: first_name});
+
+                }
+              );
+            } else {
+              const sql_insertDetails = `
+      INSERT INTO user_details 
+      (user_id, CurrentPosition, Category, Description, DOP, Age, Gender, Language, Experience, offer_salary, Salary_type, Currency, LinkedIn)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+              conn_sql.query(
+                sql_insertDetails,
+                [
+                  id,
+                  CurrentPosition,
+                  Category,
+                  Description,
+                  DOP,
+                  Age,
+                  Gender,
+                  Language,
+                  Experience,
+                  offer_salary,
+                  Salary_type,
+                  Currency,
+                  LinkedIn,
+                ],
+                (err, insertResult) => {
+                  if (err) {
+                    console.log(err);
+                    return res.json({
+                      msg: "Error inserting user details",
+                      err,
+                    });
+                  }
+
+                  return res.json({ msg: "Profile Published", insertResult });
+                }
+              );
+            }
+          });
         }
       );
     } else {
@@ -215,9 +300,7 @@ const Project = (req, res) => {
       (err, detailsResult) => {
         if (err) {
           console.error("Insert error:", err);
-          return res
-            .status(500)
-            .json({ msg: "Failed to add project", err });
+          return res.status(500).json({ msg: "Failed to add project", err });
         }
 
         return res
@@ -257,9 +340,7 @@ const Award = (req, res) => {
       (err, detailsResult) => {
         if (err) {
           console.error("Insert error:", err);
-          return res
-            .status(500)
-            .json({ msg: "Failed to add award", err });
+          return res.status(500).json({ msg: "Failed to add award", err });
         }
 
         return res
@@ -288,13 +369,16 @@ const getUserProfileStatus = (req, res) => {
 
   const checkInfo = () => {
     return new Promise((resolve) => {
-      const query1 = "SELECT first_name, last_name, image, email, phone, qualification, province, location FROM user_accounts WHERE id = ?";
-      const query2 = "SELECT CurrentPosition, Category, Description, DOP, Age, Gender, Language, Experience, offer_salary, Salary_type, Currency, LinkedIn FROM user_details WHERE user_id = ?";
-  
+      const query1 =
+        "SELECT first_name, last_name, image, email, phone, qualification, province, location FROM user_accounts WHERE id = ?";
+      const query2 =
+        "SELECT CurrentPosition, Category, Description, DOP, Age, Gender, Language, Experience, offer_salary, Salary_type, Currency, LinkedIn FROM user_details WHERE user_id = ?";
+
       conn_sql.query(query1, [id], (err, result1) => {
         if (err) return resolve();
         const userInfo = result1[0];
-        const allInfoFieldsFilled = userInfo &&
+        const allInfoFieldsFilled =
+          userInfo &&
           userInfo.first_name &&
           userInfo.last_name &&
           userInfo.image &&
@@ -303,12 +387,13 @@ const getUserProfileStatus = (req, res) => {
           userInfo.qualification &&
           userInfo.province &&
           userInfo.location;
-  
+
         if (allInfoFieldsFilled) {
           conn_sql.query(query2, [id], (err, result2) => {
             if (err) return resolve();
             const userDetails = result2[0];
-            const allDetailsFieldsFilled = userDetails &&
+            const allDetailsFieldsFilled =
+              userDetails &&
               userDetails.CurrentPosition &&
               userDetails.Category &&
               userDetails.Description &&
@@ -321,7 +406,7 @@ const getUserProfileStatus = (req, res) => {
               userDetails.Salary_type &&
               userDetails.Currency &&
               userDetails.LinkedIn;
-  
+
             if (allDetailsFieldsFilled) {
               status.info = true;
               completed++;
@@ -334,7 +419,6 @@ const getUserProfileStatus = (req, res) => {
       });
     });
   };
-  
 
   const checkEducation = () => {
     return new Promise((resolve) => {
@@ -414,4 +498,12 @@ const getUserProfileStatus = (req, res) => {
   });
 };
 
-module.exports = { ProfileBasicInfo, Education , Experience, Project , Award, getUserProfileStatus};
+module.exports = {
+  GetProfile,
+  ProfileBasicInfo,
+  Education,
+  Experience,
+  Project,
+  Award,
+  getUserProfileStatus,
+};

@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { MdOutlineLocationOn } from "react-icons/md";
 import { FaRegHeart } from "react-icons/fa";
 import { urgent, featured } from "../assets/icons/index.js";
 import { Pagination } from "../index.js";
+
 const JobCard = ({
   id,
   images,
@@ -18,12 +19,14 @@ const JobCard = ({
   isSelected,
   isUrgent,
   onClick,
+  fromShare = false 
 }) => {
   const customClass = `${isFeatured ? "civi-jobs-featured" : ""} ${
     isSelected ? "active" : ""
   } ${isUrgent ? "civi-jobs-urgent" : ""}`;
   const navigate = useNavigate();
   const check = sessionStorage.getItem("isLoggedIn");
+  const [sharedHighlight, setSharedHighlight] = useState(false);
   const handleWishlist = async () => {
     if (!check) {
       alert("Please Login First!");
@@ -49,14 +52,29 @@ const JobCard = ({
       }
     }
   };
-
+ useEffect(() => {
+  if (fromShare) {
+    setSharedHighlight(true);
+    const timer = setTimeout(() => setSharedHighlight(false), 5000);
+    return () => clearTimeout(timer);
+  }
+}, [fromShare]);
   return (
-    <div className="content-jobs area-jobs area-archive column-1 ">
+    <div className="content-jobs area-jobs area-archive column-1" >
       <div
         id={id}
         className={`civi-jobs-item layout-list  ${customClass}`}
         onClick={onClick}
-        style={{ cursor: "pointer" }}
+        // style={{ cursor: "pointer" }}
+        style={
+    sharedHighlight
+      ? {
+          border: "2px solid #ff9800",
+          boxShadow: "0 0 15px rgba(255, 152, 0, 0.5)",
+          backgroundColor: "#fff7e6",
+          transition: "all 0.5s ease-in-out",
+        }
+      : {} }
       >
         <div className="jobs-archive-header">
           <div className="jobs-header-left">

@@ -105,10 +105,11 @@ const Getposts = (req, res) => {
       jobs.*, 
       (SELECT COUNT(*) FROM applicants WHERE applicants.job_id = jobs.id) AS applicant_count,
       user_accounts.username AS employer_username,
-      companies.images
+      companies.images,
+      companies.name AS company_name
     FROM jobs
     LEFT JOIN user_accounts ON jobs.employee_id = user_accounts.id
-    LEFT JOIN companies ON jobs.company_name = companies.name
+    LEFT JOIN companies ON jobs.company_name = companies.id
     ${whereClause}
     LIMIT ? OFFSET ?
   `;
@@ -123,7 +124,7 @@ const Getposts = (req, res) => {
       const sql_count = `
         SELECT COUNT(*) as count FROM jobs
         LEFT JOIN user_accounts ON jobs.employee_id = user_accounts.id
-        LEFT JOIN companies ON jobs.company_name = companies.name
+        LEFT JOIN companies ON jobs.company_name = companies.id
         ${whereClause}
       `;
       conn_sql.query(sql_count, values.slice(0, -2), (countErr, countData) => {
@@ -151,17 +152,28 @@ const Getposts = (req, res) => {
 };
 
 // getPosts by id
-const Getpostbyid = (req, res) => {
+const  Getpostbyid = (req, res) => {
   const { id } = req.params;
-  const sql_get = "SELECT * FROM `jobs` WHERE id=?";
-  conn_sql.query(sql_get, [id], (err, result) => {
-    if (err) {
-      return res.json(err);
-    } else {
-      return res.json(result);
-    }
+
+  const sql = `
+    SELECT 
+      jobs.*, 
+      companies.name AS company_name, 
+      companies.About AS company_description,
+      companies.images AS company_logo
+    FROM jobs 
+    LEFT JOIN companies ON jobs.company_name = companies.id
+    WHERE jobs.id = ?
+  `;
+
+  conn_sql.query(sql, [id], (err, results) => {
+    if (err) return res.status(500).json(err);
+    if (results.length === 0) return res.status(404).json({ msg: "Job not found" });
+
+    res.json(results[0]); // return a single job object with company details
   });
 };
+
 
 // get all jobs of applicant where he/she  applied to
 

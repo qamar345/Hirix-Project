@@ -1,34 +1,69 @@
 const { conn_sql } = require("../../config/connection");
-// const bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken')
 
 const upload = require("../../middleware/upload"); 
 
+// Admin account creation
+
+const AdminSetup = async () => {
+  const createAdminTable = `
+CREATE TABLE IF NOT EXISTS admin (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(50) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  role VARCHAR(20) NOT NULL,
+  name VARCHAR(50),
+  image VARCHAR(200)
+);`;
+
+  const hashedPassword = await bcrypt.hash("admin123", 10);
+  conn_sql.query(createAdminTable, (err) => {
+    if (err) throw err;
+    conn_sql.query(
+      "INSERT IGNORE INTO admin (email, password, role, image) VALUES (?, ?, 'admin', ?)",
+      ["nimraasad09@gmail.com", hashedPassword, '/uploads/1748974785956-slidepic4.png'],
+      (err) => {
+        if (err) throw err;
+        console.log("Admin user created (if not exists)");
+      }
+    );
+  });
+};
 
 //Admin login
 const Adminlogin = (req, res) => {
   const { email, password } = req.body;
-  const sqladminlogin =
-    "SELECT * FROM `admin-account` WHERE `email`= ? AND `password` = ?";
-  conn_sql.query(sqladminlogin, [email, password], (err, result) => {
+
+  const sqladminlogin = "SELECT * FROM `admin` WHERE `email`= ?";
+  conn_sql.query(sqladminlogin, [email], (err, result) => {
     if (err) throw err;
+
     if (result.length === 0) {
       return res.json({ userStatus: false, message: "Invalid email or password" });
     }
 
     const admin = result[0];
-    // console.log(admin)
-    // const isPasswordValid = bcrypt.compareSync(password, admin[0].password);
-    // if (!isPasswordValid) {
-    //   return res.json({ passwordStatus: false });
-    // }
+    const isPasswordValid = bcrypt.compareSync(password, admin.password);
+
+    if (!isPasswordValid) {
+      return res.json({ userStatus: false, message: "Invalid email or password" });
+    }
+
     const secretKey = process.env.SECRETKEY;
     const token = jwt.sign({ email: admin.email }, secretKey, {
       expiresIn: 86400,
     });
-    return res.json({ loginStatus: true, token, admin, message: "Login Successfully!"});
+
+    return res.json({
+      loginStatus: true,
+      token,
+      admin,
+      message: "Login Successfully!",
+    });
   });
 };
+
 // Middleware to verify token
 const secretKey = process.env.SECRETKEY;
 
@@ -36,20 +71,20 @@ const secretKey = process.env.SECRETKEY;
 const AdminProfile = (req, res) => {
   const bodyData = Object.assign({}, req.body);
     const { id } = req.params;
-  const { FirstName, LastName, email } = bodyData;
+  const { name, email } = bodyData;
 
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
   const sqladmin =
-    "UPDATE `admin-account` SET `FirstName`= ?, `LastName`= ?, `email`= ?, `image`= ? WHERE id=?";
+    "UPDATE `admin` SET `name`= ?, `email`= ?, `image`= ? WHERE id=?";
   conn_sql.query(
     sqladmin,
-    [FirstName, LastName, email, imageUrl, id],
+    [name, email, imageUrl, id],
     (err, result) => {
       if (err) {
         return res.json(err);
       } else {
-        return res.json({ message: "Profile updated...", result });
+        return res.json({ message: "Profile updated...", result, imageUrl });
       }
     }
   );
@@ -60,37 +95,44 @@ const AdminProfile = (req, res) => {
 const AdminChangePassword = (req, res) => {
   const { id } = req.params;
   const { currentPass, newPass } = req.body.editPasswordData;
-  const checkPasswordQuery = "SELECT password FROM `admin-account` WHERE id = ?";
-  
-  conn_sql.query(checkPasswordQuery, [id], (err, results) => {
+
+  const checkPasswordQuery = "SELECT password FROM `admin` WHERE id = ?";
+
+  conn_sql.query(checkPasswordQuery, [id], async (err, results) => {
     if (err) {
-      return res.json({ msg: "Database error",err });
+      return res.json({ msg: "Database error", err });
     }
-    
+
     if (results.length === 0) {
-      return res.json({msg: "Admin not found" });
+      return res.json({ msg: "Admin not found" });
     }
 
-    const storedPassword = results[0].password;
+    const storedHashedPassword = results[0].password;
 
-    if (storedPassword !== currentPass) {
+    const isMatch = await bcrypt.compare(currentPass, storedHashedPassword);
+    if (!isMatch) {
       return res.json({ msg: "Current password is incorrect" });
     }
-    const updatePasswordQuery = "UPDATE `admin-account` SET `password`= ? WHERE id=?";
-    conn_sql.query(updatePasswordQuery, [newPass, id], (updateErr, updateResult) => {
+
+    // Hash new password
+    const saltRounds = 10;
+    const hashedNewPass = await bcrypt.hash(newPass, saltRounds);
+
+    const updatePasswordQuery = "UPDATE `admin` SET `password` = ? WHERE id = ?";
+    conn_sql.query(updatePasswordQuery, [hashedNewPass, id], (updateErr, updateResult) => {
       if (updateErr) {
-        return res.json({ msg: "Failed to update password",updateErr });
+        return res.json({ msg: "Failed to update password", updateErr });
       }
-      return res.json({ msg: "Password updated successfully",updateResult });
+      return res.json({ msg: "Password updated successfully", updateResult });
     });
   });
-
 };
+
 
  
 const GetAdmin = (req, res) => {
   const {id} = req.params;
-  const sql_get = "SELECT * FROM `admin-account` WHERE id = ?";
+  const sql_get = "SELECT * FROM `admin` WHERE id = ?";
   conn_sql.query(sql_get, [id],(err, result) => {
     if (err) {
       return res.json(err);
@@ -100,4 +142,4 @@ const GetAdmin = (req, res) => {
   });
 };
 
-module.exports = { Adminlogin, AdminProfile , GetAdmin, AdminChangePassword};
+module.exports = { AdminSetup, Adminlogin, AdminProfile , GetAdmin, AdminChangePassword};

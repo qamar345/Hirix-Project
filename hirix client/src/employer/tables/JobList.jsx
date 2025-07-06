@@ -20,7 +20,7 @@ const CustomToggle = React.forwardRef(({ onClick }, ref) => (
   </span>
 ));
 function JobList() {
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
 
@@ -33,7 +33,7 @@ function JobList() {
   const queryParams = new URLSearchParams(location.search);
   const filter = queryParams.get("filter") || "";
   const searchQuery = queryParams.get("search") || "";
-  const sort = queryParams.get("sort") || "newest"; 
+  const sort = queryParams.get("sort") || "newest";
   const fetchJobs = async (page, search, statusFilter, sortOrder) => {
     try {
       const res = await axios.get(`http://localhost:9000/get-his-posts/${id}`, {
@@ -41,12 +41,10 @@ function JobList() {
       });
 
       setJobs(res.data.data);
-      console.log(res.data.data.id);
-      setCurrentPage(res.data.meta.page);
+            setCurrentPage(res.data.meta.page);
       setTotalPages(res.data.meta.totalPages);
     } catch (error) {
-      console.error("Error fetching jobs:", error);
-    }
+          }
   };
 
   useEffect(() => {
@@ -59,13 +57,17 @@ function JobList() {
       filteredData = jobs.filter((job) => job.status === filter);
     }
     if (sort === "newest") {
-      filteredData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      filteredData.sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
     } else if (sort === "oldest") {
-      filteredData.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      filteredData.sort(
+        (a, b) => new Date(a.created_at) - new Date(b.created_at)
+      );
     }
     setFilteredJobs(filteredData);
   }, [filter, sort, jobs]);
-  
+
   const StatusClosed = async (id) => {
     await axios
       .put(`http://localhost:9000/del-job-posts/${id}`)
@@ -74,8 +76,7 @@ function JobList() {
         window.location.reload();
       })
       .catch((err) => {
-        console.log(err);
-      });
+              });
   };
 
   const DeleteJob = async (id) => {
@@ -86,14 +87,13 @@ function JobList() {
         window.location.reload();
       })
       .catch((err) => {
-        console.log(err);
-      });
+              });
   };
 
   const EditJob = async (id) => {
     sessionStorage.setItem("editJobData", JSON.stringify(id));
     navigate("/employer/Edit_job");
-  }
+  };
 
   const StatusOpen = async (id) => {
     await axios
@@ -103,8 +103,7 @@ function JobList() {
         window.location.reload();
       })
       .catch((err) => {
-        console.log(err);
-      });
+              });
   };
 
   const StatusPause = async (id) => {
@@ -115,8 +114,7 @@ function JobList() {
         window.location.reload();
       })
       .catch((err) => {
-        console.log(err);
-      });
+              });
   };
 
   return (
@@ -136,14 +134,18 @@ function JobList() {
         <tbody>
           {filteredJobs.length > 0 ? (
             filteredJobs.map((job, index) => {
-              const postDate = new Date(job.created_at).toISOString().split("T")[0];
+              const postDate = new Date(job.created_at)
+                .toISOString()
+                .split("T")[0];
               const expiryDate = job.expiry_date
                 ? new Date(job.expiry_date).toISOString().split("T")[0]
                 : "No Expiry Date";
 
               // Determine Job Status
               const jobStatus =
-                job.expiry_date && new Date(job.expiry_date) < new Date()
+                job.expiry_date &&
+                new Date(new Date(job.expiry_date).setHours(0, 0, 0, 0)) <
+                  new Date(new Date().setHours(0, 0, 0, 0))
                   ? "Closed"
                   : job.status;
 
@@ -151,7 +153,7 @@ function JobList() {
                 <tr key={index}>
                   <td>
                     <h3 className="title-jobs-dashboard">
-                      <NavLink to="">
+                      <NavLink to={`/jobdetail/${job.id}`}>
                         <span className="icon">
                           <img
                             src={jobStatus === "Closed" ? lock : urgent}
@@ -202,166 +204,167 @@ function JobList() {
                             : "red",
                       }}
                     >
-                      {jobStatus === "Closed" ? "Expired" : expiryDate}
+                     {jobStatus === "Closed" ? "Expired" : new Date(job.expiry_date).toLocaleDateString()}
+
                     </span>
                   </td>
                   <td>
-                  <Dropdown>
-                          <Dropdown.Toggle as={CustomToggle} />
-                          <Dropdown.Menu>
-                            {job.status === "Pending" ? (
-                              <>
-                                <Dropdown.Item>
-                                  <button
-                                    className="btn btn-light"
-                                    onClick={() => StatusOpen(job.id)}
-                                     style={{
-                                      display: "block",
-                                      width: "100%",
-                                      fontSize: "1.5rem",
-                                    }} 
-                                  >
-                                    Open
-                                  </button>
-                                </Dropdown.Item>
-                                <Dropdown.Item>
-                                  <button
-                                    className="btn btn-light"
-                                    onClick={() => StatusPause(job.id)}
-                                    style={{
-                                      display: "block",
-                                      width: "100%",
-                                      fontSize: "1.5rem",
-                                    }}
-                                  >
-                                    Pause
-                                  </button>
-                                </Dropdown.Item>
-                                <Dropdown.Item>
-                                  <button
-                                    className="btn btn-light"
-                                    onClick={() => StatusClosed(job.status)}
-                                    style={{
-                                      display: "block",
-                                      width: "100%",
-                                      fontSize: "1.5rem",
-                                    }}
-                                  >
-                                    Closed
-                                  </button>
-                                </Dropdown.Item>
-                              </>
-                            ) : job.status === "Open" ? (
-                              <>
-                                <Dropdown.Item>
-                                  <button
-                                    className="btn btn-light"
-                                    onClick={() => StatusPause(job.id)}
-                                    style={{
-                                      display: "block",
-                                      width: "100%",
-                                      fontSize: "1.5rem",
-                                    }}
-                                  >
-                                    Pause
-                                  </button>
-                                </Dropdown.Item>
-                                <Dropdown.Item>
-                                  <button
-                                    className="btn btn-light"
-                                    onClick={() => StatusClosed(job.id)}
-                                    style={{
-                                      display: "block",
-                                      width: "100%",
-                                      fontSize: "1.5rem",
-                                    }}
-                                  >
-                                    Closed
-                                  </button>
-                                </Dropdown.Item>
-                              </>
-                            ) : job.status === "Pause" ? (
-                              <>
-                              <Dropdown.Item>
-                                  <button
-                                    className="btn btn-light"
-                                    onClick={() => StatusOpen(job.id)}
-                                    style={{
-                                      display: "block",
-                                      width: "100%",
-                                      fontSize: "1.5rem",
-                                    }}
-                                  >
-                                    Open
-                                  </button>
-                                </Dropdown.Item>
-                                <Dropdown.Item>
-                                  <button
-                                    className="btn btn-light"
-                                    onClick={() => StatusClosed(job.id)}
-                                    style={{
-                                      display: "block",
-                                      width: "100%",
-                                      fontSize: "1.5rem",
-                                    }}
-                                  >
-                                    Closed
-                                  </button>
-                                </Dropdown.Item>
-                              </>
-                            ) : (
-                              <>
-                                <Dropdown.Item>
-                                  <button
-                                    className="btn btn-light"
-                                    onClick={() => StatusOpen(job.id)}
-                                    style={{
-                                      display: "block",
-                                      width: "100%",
-                                      fontSize: "1.5rem",
-                                    }}
-                                  >
-                                    Open
-                                  </button>
-                                </Dropdown.Item>
-                              </>
-                            )}
-                          </Dropdown.Menu>
-                        </Dropdown>
-                    </td>
+                    <Dropdown>
+                      <Dropdown.Toggle as={CustomToggle} />
+                      <Dropdown.Menu>
+                        {job.status === "Pending" ? (
+                          <>
+                            <Dropdown.Item>
+                              <button
+                                className="btn btn-light"
+                                onClick={() => StatusOpen(job.id)}
+                                style={{
+                                  display: "block",
+                                  width: "100%",
+                                  fontSize: "1.5rem",
+                                }}
+                              >
+                                Open
+                              </button>
+                            </Dropdown.Item>
+                            <Dropdown.Item>
+                              <button
+                                className="btn btn-light"
+                                onClick={() => StatusPause(job.id)}
+                                style={{
+                                  display: "block",
+                                  width: "100%",
+                                  fontSize: "1.5rem",
+                                }}
+                              >
+                                Pause
+                              </button>
+                            </Dropdown.Item>
+                            <Dropdown.Item>
+                              <button
+                                className="btn btn-light"
+                                onClick={() => StatusClosed(job.status)}
+                                style={{
+                                  display: "block",
+                                  width: "100%",
+                                  fontSize: "1.5rem",
+                                }}
+                              >
+                                Closed
+                              </button>
+                            </Dropdown.Item>
+                          </>
+                        ) : job.status === "Open" ? (
+                          <>
+                            <Dropdown.Item>
+                              <button
+                                className="btn btn-light"
+                                onClick={() => StatusPause(job.id)}
+                                style={{
+                                  display: "block",
+                                  width: "100%",
+                                  fontSize: "1.5rem",
+                                }}
+                              >
+                                Pause
+                              </button>
+                            </Dropdown.Item>
+                            <Dropdown.Item>
+                              <button
+                                className="btn btn-light"
+                                onClick={() => StatusClosed(job.id)}
+                                style={{
+                                  display: "block",
+                                  width: "100%",
+                                  fontSize: "1.5rem",
+                                }}
+                              >
+                                Closed
+                              </button>
+                            </Dropdown.Item>
+                          </>
+                        ) : job.status === "Pause" ? (
+                          <>
+                            <Dropdown.Item>
+                              <button
+                                className="btn btn-light"
+                                onClick={() => StatusOpen(job.id)}
+                                style={{
+                                  display: "block",
+                                  width: "100%",
+                                  fontSize: "1.5rem",
+                                }}
+                              >
+                                Open
+                              </button>
+                            </Dropdown.Item>
+                            <Dropdown.Item>
+                              <button
+                                className="btn btn-light"
+                                onClick={() => StatusClosed(job.id)}
+                                style={{
+                                  display: "block",
+                                  width: "100%",
+                                  fontSize: "1.5rem",
+                                }}
+                              >
+                                Closed
+                              </button>
+                            </Dropdown.Item>
+                          </>
+                        ) : (
+                          <>
+                            <Dropdown.Item>
+                              <button
+                                className="btn btn-light"
+                                onClick={() => StatusOpen(job.id)}
+                                style={{
+                                  display: "block",
+                                  width: "100%",
+                                  fontSize: "1.5rem",
+                                }}
+                              >
+                                Open
+                              </button>
+                            </Dropdown.Item>
+                          </>
+                        )}
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  </td>
                   <td>
-                      <Dropdown>
-                        <Dropdown.Toggle as={CustomToggle} />
-                        <Dropdown.Menu>
-                              <Dropdown.Item>
-                                <button
-                                  className="btn btn-light"
-                                  onClick={() => EditJob(job.id)}
-                                  style={{
-                                    display: "block",
-                                    width: "100%",
-                                    fontSize: "1.5rem",
-                                  }}
-                                >
-                                  Edit
-                                </button>
-                              </Dropdown.Item>
-                              <Dropdown.Item>
-                                <button
-                                  className="btn btn-light"
-                                  onClick={() => DeleteJob(job.id)}
-                                  style={{
-                                    display: "block",
-                                    width: "100%",
-                                    fontSize: "1.5rem",
-                                  }}
-                                >
-                                  Delete
-                                </button>
-                              </Dropdown.Item>
-                        </Dropdown.Menu>
-                      </Dropdown>
-                    </td>
+                    <Dropdown>
+                      <Dropdown.Toggle as={CustomToggle} />
+                      <Dropdown.Menu>
+                        <Dropdown.Item>
+                          <button
+                            className="btn btn-light"
+                            onClick={() => EditJob(job.id)}
+                            style={{
+                              display: "block",
+                              width: "100%",
+                              fontSize: "1.5rem",
+                            }}
+                          >
+                            Edit
+                          </button>
+                        </Dropdown.Item>
+                        <Dropdown.Item>
+                          <button
+                            className="btn btn-light"
+                            onClick={() => DeleteJob(job.id)}
+                            style={{
+                              display: "block",
+                              width: "100%",
+                              fontSize: "1.5rem",
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  </td>
                 </tr>
               );
             })
@@ -382,6 +385,5 @@ function JobList() {
     </>
   );
 }
-
 
 export default JobList;

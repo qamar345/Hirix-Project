@@ -54,8 +54,7 @@ const PostJob = () => {
 
   //         if (Array.isArray(res.data) && res.data.length > 0) {
   //           const data = res.data[0]; // 👈 First object extract karo
-  //           console.log("Extracted Data:", data);
-
+  //           
   //           setTitle(data.title || "");
   //           setCategory(data.job_category || "");
   //           setJobType(data.job_type || "");
@@ -78,11 +77,9 @@ const PostJob = () => {
   //           setCity(data.city || "");
   //           setProvince(data.province || "");
   //         } else {
-  //           console.warn("⚠️ No data found for this ID!");
-  //         }
+  //             //         }
   //       })
-  //       .catch((err) => console.error("Error fetching job data:", err));
-  //   }
+  //       .catch((err) =>   //   }
   // }, [editId]);
   useEffect(() => {
     const fetchCompany = async () => {
@@ -94,8 +91,7 @@ const PostJob = () => {
         }));
         setCompanyData(formattedCompanies);
       } catch (err) {
-        console.error("Error fetching companies:", err);
-      }
+              }
     };
 
     fetchCompany();
@@ -132,17 +128,55 @@ const PostJob = () => {
     };
 
     try {
-      console.log(Company);
-      await axios
+            await axios
         .post(`http://localhost:9000/postbyEmployee/${id}`, payload)
         .then((res) => {
           alert(res.data.msg);
           navigate(`/employer/jobs`);
         })
-        .catch((err) => console.error(err));
-    } catch (error) {
-      console.error("Error:", error.message);
-    }
+        .catch((err) =>     } catch (error) {
+          }
+  };
+
+  const handledraft = async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      title: title?.trim(),
+      Email: email?.trim(),
+      job_category: category?.trim(),
+      job_type: jobtype?.trim(),
+      workplace_type: workPlaceType?.trim(),
+      description: des?.trim(),
+      required_skills: skill.map((s) => s.value).join(","),
+      career_level: careerLevel?.trim(),
+      Experience: experiences?.trim(),
+      qualification: qual?.trim(),
+      available_seats: quantity?.trim(),
+      gender: Gender?.trim(),
+      expiry_date: expirydate,
+      salary: Salary?.trim(),
+      currency: curr?.trim(),
+      minimum_currency: minValue?.trim(),
+      maximum_currency: maxValue?.trim(),
+      Rate: rateType?.trim(),
+      Url: url?.trim(),
+      Phone: phone?.trim(),
+      ApplyType: appliedType?.trim(),
+      company_name: Company,
+      city: City?.trim(),
+      province: Province?.trim(),
+    };
+
+    try {
+      await axios
+        .post(`http://localhost:9000/saveAsDraft/${id}`, payload)
+        .then((res) => {
+          alert(res.data.msg);
+          navigate(`/employer/jobs`);
+        })
+        .catch((err) =>     } catch (error) {
+          }
   };
 
   useEffect(() => {
@@ -170,19 +204,19 @@ const PostJob = () => {
   ];
 
   const type = [
-    { value: "full", label: "Full Time" },
-    { value: "part", label: "Part Time" },
-    { value: "intern", label: "Internship" },
-    { value: "contract", label: "Contract" },
-    { value: "temporary", label: "Temporary" },
-    { value: "volunteer", label: "Volunteer" },
-    { value: "other", label: "Other" },
+    { value: "Full Time", label: "Full Time" },
+    { value: "Part Time", label: "Part Time" },
+    { value: "Internship", label: "Internship" },
+    { value: "Contract", label: "Contract" },
+    { value: "Temporary", label: "Temporary" },
+    { value: "Volunteer", label: "Volunteer" },
+    { value: "Other", label: "Other" },
   ];
 
   const workType = [
-    { value: "onsite", label: "On-site" },
-    { value: "remote", label: "Remote" },
-    { value: "hybrid", label: "Hybird" },
+    { value: "Onsite", label: "On-site" },
+    { value: "Remote", label: "Remote" },
+    { value: "Hybrid", label: "Hybird" },
   ];
 
   const skills = [
@@ -193,18 +227,18 @@ const PostJob = () => {
   ];
 
   const career = [
-    { value: "fresher", label: "Fresher" },
-    { value: "junior", label: "Junior" },
-    { value: "middle", label: "Middle" },
-    { value: "senior", label: "Senior" },
+    { value: "Fresher", label: "Fresher" },
+    { value: "Junior", label: "Junior" },
+    { value: "Middle", label: "Middle" },
+    { value: "Senior", label: "Senior" },
   ];
 
   const experience = [
     { value: "0", label: "No Experience" },
-    { value: "2", label: "1-2 Years" },
-    { value: "5", label: "3-5 Years" },
-    { value: "9", label: "6-9 Years" },
-    { value: "10", label: "10+ Years" },
+    { value: "1-2", label: "1-2 Years" },
+    { value: "3-5", label: "3-5 Years" },
+    { value: "6-9", label: "6-9 Years" },
+    { value: "10+", label: "10+ Years" },
   ];
 
   const qualification = [
@@ -221,19 +255,20 @@ const PostJob = () => {
     { value: "2", label: "2" },
     { value: "3", label: "3" },
     { value: "4", label: "4" },
+     { value: "5", label: "5" },
   ];
 
   const gender = [
-    { value: "female", label: "Female" },
-    { value: "male", label: "Male" },
-    { value: "both", label: "Both" },
+    { value: "Female", label: "Female" },
+    { value: "Male", label: "Male" },
+    { value: "Both", label: "Both" },
   ];
 
   const salary = [
-    { value: "range", label: "Range" },
-    { value: "starting", label: "Starting Amount" },
-    { value: "maximum", label: "Maximum Amount" },
-    { value: "negotiable", label: "Negotiable Price" },
+    { value: "Range", label: "Range" },
+    { value: "Starting", label: "Starting Amount" },
+    { value: "Maximum", label: "Maximum Amount" },
+    { value: "Negotiable", label: "Negotiable Price" },
   ];
   
 
@@ -257,10 +292,10 @@ const PostJob = () => {
     { value: "call", label: "Call To Apply" },
   ];
   const cityName = [
-    { value: "lhr", label: "Lahore" },
-    { value: "rwp", label: "Rawalpindi" },
-    { value: "khi", label: "Karachi" },
-    { value: "isb", label: "Islamabad" },
+    { value: "Lahore", label: "Lahore" },
+    { value: "Rawalpindi", label: "Rawalpindi" },
+    { value: "Karachi", label: "Karachi" },
+    { value: "Islamabad", label: "Islamabad" },
   ];
   const provinceName = [
     { value: "kpk", label: "Khyber Pakhtunkhwa" },
@@ -288,7 +323,7 @@ const PostJob = () => {
                       Cancel
                     </Link>
                     <Link
-                      to="/employer/employer-company"
+                      onClick={handledraft}
                       className="btn-outline d-none d-lg-block"
                     >
                       Save As Draft

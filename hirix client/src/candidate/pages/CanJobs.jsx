@@ -61,8 +61,7 @@ const [wishlistCount, setWishlistCount] = useState(0);
         setJobs([]);
       }
     } catch (error) {
-      console.error("Error fetching jobs:", error);
-      setJobs([]);
+            setJobs([]);
       
       // Reset specific count based on type
       if (type === "applied") {
@@ -108,8 +107,7 @@ const [wishlistCount, setWishlistCount] = useState(0);
         window.location.reload();
       })
       .catch((err) => {
-        console.log(err);
-      });
+              });
   };
 
   const StatusApply = async (application_id) => {
@@ -120,8 +118,7 @@ const [wishlistCount, setWishlistCount] = useState(0);
         window.location.reload();
       })
       .catch((err) => {
-        console.log(err);
-      });
+              });
   };
 
   const StatusCancelApplication = async (application_id) => {
@@ -136,8 +133,7 @@ const [wishlistCount, setWishlistCount] = useState(0);
           window.location.reload();
         })
         .catch((err) => {
-          console.log(err);
-        });
+                  });
     }
   };
   const jobAge = [
@@ -224,10 +220,17 @@ const [wishlistCount, setWishlistCount] = useState(0);
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                       />
+                       <button
+                                          type="submit"
+                                          className="btn-search d-flex"
+                                          style={{ all: "unset", cursor: "pointer" }}
+                                        >
+                                          <FaSearch className="mx-3" />
+                                        </button>
                       </form>
-                      <Link className="me-3">
+                      {/* <Link className="me-3">
                         <FaSearch />
-                      </Link>
+                      </Link> */}
                     </div>
                   </div>
                   <div className="d-flex mb-5 align-items-center">

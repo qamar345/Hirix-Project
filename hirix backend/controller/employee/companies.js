@@ -20,7 +20,7 @@ const Addcompany = (req, res) => {
     total_members,
     province,
     city,
-    postalCode,
+    Ntn,
     twitter,
     facebook,
     instagram,
@@ -28,22 +28,22 @@ const Addcompany = (req, res) => {
   } = bodyData;
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
   const sql_addcompany =
-    "INSERT INTO `companies` (`user_account_id`,`name`, `categories`,`About`,`website_link`,`Contact`, `E_mail`,`total_members`,`images` ,`province`,`city`,`postalCode`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    "INSERT INTO `companies` (`user_account_id`,`name`, `categories`,`About`,`website_link`,`Contact`, `E_mail`,`total_members`,`images` ,`province`,`city`,`Ntn`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
   conn_sql.query(
     sql_addcompany,
     [
       id,
       name,
       categories,
+       About,
       website_link,
-      About,
       Contact,
       E_mail,
       total_members,
       imageUrl,
       province,
       city,
-      postalCode
+      Ntn
     ],
     (err, result) => {
       if (err) {
@@ -102,10 +102,10 @@ const Editcompany = (req, res) => {
     linkedIn,
     province,
     city,
-    postalCode
+    Ntn
   } = req.body;
   const sql_addcompany =
-    "UPDATE `companies` SET `name`=? , `categories`=? ,`About`=? , `website_link`=? ,`Contact`=? , `E_mail`=? ,`founded_in` = ? ,`total_members`= ? ,`province`=?, `city` = ?, `postalCode` = ? WHERE id=?";
+    "UPDATE `companies` SET `name`=? , `categories`=? ,`About`=? , `website_link`=? ,`Contact`=? , `E_mail`=? ,`founded_in` = ? ,`total_members`= ? ,`province`=?, `city` = ?, `Ntn` = ? WHERE id=?";
   conn_sql.query(
     sql_addcompany,
     [
@@ -119,7 +119,7 @@ const Editcompany = (req, res) => {
       total_members,
       province,
       city,
-      postalCode,
+      Ntn,
       id,
     ],
     (err, result) => {
@@ -162,8 +162,7 @@ const Selectcompany = (req, res) => {
     const totalPages = Math.ceil(totalData / limit);
 
     // Ab actual companies ka data fetch karein
-    // const sql_get = "SELECT * FROM `companies` WHERE user_account_id = ? LIMIT ? OFFSET ?";
-    const sql_get = " SELECT c.*, (SELECT COUNT(*) FROM jobs j WHERE j.company_name = c.name AND j.status = 'open') AS active_jobs FROM companies c WHERE c.user_account_id = ? AND c.status_delete = 1  LIMIT ? OFFSET ?";
+    const sql_get = " SELECT c.*, (SELECT COUNT(*) FROM jobs j WHERE j.company_name = c.id AND j.status = 'open') AS active_jobs FROM companies c WHERE c.user_account_id = ? AND c.status_delete = 1  LIMIT ? OFFSET ?";
 
     conn_sql.query(sql_get, [id, limit, offset], (c_err, c_data) => {
       if (c_err) {

@@ -18,7 +18,7 @@ import { FaArrowLeft } from "react-icons/fa";
 const EmpSideBar = ({ isCollapsed, handleSidebarToggle }) => {
   const navigate = useNavigate();
   const handleLogout = () => {
-    sessionStorage.clear();
+     sessionStorage.clear();
     alert("LoggedOut Successfully");
     navigate("/");
   };

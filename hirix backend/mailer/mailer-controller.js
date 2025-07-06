@@ -15,8 +15,18 @@ const VerifyEmail = (email, code) => {
     from: "Hirix <nimraasad09@gmail.com>",
     to: email,
     subject: "Verification",
-    html: `<p>${code}</p>`,
-  };
+    html: `
+    <p style="font-size: 16px;">🔐 <strong>Your Verification Code:</strong></p>
+  <p style="font-size: 28px; font-weight: bold; letter-spacing: 3px; color: #333;">${code}</p>
+
+  <p style="font-size: 14px; color: #555;">
+    Please use this code to verify your email address. The code will expire shortly.
+  </p>
+
+  <br/>
+
+  <p style="color: gray; font-size: 12px;">This is an automated message. Please do not reply.</p>`,
+  }
 
   // Send the email
   transporter.sendMail(mailOptions, (error, info) => {
@@ -27,5 +37,4 @@ const VerifyEmail = (email, code) => {
     }
   });
 };
-
 module.exports = { VerifyEmail };

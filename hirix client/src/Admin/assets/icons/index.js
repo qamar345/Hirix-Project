@@ -18,7 +18,6 @@ import meeting from "./meeting.svg";
 import company from "./company.svg";
 import setting from "./setting.svg";
 import logout from "./logout.svg";
-
 import edit from "./edit.svg";
 import text from "./text.svg";
 

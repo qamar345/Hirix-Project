@@ -34,7 +34,7 @@ const ApplicantList = () => {
 
   const querysearch = new URLSearchParams(location.search);
   const searchQuery = querysearch.get("search") || "";
-
+ const sort = queryParams.get("sort") || "newest"; 
   const GetApplicants = async (page, search = "") => {
     // setLoading(true);
     try {
@@ -50,8 +50,7 @@ const ApplicantList = () => {
       setTotalPages(res.data.meta.totalPages);
       // setLoading(false);
     } catch (error) {
-      console.log(error);
-    }
+          }
   };
 
   const handlePageChange = (page) => {
@@ -63,12 +62,17 @@ const ApplicantList = () => {
   }, [currentPage, searchQuery]);
 
   useEffect(() => {
-    const filteredData =
+    let filteredData =
       filter == ""
         ? datauser
         : datauser.filter((user) => user.account_status == filter);
+         if (sort === "newest") {
+      filteredData = filteredData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    } else if (sort === "oldest") {
+      filteredData = filteredData.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    }
     setfiltersUsers(filteredData);
-  }, [filter, datauser]);
+  }, [filter, datauser, sort]);
 
   const ActiveAccount = async (id) => {
     await axios
@@ -78,8 +82,7 @@ const ApplicantList = () => {
         window.location.reload();
       })
       .catch((err) => {
-        console.log(err);
-      });
+              });
   };
 
   const FreezeAccount = async (id) => {
@@ -90,8 +93,7 @@ const ApplicantList = () => {
         window.location.reload();
       })
       .catch((err) => {
-        console.log(err);
-      });
+              });
   };
   const handleClick = (Jid) => {
     navigate(`/admin/jobs?highlight=${Jid}`);
@@ -183,7 +185,7 @@ const ApplicantList = () => {
                         )}
                       </div>
                       <div className="info-details">
-                        <h3>{applicant.username}</h3>
+                        <NavLink to={`/ApplicantDetails/${applicant.id}`}><h3>{applicant.username}</h3></NavLink>
                         <div className="applied">
                           Applied:
                           <NavLink to={`/admin/jobs?Jid=${applicant.id}`}>

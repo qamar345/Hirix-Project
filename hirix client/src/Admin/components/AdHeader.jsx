@@ -1,16 +1,29 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { FaBars } from "react-icons/fa";
 import { AdSideMenu } from "../index.js";
 import { employerImg } from "../assets/images/index.js";
 import { useNavigate } from "react-router-dom";
 const AdHeader = () => {
-  const check = sessionStorage.getItem("isLoggedIn");
-  const firstName = sessionStorage.getItem("FirstName");
-  const imageAdmin = sessionStorage.getItem("AdminImage");
   const navigate = useNavigate();
+  const check = sessionStorage.getItem("isLoggedIn");
+  const name = sessionStorage.getItem("name");
+
+  const [imageAdmin, setImageAdmin] = useState(sessionStorage.getItem("image"));
+
   useEffect(() => {
     if (!check) navigate("/admin-login");
-  });
+  }, [check, navigate]);
+
+  useEffect(() => {
+    const updateImage = () => {
+      const newImage = sessionStorage.getItem("image");
+      setImageAdmin(newImage);
+    };
+
+    window.addEventListener("profileUpdated", updateImage);
+    return () => window.removeEventListener("profileUpdated", updateImage);
+  }, []);
+
 
   
   return (
@@ -39,16 +52,17 @@ const AdHeader = () => {
           {check && (
             <div className="profileImg">
               <img
-                // src={employerImg}
                 src={`http://localhost:9000${imageAdmin}`}
                 title="Admin"
                 alt="Admin"
                 className=""
               />
-              <span className="d-none d-md-block">{firstName}</span>
+              {name && typeof name === "string" && name.trim() !== "" && name == null && (
+                <span className="d-none d-md-block">{name || "Admin"}</span>
+              
+              )} 
             </div>
            )}
-         
           </div>
         </div>
       </div>
