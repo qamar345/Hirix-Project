@@ -14,57 +14,60 @@ import {
 import Select from "react-select";
 import { coinTracker } from "../assets/icons/index.js";
 import axios from "axios";
-import { useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 const HomePage = () => {
   const navigate = useNavigate();
   const [totalJobs, setTotalJobs] = useState(0);
   const [selectedJob, setSelectedJob] = useState(null);
   const [jobs, setJobs] = useState([]);
   const [companies, setCompanies] = useState([]);
-   const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const sharedId = searchParams.get("id");
- useEffect(() => {
-  const jobId = searchParams.get("id");
-  if (jobId) {
-    navigate(`/JobPage/${jobId}?fromShare=true`);
-  }
-}, []);
+  useEffect(() => {
+    const jobId = searchParams.get("id");
+    if (jobId) {
+      navigate(`/JobPage/${jobId}?fromShare=true`);
+    }
+  }, []);
 
   useEffect(() => {
     const getJobCount = async () => {
       try {
         const res = await axios.get("http://localhost:9000/getTotal_jobs");
-                setTotalJobs(res.data.TotalJobs);
-      } catch (error) {
-              }
+        setTotalJobs(res.data.TotalJobs);
+      } catch (error) {}
     };
     getJobCount();
   }, []);
 
- useEffect(() => {
-  const fetchFilteredJobs = async () => {
-    const params = new URLSearchParams(location.search);
-    const search = params.get("search") || "";
-    const city = params.get("city") || "";
-    const category = params.get("category") || "";
+  useEffect(() => {
+    const fetchFilteredJobs = async () => {
+      const params = new URLSearchParams(location.search);
+      const search = params.get("search") || "";
+      const city = params.get("city") || "";
+      const category = params.get("category") || "";
 
-    if (!search.trim() || !city.trim() || !category.trim()) {
-      setJobs([]);
-      return;
-    }
-    try {
-      const res = await axios.get("http://localhost:9000/jobs", {
-        params: { search, city, category },
-      });
-      setJobs(res.data);
-    } catch (error) {
-            setJobs([]);
-    }
-  };
+      if (!search.trim() || !city.trim() || !category.trim()) {
+        setJobs([]);
+        return;
+      }
+      try {
+        const res = await axios.get("http://localhost:9000/jobs", {
+          params: { search, city, category },
+        });
+        setJobs(res.data);
+      } catch (error) {
+        setJobs([]);
+      }
+    };
 
-  fetchFilteredJobs();
-}, [location.search]);
-
+    fetchFilteredJobs();
+  }, [location.search]);
 
   useEffect(() => {
     if (jobs.length === 0) {
@@ -122,15 +125,14 @@ const HomePage = () => {
             </div>
 
             <div className="col-right preview-job-wrapper">
-  {selectedJob ? (
-    <JobPost job={selectedJob}  />
-  ) : (
-    <div className="job-post-placeholder">
-        <p>Please select a job to view details.</p>
-      </div>
-  )}
-</div>
-
+              {selectedJob ? (
+                <JobPost job={selectedJob} />
+              ) : (
+                <div className="job-post-placeholder">
+                  <p>Please select a job to view details.</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
