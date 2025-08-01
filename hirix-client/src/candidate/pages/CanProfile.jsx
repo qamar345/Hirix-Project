@@ -159,7 +159,8 @@ const CanProfile = () => {
         setCity(data.location);
         setlinkedIn(data.LinkedIn);
       })
-      .catch((err) =>   }, []);
+      .catch((err) => {}, []);
+  });
   const submit = async (e) => {
     e.preventDefault();
 
@@ -198,39 +199,38 @@ const CanProfile = () => {
           },
         }
       );
-       if (res.data.image) {
-    sessionStorage.setItem("image", res.data.image);
-    window.dispatchEvent(new Event("profileUpdated"));
-  }
+      if (res.data.image) {
+        sessionStorage.setItem("image", res.data.image);
+        window.dispatchEvent(new Event("profileUpdated"));
+      }
 
-  if (res.data.firstName) {
-  sessionStorage.setItem("first_name", res.data.firstName);
-}
+      if (res.data.firstName) {
+        sessionStorage.setItem("first_name", res.data.firstName);
+      }
       alert(res.data.msg);
-     window.location.reload();
-    } catch (error) {
-          }
+      window.location.reload();
+    } catch (error) {}
   };
 
   const EduSubmit = async (e) => {
     e.preventDefault();
- if (!EduFrom) {
-    alert("Please select the 'From' date. It is required.");
-    return; // Stop form submission
-  }
+    if (!EduFrom) {
+      alert("Please select the 'From' date. It is required.");
+      return; // Stop form submission
+    }
     const formData = new FormData();
 
     formData.append("Title", title?.trim());
     formData.append("Level", EduLevel?.trim());
     formData.append("From", EduFrom);
     if (isPresent) {
-  formData.append("To", "Present");
-} else if (EduTo) {
-  formData.append("To", EduTo);
-}
+      formData.append("To", "Present");
+    } else if (EduTo) {
+      formData.append("To", EduTo);
+    }
     formData.append("Description", EduDes?.trim());
 
-        try {
+    try {
       const res = await axios.post(
         `http://localhost:9000/AddEducation/${id}`,
         formData,
@@ -241,18 +241,17 @@ const CanProfile = () => {
         }
       );
       alert(res.data.msg);
-     window.location.reload();
-    } catch (error) {
-          }
+      window.location.reload();
+    } catch (error) {}
   };
 
   const ExperienceSumit = async (e) => {
     e.preventDefault();
 
-     if (!ExpFrom) {
-    alert("Please select the 'From' date. It is required.");
-    return; // Stop form submission
-  }
+    if (!ExpFrom) {
+      alert("Please select the 'From' date. It is required.");
+      return; // Stop form submission
+    }
 
     const payload = {
       Title: jobtitle?.trim(),
@@ -273,9 +272,8 @@ const CanProfile = () => {
         }
       );
       alert(res.data.msg);
-     window.location.reload();
-    } catch (error) {
-          }
+      window.location.reload();
+    } catch (error) {}
   };
 
   const skillsSubmit = async (e) => {
@@ -297,8 +295,7 @@ const CanProfile = () => {
       );
       alert(res.data.msg);
       window.location.reload();
-    } catch (error) {
-          }
+    } catch (error) {}
   };
 
   const ProjectSubmit = async (e) => {
@@ -321,9 +318,8 @@ const CanProfile = () => {
         }
       );
       alert(res.data.msg);
-     window.location.reload();
-    } catch (error) {
-          }
+      window.location.reload();
+    } catch (error) {}
   };
 
   const AwardSubmit = async (e) => {
@@ -346,9 +342,8 @@ const CanProfile = () => {
         }
       );
       alert(res.data.msg);
-     window.location.reload();
-    } catch (error) {
-          }
+      window.location.reload();
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -381,9 +376,8 @@ const CanProfile = () => {
 
         setPercentage(newPercentage);
         sessionStorage.setItem("Percent", newPercentage);
-         window.dispatchEvent(new Event("percentUpdated"));
-      } catch (error) {
-              }
+        window.dispatchEvent(new Event("percentUpdated"));
+      } catch (error) {}
     };
 
     fetchProfileData();
@@ -500,7 +494,7 @@ const CanProfile = () => {
     { id: "projects", label: "Projects" },
     { id: "awards", label: "Awards" },
   ];
-    useEffect(() => {
+  useEffect(() => {
     if (dop) {
       const today = new Date();
       const birthDate = new Date(dop);
@@ -995,7 +989,9 @@ const CanProfile = () => {
                         </label>
                       </div>
                       <div className="entryGroup col-md-6">
-                        <label>From <span style={{ color: "red" }}>*</span></label>
+                        <label>
+                          From <span style={{ color: "red" }}>*</span>
+                        </label>
                         <br></br>
                         <DatePicker
                           selected={EduFrom}
@@ -1123,7 +1119,7 @@ const CanProfile = () => {
                           className="custom-checkbox input-control point-mark point-active"
                           name="candidate_experience_check"
                           defaultValue="present"
-                           checked={isPresent}
+                          checked={isPresent}
                           onChange={() => setIsPresent(!isPresent)}
                         />
                         <label className="label-present ms-3">
@@ -1131,7 +1127,9 @@ const CanProfile = () => {
                         </label>
                       </div>
                       <div className="entryGroup col-md-6">
-                        <label>From <span style={{ color: "red" }}>*</span></label>
+                        <label>
+                          From <span style={{ color: "red" }}>*</span>
+                        </label>
                         <br></br>
                         <DatePicker
                           selected={ExpFrom}

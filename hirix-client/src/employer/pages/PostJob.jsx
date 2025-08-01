@@ -54,7 +54,7 @@ const PostJob = () => {
 
   //         if (Array.isArray(res.data) && res.data.length > 0) {
   //           const data = res.data[0]; // 👈 First object extract karo
-  //           
+  //
   //           setTitle(data.title || "");
   //           setCategory(data.job_category || "");
   //           setJobType(data.job_type || "");
@@ -90,8 +90,7 @@ const PostJob = () => {
           value: company.id,
         }));
         setCompanyData(formattedCompanies);
-      } catch (err) {
-              }
+      } catch (err) {}
     };
 
     fetchCompany();
@@ -128,14 +127,23 @@ const PostJob = () => {
     };
 
     try {
-            await axios
+      await axios
         .post(`http://localhost:9000/postbyEmployee/${id}`, payload)
         .then((res) => {
           alert(res.data.msg);
           navigate(`/employer/jobs`);
-        })
-        .catch((err) =>     } catch (error) {
-          }
+        });
+    } catch (error) {}
+
+    // try {
+    //         await axios
+    //     .post(`http://localhost:9000/postbyEmployee/${id}`, payload)
+    //     .then((res) => {
+    //       alert(res.data.msg);
+    //       navigate(`/employer/jobs`);
+    //     })
+    //     .catch((err) =>  {
+    //     })
   };
 
   const handledraft = async (e) => {
@@ -174,9 +182,18 @@ const PostJob = () => {
         .then((res) => {
           alert(res.data.msg);
           navigate(`/employer/jobs`);
-        })
-        .catch((err) =>     } catch (error) {
-          }
+        });
+    } catch (error) {}
+
+    // try {
+    //   await axios
+    //     .post(`http://localhost:9000/saveAsDraft/${id}`, payload)
+    //     .then((res) => {
+    //       alert(res.data.msg);
+    //       navigate(`/employer/jobs`);
+    //     })
+    //     .catch((err) =>     } catch (error) {
+    //       }
   };
 
   useEffect(() => {
@@ -255,7 +272,7 @@ const PostJob = () => {
     { value: "2", label: "2" },
     { value: "3", label: "3" },
     { value: "4", label: "4" },
-     { value: "5", label: "5" },
+    { value: "5", label: "5" },
   ];
 
   const gender = [
@@ -270,7 +287,6 @@ const PostJob = () => {
     { value: "Maximum", label: "Maximum Amount" },
     { value: "Negotiable", label: "Negotiable Price" },
   ];
-  
 
   const currency = [
     { value: "usd", label: "($) - USD" },

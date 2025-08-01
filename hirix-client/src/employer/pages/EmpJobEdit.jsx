@@ -55,46 +55,46 @@ const EmpJobEdit = () => {
           value: company.id,
         }));
         setCompanyData(formattedCompanies);
-      } catch (err) {
-              }
+      } catch (err) {}
     };
 
     fetchCompany();
   }, []);
-  useEffect(() => {
+  useEffect(async () => {
     if (editId && editId !== "new") {
-      axios
-        .get(`http://localhost:9000/getjobPost/${editId}`)
-        .then((res) => {
-  const submit = async (e) => {
-    e.preventDefault();
+      axios.get(`http://localhost:9000/getjobPost/${editId}`).then((res) => {
+        const submit = async (e) => {
+          e.preventDefault();
 
-    const payload = {
-      title: title?.trim(),
-      Email: email?.trim(),
-      job_category: category?.trim(),
-      job_type: jobtype?.trim(),
-      workplace_type: workPlaceType?.trim(),
-      description: des?.trim(),
-      required_skills: skill,
-      career_level: careerLevel?.trim(),
-      Experience: experiences?.trim(),
-      qualification: qual?.trim(),
-      available_seats: quantity,
-      gender: Gender?.trim(),
-      expiry_date: expirydate,
-      salary: Salary?.trim(),
-      currency: curr?.trim(),
-      minimum_currency: minValue,
-      maximum_currency: maxValue,
-      Rate: rateType?.trim(),
-      Url: url?.trim(),
-      Phone: phone,
-      ApplyType: appliedType?.trim(),
-      company_name: Company,
-      city: City?.trim(),
-      province: Province?.trim(),
-    };
+          const payload = {
+            title: title?.trim(),
+            Email: email?.trim(),
+            job_category: category?.trim(),
+            job_type: jobtype?.trim(),
+            workplace_type: workPlaceType?.trim(),
+            description: des?.trim(),
+            required_skills: skill,
+            career_level: careerLevel?.trim(),
+            Experience: experiences?.trim(),
+            qualification: qual?.trim(),
+            available_seats: quantity,
+            gender: Gender?.trim(),
+            expiry_date: expirydate,
+            salary: Salary?.trim(),
+            currency: curr?.trim(),
+            minimum_currency: minValue,
+            maximum_currency: maxValue,
+            Rate: rateType?.trim(),
+            Url: url?.trim(),
+            Phone: phone,
+            ApplyType: appliedType?.trim(),
+            company_name: Company,
+            city: City?.trim(),
+            province: Province?.trim(),
+          };
+        };
+      });
+    }
 
     try {
       const res = await axios.put(
@@ -103,9 +103,8 @@ const EmpJobEdit = () => {
       );
       alert(res.data.msg);
       navigate(`/employer/jobs`);
-    } catch (error) {
-          }
-  };
+    } catch (error) {}
+  });
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 150) {
@@ -123,7 +122,7 @@ const EmpJobEdit = () => {
     };
   }, []);
 
-   const salary = [
+  const salary = [
     { value: "Range", label: "Range" },
     { value: "Starting", label: "Starting Amount" },
     { value: "Maximum", label: "Maximum Amount" },
@@ -354,40 +353,40 @@ const EmpJobEdit = () => {
                       {/* Conditionally Rendered Fields */}
                       {Salary === "range" && (
                         <>
-                      <div className="entryGroup col-md-6">
-                        <label>
-                          Minimum <sup>*</sup>
-                        </label>
-                        <input
-                          type="number"
-                          name="minValue"
-                          value={minValue}
-                          onChange={(e) => setMinValue(e.target.value)}
-                        />
-                      </div>
-                      <div className="entryGroup col-md-6">
-                        <label>
-                          Maximum <sup>*</sup>
-                        </label>
-                        <input
-                          type="number"
-                          name="maxValue"
-                          value={maxValue}
-                          onChange={(e) => setMaxValue(e.target.value)}
-                        />
-                      </div>
-                      <div className="entryGroup col-md-6">
-                        <label>
-                          Rate (per month/ per week/ per day) <sup>*</sup>
-                        </label>
+                          <div className="entryGroup col-md-6">
+                            <label>
+                              Minimum <sup>*</sup>
+                            </label>
+                            <input
+                              type="number"
+                              name="minValue"
+                              value={minValue}
+                              onChange={(e) => setMinValue(e.target.value)}
+                            />
+                          </div>
+                          <div className="entryGroup col-md-6">
+                            <label>
+                              Maximum <sup>*</sup>
+                            </label>
+                            <input
+                              type="number"
+                              name="maxValue"
+                              value={maxValue}
+                              onChange={(e) => setMaxValue(e.target.value)}
+                            />
+                          </div>
+                          <div className="entryGroup col-md-6">
+                            <label>
+                              Rate (per month/ per week/ per day) <sup>*</sup>
+                            </label>
 
-                        <input
-                          type="text"
-                          value={rateType}
-                          onChange={(e) => setRateType(e.target.value)}
-                        />
-                      </div>
-                      </>
+                            <input
+                              type="text"
+                              value={rateType}
+                              onChange={(e) => setRateType(e.target.value)}
+                            />
+                          </div>
+                        </>
                       )}
 
                       {/* {/* {Salary === "starting" && (
@@ -458,7 +457,7 @@ const EmpJobEdit = () => {
                             />
                           </div>
                         </>
-                      )} 
+                      )}
 
                       {Salary === "negotiable" && null}
                     </div>
@@ -482,49 +481,49 @@ const EmpJobEdit = () => {
                       </div>
 
                       {appliedType === "email" && (
-                      <div className="entryGroup col-md-6">
-                        <label>
-                          Job apply email <sup>*</sup>
-                        </label>
+                        <div className="entryGroup col-md-6">
+                          <label>
+                            Job apply email <sup>*</sup>
+                          </label>
 
-                        <input
-                          type="email"
-                          name="email"
-                          placeholder="Enter email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                        />
-                      </div>
-                         )} 
+                          <input
+                            type="email"
+                            name="email"
+                            placeholder="Enter email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                          />
+                        </div>
+                      )}
                       {appliedType === "external" && (
-                      <div className="entryGroup col-md-6">
-                        <label>
-                          Job apply external <sup>*</sup>
-                        </label>
+                        <div className="entryGroup col-md-6">
+                          <label>
+                            Job apply external <sup>*</sup>
+                          </label>
 
-                        <input
-                          type="text"
-                          name="text"
-                          placeholder="Enter url"
-                          value={url}
-                          onChange={(e) => setURL(e.target.value)}
-                        />
-                      </div>
-                       )}
-                       {appliedType === "internal" && null} 
-                       {appliedType === "call" && ( 
-                       <div className="form-group col-md-6">
+                          <input
+                            type="text"
+                            name="text"
+                            placeholder="Enter url"
+                            value={url}
+                            onChange={(e) => setURL(e.target.value)}
+                          />
+                        </div>
+                      )}
+                      {appliedType === "internal" && null}
+                      {appliedType === "call" && (
+                        <div className="form-group col-md-6">
                           <label htmlFor="ip_reg_phone" className="label-field">
                             Phone number
                           </label>
                           <PhoneInput
                             className="mt-1"
-                            value={phone?.toString() || ''}
+                            value={phone?.toString() || ""}
                             onChange={setPhone}
                             defaultCountry="PK"
                           />
-                        </div> 
-                       )} 
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -593,7 +592,7 @@ const EmpJobEdit = () => {
       </div>
     </div>
   );
-});
+};
 
 const customStyles = {
   control: (provided, state) => ({

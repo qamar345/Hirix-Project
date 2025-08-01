@@ -25,14 +25,14 @@ const JobList = () => {
   const [currentPage, settCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [filterUsers, setfiltersUsers] = useState([]);
-  const [appliedJobs, setAppliedJobs] = useState([]); 
+  const [appliedJobs, setAppliedJobs] = useState([]);
   const location = useLocation();
 
   const queryParams = new URLSearchParams(location.search);
   const filter = queryParams.get("filter") || "";
   const searchQuery = queryParams.get("search") || "";
-  const sort = queryParams.get("sort") || "newest"; 
-  const clientId = queryParams.get("Jid");  // Fetch the clientId from query params
+  const sort = queryParams.get("sort") || "newest";
+  const clientId = queryParams.get("Jid"); // Fetch the clientId from query params
   const dataToShow = clientId ? appliedJobs : filterUsers;
   const GetJobPosts = async (page, search = "") => {
     try {
@@ -46,41 +46,47 @@ const JobList = () => {
       setfiltersUsers(res.data.data);
       settCurrentPage(res.data.meta.page);
       setTotalPages(res.data.meta.totalPages);
-    } catch (error) {
-          }
+    } catch (error) {}
   };
 
   const GetAppliedJobs = async () => {
     if (clientId) {
       try {
-        const res = await axios.get(`http://localhost:9000/getPostSpecific/${clientId}`);
-  useEffect(() => {
-    let filteredData =
-      filter === ""
-        ? [...datauser]
-        : datauser.filter((user) => user.status === filter);
-    if (sort === "newest") {
-      filteredData = filteredData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    } else if (sort === "oldest") {
-      filteredData = filteredData.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        const res = await axios.get(
+          `http://localhost:9000/getPostSpecific/${clientId}`
+        );
+        useEffect(() => {
+          let filteredData =
+            filter === ""
+              ? [...datauser]
+              : datauser.filter((user) => user.status === filter);
+          if (sort === "newest") {
+            filteredData = filteredData.sort(
+              (a, b) => new Date(b.created_at) - new Date(a.created_at)
+            );
+          } else if (sort === "oldest") {
+            filteredData = filteredData.sort(
+              (a, b) => new Date(a.created_at) - new Date(b.created_at)
+            );
+          }
+          setfiltersUsers(filteredData || []);
+        }, [filter, datauser, sort]);
+      } catch (err) {}
     }
-    setfiltersUsers(filteredData || []);
-  }, [filter, datauser, sort]);
+  };
 
   useEffect(() => {
-        GetAppliedJobs();  // Fetch the applied jobs for the client
+    GetAppliedJobs(); // Fetch the applied jobs for the client
   }, [clientId]);
- 
-  
-   const Delete = async (id) => {
+
+  const Delete = async (id) => {
     await axios
       .delete(`http://localhost:9000/deleteJob/${id}`)
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();
       })
-      .catch((err) => {
-              });
+      .catch((err) => {});
   };
   return (
     <>
@@ -96,35 +102,45 @@ const JobList = () => {
           </tr>
         </thead>
         <tbody>
-        {Array.isArray(dataToShow) && dataToShow.length > 0 ? (
+          {Array.isArray(dataToShow) && dataToShow.length > 0 ? (
             dataToShow.map((job, index) => {
-              const postDate = new Date(job.created_at).toISOString().split("T")[0];
+              const postDate = new Date(job.created_at)
+                .toISOString()
+                .split("T")[0];
               const expiryDate = job.expiry_date
                 ? new Date(job.expiry_date).toISOString().split("T")[0]
                 : null;
 
               // Update status dynamically for expired jobs
               const jobStatus =
-                job.expiry_date < new Date()
-                  ? "Closed"
-                  : job.status;
+                job.expiry_date < new Date() ? "Closed" : job.status;
 
               // Check if the current job is in the applied jobs list
-              const isApplied = appliedJobs.some((appliedJob) => appliedJob.job_id === job.id);
+              const isApplied = appliedJobs.some(
+                (appliedJob) => appliedJob.job_id === job.id
+              );
 
               return (
                 <tr
                   key={index}
-                  className={isApplied ? "highlight-applied-job" : ""}  // Highlight the row if the client has applied
+                  className={isApplied ? "highlight-applied-job" : ""} // Highlight the row if the client has applied
                 >
                   <td>
                     <h3 className="title-jobs-dashboard">
                       <NavLink to={`/jobdetail/${job.id}`}>
                         <span className="icon">
                           {jobStatus === "Closed" ? (
-                            <img src={lock} alt={job.tooltip} title={job.tooltip} />
+                            <img
+                              src={lock}
+                              alt={job.tooltip}
+                              title={job.tooltip}
+                            />
                           ) : (
-                            <img src={urgent} alt={job.tooltip} title={job.tooltip} />
+                            <img
+                              src={urgent}
+                              alt={job.tooltip}
+                              title={job.tooltip}
+                            />
                           )}
                         </span>
                         {job.title}
@@ -170,41 +186,43 @@ const JobList = () => {
                             : "orange",
                       }}
                     >
-                      {jobStatus === "Closed" ? "Expire" : expiryDate || "No Expiry Date"}
+                      {jobStatus === "Closed"
+                        ? "Expire"
+                        : expiryDate || "No Expiry Date"}
                     </span>
                   </td>
                   <td>
                     <Dropdown>
-                          <Dropdown.Toggle as={CustomToggle} />
-                          <Dropdown.Menu>
-                                <Dropdown.Item>
-                                  <button
-                                    className="btn btn-light"
-                                    onClick={() => Edit(job.id)}
-                                    style={{
-                                      display: "block",
-                                      width: "100%",
-                                      fontSize: "1.5rem",
-                                    }}
-                                  >
-                                    Edit
-                                  </button>
-                                </Dropdown.Item>
-                                <Dropdown.Item>
-                                  <button
-                                    className="btn btn-light"
-                                    onClick={() => Delete(job.id)}
-                                    style={{
-                                      display: "block",
-                                      width: "100%",
-                                      fontSize: "1.5rem",
-                                    }}
-                                  >
-                                    Delete
-                                  </button>
-                                </Dropdown.Item>
-                                 </Dropdown.Menu>
-                                 </Dropdown>
+                      <Dropdown.Toggle as={CustomToggle} />
+                      <Dropdown.Menu>
+                        <Dropdown.Item>
+                          <button
+                            className="btn btn-light"
+                            onClick={() => Edit(job.id)}
+                            style={{
+                              display: "block",
+                              width: "100%",
+                              fontSize: "1.5rem",
+                            }}
+                          >
+                            Edit
+                          </button>
+                        </Dropdown.Item>
+                        <Dropdown.Item>
+                          <button
+                            className="btn btn-light"
+                            onClick={() => Delete(job.id)}
+                            style={{
+                              display: "block",
+                              width: "100%",
+                              fontSize: "1.5rem",
+                            }}
+                          >
+                            Delete
+                          </button>
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown>
                   </td>
                 </tr>
               );
