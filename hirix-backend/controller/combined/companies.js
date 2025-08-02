@@ -1,7 +1,7 @@
 const { query } = require("express");
 const { conn_sql } = require("../../config/connection");
 const { VerifyEmail } = require("../../mailer/mailer-controller");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 // get All companies
 const Getcompanies = (req, res) => {

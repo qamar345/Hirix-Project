@@ -4,7 +4,7 @@ const path = require("path");
 const cors = require('cors');
 const router = require('./routes/app-routes');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const { databaseconfig } = require('./config/connection');
 

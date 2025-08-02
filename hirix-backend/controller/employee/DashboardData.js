@@ -1,5 +1,5 @@
 const { conn_sql } = require("../../config/connection");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 // get dashboard data
 const Dashboard = (req, res) => {
