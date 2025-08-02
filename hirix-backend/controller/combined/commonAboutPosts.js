@@ -1,6 +1,6 @@
 const { conn_sql } = require("../../config/connection");
 const { VerifyEmail } = require("../../mailer/mailer-controller");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 // get All job posts
 const GetpostsByAdmin = (req, res) => {
