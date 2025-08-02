@@ -37,8 +37,7 @@ const ManagersList = () => {
       settCurrentPage(res.data.meta.page);
       setTotalPages(res.data.meta.totalPages);
       // setLoading(false);
-    } catch (error) {
-          }
+    } catch (error) {}
   };
 
   const handlePageChange = (page) => {
@@ -55,8 +54,7 @@ const ManagersList = () => {
         alert(res.data.msg);
         window.location.reload();
       })
-      .catch((err) => {
-              });
+      .catch((err) => {});
   };
 
   const InActiveAccount = async (id) => {
@@ -66,8 +64,7 @@ const ManagersList = () => {
         alert(res.data.msg);
         window.location.reload();
       })
-      .catch((err) => {
-              });
+      .catch((err) => {});
   };
   // const applicantsData = [
   //   {
@@ -99,103 +96,105 @@ const ManagersList = () => {
           </tr>
         </thead>
         <tbody>
-          {managersData.map((manager, index) => (
-            <tr key={index}>
-              <td className="info">
-                <div className="info-details">
-                  <h5>{manager.FirstName}</h5>
-                </div>
-              </td>
-              <td className="status">
-                <div>
-                  <span
-                    className={`label label-${
-                      manager.status === "Active" ? "open" : "close"
-                    }`}
-                  >
-                    {manager.status}
-                  </span>
-                </div>
-              </td>
-              <td className="info">
-                <span className="gmail">{manager.email}</span>
-              </td>
-              <td className="info">
-                <span className="phone">{manager.phone}</span>
-              </td>
-              <td className="info">
-                <span className="phone">{manager.role}</span>
-              </td>
-              <td className="info">
-                <div>
-                  <Dropdown>
-                    <Dropdown.Toggle as={CustomToggle} />
-                    <Dropdown.Menu>
-                      {manager.status === "Inactive" ? (
-                        <>
-                          <Dropdown.Item>
-                            <button
-                              className="btn btn-light"
-                              onClick={() => ActiveAccount(manager.id)}
-                              style={{
-                                display: "block",
-                                width: "100%",
-                                fontSize: "1.5rem",
-                              }}
-                            >
-                              Active
-                            </button>
-                          </Dropdown.Item>
-                          <Dropdown.Item>
-                            <button
-                              className="btn btn-light"
-                              onClick={() => InActiveAccount(manager.id)}
-                              style={{
-                                display: "block",
-                                width: "100%",
-                                fontSize: "1.5rem",
-                              }}
-                            >
-                              InActive
-                            </button>
-                          </Dropdown.Item>
-                        </>
-                      ) : (
-                        <>
-                          <Dropdown.Item>
-                            <button
-                              className="btn btn-light"
-                              onClick={() => InActiveAccount(manager.id)}
-                              style={{
-                                display: "block",
-                                width: "100%",
-                                fontSize: "1.5rem",
-                              }}
-                            >
-                              InActive
-                            </button>
-                          </Dropdown.Item>
-                          <Dropdown.Item>
-                            <button
-                              className="btn btn-light"
-                              onClick={() => ActiveAccount(manager.id)}
-                              style={{
-                                display: "block",
-                                width: "100%",
-                                fontSize: "1.5rem",
-                              }}
-                            >
-                              Active
-                            </button>
-                          </Dropdown.Item>
-                        </>
-                      )}
-                    </Dropdown.Menu>
-                  </Dropdown>
-                </div>
-              </td>
-            </tr>
-          ))}
+          {managersData
+            ? managersData.map((manager, index) => (
+                <tr key={index}>
+                  <td className="info">
+                    <div className="info-details">
+                      <h5>{manager.FirstName}</h5>
+                    </div>
+                  </td>
+                  <td className="status">
+                    <div>
+                      <span
+                        className={`label label-${
+                          manager.status === "Active" ? "open" : "close"
+                        }`}
+                      >
+                        {manager.status}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="info">
+                    <span className="gmail">{manager.email}</span>
+                  </td>
+                  <td className="info">
+                    <span className="phone">{manager.phone}</span>
+                  </td>
+                  <td className="info">
+                    <span className="phone">{manager.role}</span>
+                  </td>
+                  <td className="info">
+                    <div>
+                      <Dropdown>
+                        <Dropdown.Toggle as={CustomToggle} />
+                        <Dropdown.Menu>
+                          {manager.status === "Inactive" ? (
+                            <>
+                              <Dropdown.Item>
+                                <button
+                                  className="btn btn-light"
+                                  onClick={() => ActiveAccount(manager.id)}
+                                  style={{
+                                    display: "block",
+                                    width: "100%",
+                                    fontSize: "1.5rem",
+                                  }}
+                                >
+                                  Active
+                                </button>
+                              </Dropdown.Item>
+                              <Dropdown.Item>
+                                <button
+                                  className="btn btn-light"
+                                  onClick={() => InActiveAccount(manager.id)}
+                                  style={{
+                                    display: "block",
+                                    width: "100%",
+                                    fontSize: "1.5rem",
+                                  }}
+                                >
+                                  InActive
+                                </button>
+                              </Dropdown.Item>
+                            </>
+                          ) : (
+                            <>
+                              <Dropdown.Item>
+                                <button
+                                  className="btn btn-light"
+                                  onClick={() => InActiveAccount(manager.id)}
+                                  style={{
+                                    display: "block",
+                                    width: "100%",
+                                    fontSize: "1.5rem",
+                                  }}
+                                >
+                                  InActive
+                                </button>
+                              </Dropdown.Item>
+                              <Dropdown.Item>
+                                <button
+                                  className="btn btn-light"
+                                  onClick={() => ActiveAccount(manager.id)}
+                                  style={{
+                                    display: "block",
+                                    width: "100%",
+                                    fontSize: "1.5rem",
+                                  }}
+                                >
+                                  Active
+                                </button>
+                              </Dropdown.Item>
+                            </>
+                          )}
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            : ""}
         </tbody>
       </Table>
       <Pagination

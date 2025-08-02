@@ -25,7 +25,7 @@ const Login = ({ ...props }) => {
   const [Phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -63,12 +63,12 @@ const Login = ({ ...props }) => {
         .post("http://localhost:9000/employee-login", { payload })
         .then((res) => {
           alert(res.data.msg);
-                    if (res.data.isloggedin) {
+          if (res.data.isloggedin) {
             sessionStorage.setItem("id", res.data.data.id);
             sessionStorage.setItem("name", res.data.data.username);
             sessionStorage.setItem("first_name", res.data.data.first_name);
             sessionStorage.setItem("image", res.data.data.image);
-             sessionStorage.setItem("role", res.data.data.role);
+            sessionStorage.setItem("role", res.data.data.role);
             sessionStorage.setItem("email", res.data.data.email);
             sessionStorage.setItem("isLoggedIn", res.data.data.isloggedin);
             if (res.data.data.role === "employee") {
@@ -83,17 +83,16 @@ const Login = ({ ...props }) => {
             alert("Login failed.");
           }
         })
-        .catch((err) => {
-                  });
+        .catch((err) => {});
     } catch (error) {
       setError(error.message);
-          } finally {
+    } finally {
       setLoading(false);
     }
   };
   const submit = async (e) => {
     e.preventDefault();
-    if (!role) {
+    if (role !== null) {
       alert("Please select a role (Candidate or Employer).");
       return;
     }
@@ -115,7 +114,7 @@ const Login = ({ ...props }) => {
 
       setVerificationSent(true);
     } catch (error) {
-            alert(error.errors?.[0]?.message || "Failed to send verification");
+      alert(error.errors?.[0]?.message || "Failed to send verification");
     }
   };
 
@@ -143,7 +142,8 @@ const Login = ({ ...props }) => {
       alert(res.data.msg);
       window.location.reload();
     } catch (error) {
-            alert("Verification failed. Please check the code.");
+      console.log(error);
+      alert("Verification failed. Please check the code.");
     }
   };
 
@@ -213,7 +213,7 @@ const Login = ({ ...props }) => {
       const data = await response.json();
       setUserName(data.username);
     } catch (error) {
-            alert("Error generating username");
+      alert("Error generating username");
     }
   };
 
@@ -222,7 +222,7 @@ const Login = ({ ...props }) => {
       handleGenerate();
     }
   }, [FirstName, LastName]);
-  
+
   return (
     <Modal {...props} centered>
       <Modal.Body>
@@ -369,7 +369,7 @@ const Login = ({ ...props }) => {
                         Password
                       </label>
                       <input
-                         type={showPassword ? "text" : "password"}
+                        type={showPassword ? "text" : "password"}
                         className="form-control input-field valid"
                         name="password"
                         autoComplete="on"
@@ -448,7 +448,7 @@ const Login = ({ ...props }) => {
             >
               <div className="form-group">
                 <div className="row">
-                  <div className="col-6">
+                  {/* <div className="col-6">
                     <div className="col-group">
                       <label
                         htmlFor="civi_user_candidate"
@@ -475,6 +475,7 @@ const Login = ({ ...props }) => {
                         className="label-field radio-field"
                       >
                         <input
+                        className="btn-link"
                           type="radio"
                           id="civi_user_employer"
                           name="account_type"
@@ -488,7 +489,32 @@ const Login = ({ ...props }) => {
                         </span>
                       </label>
                     </div>
-                  </div>
+                  </div> */}
+
+                  <select
+                    name="role"
+                    id=""
+                    onChange={(e) => {
+                      e.target.value;
+                    }}
+                  >
+                    <option disabled selected>
+                      --Select Role--
+                    </option>
+                    <option value="employee">
+                      {" "}
+                      <span>
+                        <FaBriefcase className="icon" />
+                        Employer
+                      </span>
+                    </option>
+                    <option value="jobseeker">
+                      <span>
+                        <FaRegUser className="icon" />
+                        Candidate
+                      </span>
+                    </option>
+                  </select>
                 </div>
               </div>
               <div className="form-group">
@@ -558,7 +584,7 @@ const Login = ({ ...props }) => {
                   Phone number
                 </label>
                 <PhoneInput
-                required
+                  required
                   className="signUpPhone"
                   value={Phone}
                   onChange={(value) => setPhone(value)}
@@ -582,7 +608,7 @@ const Login = ({ ...props }) => {
                 <span
                   toggle="#ip_reg_password"
                   className="fa fa-fw fa-eye field-icon civi-toggle-password"
-                   onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowPassword(!showPassword)}
                 />
                 {verificationSent && (
                   <div className="form-group mt-3">

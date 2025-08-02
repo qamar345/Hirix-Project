@@ -76,7 +76,8 @@ const JobList = () => {
   };
 
   useEffect(() => {
-    GetAppliedJobs(); // Fetch the applied jobs for the client
+    GetAppliedJobs();
+    // Fetch the applied jobs for the client
   }, [clientId]);
 
   const Delete = async (id) => {
@@ -239,7 +240,7 @@ const JobList = () => {
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
-        onPageChange={handlePageChange}
+        // onPageChange={handlePageChange}
       />
     </>
   );

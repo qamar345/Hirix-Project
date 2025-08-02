@@ -1,8 +1,8 @@
 const { conn_sql } = require("../../config/connection");
 const bcrypt = require("bcryptjs");
-const jwt = require('jsonwebtoken')
+const jwt = require("jsonwebtoken");
 
-const upload = require("../../middleware/upload"); 
+const upload = require("../../middleware/upload");
 
 // Admin account creation
 
@@ -22,7 +22,11 @@ CREATE TABLE IF NOT EXISTS admin (
     if (err) throw err;
     conn_sql.query(
       "INSERT IGNORE INTO admin (email, password, role, image) VALUES (?, ?, 'admin', ?)",
-      ["nimraasad09@gmail.com", hashedPassword, '/uploads/1748974785956-slidepic4.png'],
+      [
+        "admin@hirix.pk",
+        hashedPassword,
+        "/uploads/1748974785956-slidepic4.png",
+      ],
       (err) => {
         if (err) throw err;
         console.log("Admin user created (if not exists)");
@@ -40,14 +44,20 @@ const Adminlogin = (req, res) => {
     if (err) throw err;
 
     if (result.length === 0) {
-      return res.json({ userStatus: false, message: "Invalid email or password" });
+      return res.json({
+        userStatus: false,
+        message: "Invalid email or password",
+      });
     }
 
     const admin = result[0];
     const isPasswordValid = bcrypt.compareSync(password, admin.password);
 
     if (!isPasswordValid) {
-      return res.json({ userStatus: false, message: "Invalid email or password" });
+      return res.json({
+        userStatus: false,
+        message: "Invalid email or password",
+      });
     }
 
     const secretKey = process.env.SECRETKEY;
@@ -70,26 +80,21 @@ const secretKey = process.env.SECRETKEY;
 // Admin Update Profile
 const AdminProfile = (req, res) => {
   const bodyData = Object.assign({}, req.body);
-    const { id } = req.params;
+  const { id } = req.params;
   const { name, email } = bodyData;
 
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
   const sqladmin =
     "UPDATE `admin` SET `name`= ?, `email`= ?, `image`= ? WHERE id=?";
-  conn_sql.query(
-    sqladmin,
-    [name, email, imageUrl, id],
-    (err, result) => {
-      if (err) {
-        return res.json(err);
-      } else {
-        return res.json({ message: "Profile updated...", result, imageUrl });
-      }
+  conn_sql.query(sqladmin, [name, email, imageUrl, id], (err, result) => {
+    if (err) {
+      return res.json(err);
+    } else {
+      return res.json({ message: "Profile updated...", result, imageUrl });
     }
-  );
+  });
 };
-
 
 // Admin Update Password
 const AdminChangePassword = (req, res) => {
@@ -118,22 +123,25 @@ const AdminChangePassword = (req, res) => {
     const saltRounds = 10;
     const hashedNewPass = await bcrypt.hash(newPass, saltRounds);
 
-    const updatePasswordQuery = "UPDATE `admin` SET `password` = ? WHERE id = ?";
-    conn_sql.query(updatePasswordQuery, [hashedNewPass, id], (updateErr, updateResult) => {
-      if (updateErr) {
-        return res.json({ msg: "Failed to update password", updateErr });
+    const updatePasswordQuery =
+      "UPDATE `admin` SET `password` = ? WHERE id = ?";
+    conn_sql.query(
+      updatePasswordQuery,
+      [hashedNewPass, id],
+      (updateErr, updateResult) => {
+        if (updateErr) {
+          return res.json({ msg: "Failed to update password", updateErr });
+        }
+        return res.json({ msg: "Password updated successfully", updateResult });
       }
-      return res.json({ msg: "Password updated successfully", updateResult });
-    });
+    );
   });
 };
 
-
- 
 const GetAdmin = (req, res) => {
-  const {id} = req.params;
+  const { id } = req.params;
   const sql_get = "SELECT * FROM `admin` WHERE id = ?";
-  conn_sql.query(sql_get, [id],(err, result) => {
+  conn_sql.query(sql_get, [id], (err, result) => {
     if (err) {
       return res.json(err);
     } else {
@@ -142,4 +150,10 @@ const GetAdmin = (req, res) => {
   });
 };
 
-module.exports = { AdminSetup, Adminlogin, AdminProfile , GetAdmin, AdminChangePassword};
+module.exports = {
+  AdminSetup,
+  Adminlogin,
+  AdminProfile,
+  GetAdmin,
+  AdminChangePassword,
+};

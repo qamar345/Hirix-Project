@@ -1,34 +1,33 @@
-const sql = require ("mysql");
+const sql = require("mysql");
 
-const dotenv= require("dotenv").config();
+const dotenv = require("dotenv").config();
 
-const host = process.env.HOST;
+const host = "localhost" || process.env.HOST;
 
-const user = process.env.USER;
+const user = "root" || process.env.USER;
 
-const password = process.env.PASSWORD;
+const password = "" || process.env.PASSWORD;
 
-const database = process.env.DATABASE;
+const database = "hirix" || process.env.DATABASE;
 
 const conn_sql = sql.createConnection({
-    host: host,
-    user: user,
-    password: password,
-    database: database,
-
+  host: host,
+  user: user,
+  password: password,
+  database: database,
 });
 
 function databaseconfig() {
-    conn_sql.connect((err)=>{
-        if(err){
-            console.log("Database is not connected", err);
-        }else{
-            console.log("Database connected");
-        }
-    });
+  conn_sql.connect((err) => {
+    if (err) {
+      console.log("Database is not connected", err);
+    } else {
+      console.log("Database connected");
+    }
+  });
 }
 
 module.exports = {
-       databaseconfig,
-       conn_sql,
+  databaseconfig,
+  conn_sql,
 };

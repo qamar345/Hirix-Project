@@ -23,7 +23,7 @@ import {
   Error,
 } from "./candidate/index.js";
 
- // Employer
+// Employer
 import {
   Employer,
   EmpApplicants,
@@ -70,7 +70,9 @@ import ApplicantDetail from "./Admin/tables/ApplicantsDetail.jsx";
 
 // Import your Publishable Key
 // const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-const PUBLISHABLE_KEY = "pk_test_ZXhwZXJ0LWdhdG9yLTQyLmNsZXJrLmFjY291bnRzLmRldiQ";
+const PUBLISHABLE_KEY =
+  "pk_test_ZHJpdmluZy1raXdpLTg4LmNsZXJrLmFjY291bnRzLmRldiQ" ||
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 if (!PUBLISHABLE_KEY) {
   throw Error("Missing Publishable Key");
@@ -97,7 +99,7 @@ const router = createBrowserRouter(
 
         <Route path="add-education" element={<AddEducation />} />
       </Route>
-        {/* Employer */}
+      {/* Employer */}
       <Route path="employer" element={<Employer />}>
         <Route path="dashboard" element={<EmpDashboard />} />
 
@@ -129,17 +131,17 @@ const router = createBrowserRouter(
       <Route path="/jobdetail/:id" element={<JobDetail />} />
 
       <Route path="/admin/company" element={<AdCompany />} />
-      <Route path="/CompanyDetails/:id" element={<CompanyDetail/>}/>
+      <Route path="/CompanyDetails/:id" element={<CompanyDetail />} />
       <Route path="/admin/candidates" element={<AdCandidates />} />
       <Route path="/admin/candidates/list" element={<ApplicantList />} />
       <Route path="/ApplicantDetails/:id" element={<ApplicantDetail />} />
       <Route path="/admin/employees" element={<AdEmployee />} />
       <Route path="/admin/employees/list" element={<EmployeeList />} />
       <Route path="/employeeDetails/:id" element={<EmployeeDetail />} />
-      <Route path="/admin/user-management" element={<AdManagement />} /> 
-   </>
+      <Route path="/admin/user-management" element={<AdManagement />} />
+    </>
   )
-); 
+);
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
