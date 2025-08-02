@@ -153,9 +153,9 @@ const NavbarMenu = () => {
                 ) : (
                   <>
                     <NavLink
-                      className={`btn-login`}
+                      className={`btn-login mr-3`}
                       type="button"
-                      variant="primary"
+                      variant="dark"
                       onClick={() => setModalShow(true)}
                     >
                       Login
@@ -176,7 +176,20 @@ const NavbarMenu = () => {
             <div className="d-xl-none">
               <div className="block-search search-icon civi-ajax-search">
                 <div className="icon-search">
-                  <GoSearch className="icon" />
+                  <NavLink
+                    className={`btn-login`}
+                    type="button"
+                    variant="primary"
+                    onClick={() => setModalShow(true)}
+                  >
+                    Login
+                  </NavLink>
+
+                  <Login show={modalShow} onHide={() => setModalShow(false)} />
+                  <AdLogin
+                    show={adModalShow}
+                    onHide={() => setAdModalShow(false)}
+                  />
                 </div>
               </div>
             </div>

@@ -1,8 +1,11 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import Login from "../../userAuthentication/Login";
+import { AdLogin } from "../../Admin/index.js";
+
 const MobileNavBar = () => {
   const [modalShow, setModalShow] = React.useState(false);
+  const [adModalShow, setAdModalShow] = React.useState(false);
   return (
     <div className="mobileNav">
       <div
@@ -23,6 +26,7 @@ const MobileNavBar = () => {
             </NavLink>
 
             <Login show={modalShow} onHide={() => setModalShow(false)} />
+            <AdLogin show={adModalShow} onHide={() => setAdModalShow(false)} />
           </p>
           <button
             type="button"

@@ -1,5 +1,5 @@
 const { conn_sql } = require("../../config/connection");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 //job seeker login
 const userlogin = (req, res) => {
@@ -45,7 +45,7 @@ const UserProfile = (req, res) => {
 
 // job_seeker see job post on the basis of their skillset
 const showjobs = (req, res) => {
-  const { id } = req.params;  // jobseeker_id
+  const { id } = req.params; // jobseeker_id
 
   // First query: get the skillset ids of the jobseeker
   const sql = `
@@ -59,7 +59,7 @@ const showjobs = (req, res) => {
 
     if (skillResult.length > 0) {
       // Collect all the skillset ids of the jobseeker
-      const skillIds = skillResult.map(skill => skill.id);
+      const skillIds = skillResult.map((skill) => skill.id);
 
       // Second query: find jobs that require those skills
       const query = `
@@ -71,7 +71,7 @@ const showjobs = (req, res) => {
         if (err) return res.status(500).json(err);
 
         if (jobResult.length > 0) {
-          const jobIds = jobResult.map(job => job.job_id);
+          const jobIds = jobResult.map((job) => job.job_id);
 
           // Third query: get the job details for those jobs
           const querySolve = `
@@ -85,28 +85,29 @@ const showjobs = (req, res) => {
             return res.json(finalResult);
           });
         } else {
-          return res.json([]);  // No jobs found
+          return res.json([]); // No jobs found
         }
       });
     } else {
-      return res.json([]);  // No skills found for this job seeker
+      return res.json([]); // No skills found for this job seeker
     }
   });
 };
 
-// Password Change 
+// Password Change
 const JobSeekerChangePassword = (req, res) => {
   const { id } = req.params;
   const { currentPass, newPass } = req.body.editPasswordData;
-  const checkPasswordQuery = "SELECT password FROM `user_accounts` WHERE id = ?";
-  
+  const checkPasswordQuery =
+    "SELECT password FROM `user_accounts` WHERE id = ?";
+
   conn_sql.query(checkPasswordQuery, [id], (err, results) => {
     if (err) {
-      return res.json({ msg: "Database error",err });
+      return res.json({ msg: "Database error", err });
     }
-    
+
     if (results.length === 0) {
-      return res.json({msg: "user not found" });
+      return res.json({ msg: "user not found" });
     }
 
     const storedPassword = results[0].password;
@@ -114,16 +115,19 @@ const JobSeekerChangePassword = (req, res) => {
     if (storedPassword !== currentPass) {
       return res.json({ msg: "Current password is incorrect" });
     }
-    const updatePasswordQuery = "UPDATE `user_accounts` SET `password`= ? WHERE id=?";
-    conn_sql.query(updatePasswordQuery, [newPass, id], (updateErr, updateResult) => {
-      if (updateErr) {
-        return res.json({ msg: "Failed to update password",updateErr });
+    const updatePasswordQuery =
+      "UPDATE `user_accounts` SET `password`= ? WHERE id=?";
+    conn_sql.query(
+      updatePasswordQuery,
+      [newPass, id],
+      (updateErr, updateResult) => {
+        if (updateErr) {
+          return res.json({ msg: "Failed to update password", updateErr });
+        }
+        return res.json({ msg: "Password updated successfully", updateResult });
       }
-      return res.json({ msg: "Password updated successfully",updateResult });
-    });
+    );
   });
-
 };
- 
 
 module.exports = { userlogin, UserProfile, showjobs, JobSeekerChangePassword };
