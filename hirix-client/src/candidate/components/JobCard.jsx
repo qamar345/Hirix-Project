@@ -19,8 +19,24 @@ const JobCard = ({
   isSelected,
   isUrgent,
   onClick,
-  fromShare = false 
+  fromShare = false,
 }) => {
+  // console.log(
+  //   id,
+  //   images,
+  //   title,
+  //   employer_username,
+  //   company_name,
+  //   job_type,
+  //   city,
+  //   minimum_currency,
+  //   expiry_date,
+  //   isFeatured,
+  //   isSelected,
+  //   isUrgent,
+  //   onClick,
+  //   (fromShare = false)
+  // );
   const customClass = `${isFeatured ? "civi-jobs-featured" : ""} ${
     isSelected ? "active" : ""
   } ${isUrgent ? "civi-jobs-urgent" : ""}`;
@@ -52,29 +68,30 @@ const JobCard = ({
       }
     }
   };
- useEffect(() => {
-  if (fromShare) {
-    setSharedHighlight(true);
-    const timer = setTimeout(() => setSharedHighlight(false), 5000);
-    return () => clearTimeout(timer);
-  }
-}, [fromShare]);
+  useEffect(() => {
+    if (fromShare) {
+      setSharedHighlight(true);
+      const timer = setTimeout(() => setSharedHighlight(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [fromShare]);
   return (
-    <div className="content-jobs area-jobs area-archive column-1" >
+    <div className="content-jobs area-jobs area-archive column-1">
       <div
         id={id}
         className={`civi-jobs-item layout-list  ${customClass}`}
         onClick={onClick}
         // style={{ cursor: "pointer" }}
         style={
-    sharedHighlight
-      ? {
-          border: "2px solid #ff9800",
-          boxShadow: "0 0 15px rgba(255, 152, 0, 0.5)",
-          backgroundColor: "#fff7e6",
-          transition: "all 0.5s ease-in-out",
+          sharedHighlight
+            ? {
+                border: "2px solid #ff9800",
+                boxShadow: "0 0 15px rgba(255, 152, 0, 0.5)",
+                backgroundColor: "#fff7e6",
+                transition: "all 0.5s ease-in-out",
+              }
+            : {}
         }
-      : {} }
       >
         <div className="jobs-archive-header">
           <div className="jobs-header-left">

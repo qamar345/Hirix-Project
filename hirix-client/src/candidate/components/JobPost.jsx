@@ -8,7 +8,7 @@ import { MdOutlineLocationOn } from "react-icons/md";
 import { differenceInDays } from "date-fns";
 import axios from "axios";
 
-const JobPost = ({ job , fromShare}) => {
+const JobPost = ({ job, fromShare }) => {
   const showJob = localStorage.getItem("test");
   // logo,
   // title,
@@ -72,8 +72,7 @@ const JobPost = ({ job , fromShare}) => {
         );
         const jobIds = res.data.map((item) => item.job_id);
         setWishlistJobs(jobIds);
-      } catch (error) {
-              }
+      } catch (error) {}
     };
 
     fetchWishlist();
@@ -99,8 +98,7 @@ const JobPost = ({ job , fromShare}) => {
         } else {
           alert("Failed to apply, please try again.");
         }
-      } catch (error) {
-              }
+      } catch (error) {}
     }
   };
 
@@ -130,7 +128,7 @@ const JobPost = ({ job , fromShare}) => {
         alert("Something went wrong. Please try again.");
       }
     } catch (error) {
-            alert("An error occurred while adding to wishlist.");
+      alert("An error occurred while adding to wishlist.");
     }
   };
 
@@ -143,9 +141,10 @@ const JobPost = ({ job , fromShare}) => {
       .then(() => {
         alert("Link copied to clipboard!");
       })
-      .catch((err) => {
-              });
+      .catch((err) => {});
   };
+
+  console.log(title)
 
   return (
     <div id="1" className="jobDetailWrapper">
@@ -355,16 +354,13 @@ const JobPost = ({ job , fromShare}) => {
                         </svg>
                       </div>
                       <div className="info">
-  <p className="title-info">Date posted</p>
-  <p className="details-info">
-    {created_at && !isNaN(new Date(created_at)) ? (
-      new Date(created_at).toISOString().split("T")[0]
-    ) : (
-      "N/A"
-    )}
-  </p>
-</div>
-
+                        <p className="title-info">Date posted</p>
+                        <p className="details-info">
+                          {created_at && !isNaN(new Date(created_at))
+                            ? new Date(created_at).toISOString().split("T")[0]
+                            : "N/A"}
+                        </p>
+                      </div>
                     </li>
                     <li className="list-item col-md-4 col-sm-6">
                       <div className="icon-jobs">

@@ -60,41 +60,42 @@ const EmpJobEdit = () => {
 
     fetchCompany();
   }, []);
+
   useEffect(async () => {
     if (editId && editId !== "new") {
-      axios.get(`http://localhost:9000/getjobPost/${editId}`).then((res) => {
-        const submit = async (e) => {
-          e.preventDefault();
-
-          const payload = {
-            title: title?.trim(),
-            Email: email?.trim(),
-            job_category: category?.trim(),
-            job_type: jobtype?.trim(),
-            workplace_type: workPlaceType?.trim(),
-            description: des?.trim(),
-            required_skills: skill,
-            career_level: careerLevel?.trim(),
-            Experience: experiences?.trim(),
-            qualification: qual?.trim(),
-            available_seats: quantity,
-            gender: Gender?.trim(),
-            expiry_date: expirydate,
-            salary: Salary?.trim(),
-            currency: curr?.trim(),
-            minimum_currency: minValue,
-            maximum_currency: maxValue,
-            Rate: rateType?.trim(),
-            Url: url?.trim(),
-            Phone: phone,
-            ApplyType: appliedType?.trim(),
-            company_name: Company,
-            city: City?.trim(),
-            province: Province?.trim(),
-          };
-        };
-      });
+      axios.get(`http://localhost:9000/getjobPost/${editId}`).then((res) => {});
     }
+  });
+
+  const Submit = async (e) => {
+    e.preventDefault();
+
+    const payload = {
+      title: title?.trim(),
+      Email: email?.trim(),
+      job_category: category?.trim(),
+      job_type: jobtype?.trim(),
+      workplace_type: workPlaceType?.trim(),
+      description: des?.trim(),
+      required_skills: skill,
+      career_level: careerLevel?.trim(),
+      Experience: experiences?.trim(),
+      qualification: qual?.trim(),
+      available_seats: quantity,
+      gender: Gender?.trim(),
+      expiry_date: expirydate,
+      salary: Salary?.trim(),
+      currency: curr?.trim(),
+      minimum_currency: minValue,
+      maximum_currency: maxValue,
+      Rate: rateType?.trim(),
+      Url: url?.trim(),
+      Phone: phone,
+      ApplyType: appliedType?.trim(),
+      company_name: Company,
+      city: City?.trim(),
+      province: Province?.trim(),
+    };
 
     try {
       const res = await axios.put(
@@ -104,7 +105,8 @@ const EmpJobEdit = () => {
       alert(res.data.msg);
       navigate(`/employer/jobs`);
     } catch (error) {}
-  });
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 150) {
@@ -131,7 +133,7 @@ const EmpJobEdit = () => {
   return (
     <div className="dashboardWrapper addCompany">
       <div className="entry-my-page submit-company-dashboard">
-        <form onSubmit={submit} className="form-dashboard">
+        <form onSubmit={Submit} className="form-dashboard">
           <div className="content-company">
             <div className="row ">
               <div className="col-lg-8 col-md-7 entry-section ">

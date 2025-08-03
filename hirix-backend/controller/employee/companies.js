@@ -2,14 +2,14 @@ const { conn_sql } = require("../../config/connection");
 
 const crypto = require("crypto");
 
-const upload = require("../../middleware/upload"); 
+const upload = require("../../middleware/upload");
 
 // const nodemailer = require ('nodemailer');
 
 //  Add Companies
 const Addcompany = (req, res) => {
   const bodyData = Object.assign({}, req.body);
-  const {id} = req.params;
+  const { id } = req.params;
   const {
     name,
     categories,
@@ -35,7 +35,7 @@ const Addcompany = (req, res) => {
       id,
       name,
       categories,
-       About,
+      About,
       website_link,
       Contact,
       E_mail,
@@ -43,10 +43,11 @@ const Addcompany = (req, res) => {
       imageUrl,
       province,
       city,
-      Ntn
+      Ntn,
     ],
     (err, result) => {
       if (err) {
+        console.log(err);
         return res.json({ msg: "Error...", err });
       } else {
         const companyId = result.insertId;
@@ -57,6 +58,7 @@ const Addcompany = (req, res) => {
           [companyId, twitter, facebook, instagram, linkedIn],
           (err, result) => {
             if (err) {
+              console.log(err);
               return res.json({ msg: "Error...", err });
             } else {
               return res.json({ msg: "INSERTED...", result });
@@ -102,7 +104,7 @@ const Editcompany = (req, res) => {
     linkedIn,
     province,
     city,
-    Ntn
+    Ntn,
   } = req.body;
   const sql_addcompany =
     "UPDATE `companies` SET `name`=? , `categories`=? ,`About`=? , `website_link`=? ,`Contact`=? , `E_mail`=? ,`founded_in` = ? ,`total_members`= ? ,`province`=?, `city` = ?, `Ntn` = ? WHERE id=?";
@@ -134,7 +136,7 @@ const Editcompany = (req, res) => {
           (err, result) => {
             if (err) throw err;
             else {
-               console.log(result);
+              console.log(result);
               return res.json({ msg: "Updated...", result });
             }
           }
@@ -152,7 +154,8 @@ const Selectcompany = (req, res) => {
   const { id } = req.params;
 
   // Pehle total count fetch karein
-  const sql_count = "SELECT COUNT(*) AS total FROM `companies` WHERE user_account_id = ? AND status_delete = 1 ";
+  const sql_count =
+    "SELECT COUNT(*) AS total FROM `companies` WHERE user_account_id = ? AND status_delete = 1 ";
   conn_sql.query(sql_count, [id], (count_err, count_result) => {
     if (count_err) {
       return res.json({ error: count_err });
@@ -162,7 +165,8 @@ const Selectcompany = (req, res) => {
     const totalPages = Math.ceil(totalData / limit);
 
     // Ab actual companies ka data fetch karein
-    const sql_get = " SELECT c.*, (SELECT COUNT(*) FROM jobs j WHERE j.company_name = c.id AND j.status = 'open') AS active_jobs FROM companies c WHERE c.user_account_id = ? AND c.status_delete = 1  LIMIT ? OFFSET ?";
+    const sql_get =
+      " SELECT c.*, (SELECT COUNT(*) FROM jobs j WHERE j.company_name = c.id AND j.status = 'open') AS active_jobs FROM companies c WHERE c.user_account_id = ? AND c.status_delete = 1  LIMIT ? OFFSET ?";
 
     conn_sql.query(sql_get, [id, limit, offset], (c_err, c_data) => {
       if (c_err) {
@@ -186,7 +190,8 @@ const Selectcompany = (req, res) => {
 const DeleteCompany = (req, res) => {
   const { id } = req.params;
 
-  const sql_update = "UPDATE `companies` SET `status_delete` = 0 WHERE `id` = ?";
+  const sql_update =
+    "UPDATE `companies` SET `status_delete` = 0 WHERE `id` = ?";
   conn_sql.query(sql_update, [id], (err, result) => {
     if (err) {
       return res.status(500).json({ msg: "SQL Error", error: err.sqlMessage });
@@ -201,9 +206,9 @@ const DeleteCompany = (req, res) => {
 
 // Get specific company
 const GetCompanySpecific = (req, res) => {
-  const {id} = req.params;
+  const { id } = req.params;
   const sql_get = "SELECT * FROM `companies` WHERE id = ?";
-  conn_sql.query(sql_get, [id],(err, result) => {
+  conn_sql.query(sql_get, [id], (err, result) => {
     if (err) {
       return res.json(err);
     } else {
@@ -212,6 +217,10 @@ const GetCompanySpecific = (req, res) => {
   });
 };
 
-
-
-module.exports = { Addcompany, Editcompany, Selectcompany , DeleteCompany, GetCompanySpecific};
+module.exports = {
+  Addcompany,
+  Editcompany,
+  Selectcompany,
+  DeleteCompany,
+  GetCompanySpecific,
+};

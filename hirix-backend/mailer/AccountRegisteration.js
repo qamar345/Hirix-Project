@@ -5,13 +5,13 @@ const SendAccountCreatedEmail = (email) => {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "nimraasad09@gmail.com@gmail.com",
+      user: process.env.MAILERUSER,
       pass: process.env.MAILERPASS,
     },
   });
 
   const mailOptions = {
-    from: "Hirix <nimraasad09@gmail.com>",
+    from: "Hirix <Hirix Pakistan>",
     to: email,
     subject: "Account Created Successfully",
     html: `

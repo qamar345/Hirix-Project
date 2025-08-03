@@ -25,7 +25,7 @@ const Login = ({ ...props }) => {
   const [Phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState(null);
+  const [role, setRole] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -40,6 +40,8 @@ const Login = ({ ...props }) => {
   const [token, setToken] = useState();
   const [verificationSent, setVerificationSent] = useState(false);
   const [code, setCode] = useState("");
+  const [isVerified, setIsVerified] = useState(false);
+  const [loader, setLoader] = useState("");
 
   const navigate = useNavigate();
 
@@ -90,51 +92,94 @@ const Login = ({ ...props }) => {
       setLoading(false);
     }
   };
-  const submit = async (e) => {
+
+  const SendMailVerifcationLink = async (e) => {
     e.preventDefault();
-    if (role !== null) {
-      alert("Please select a role (Candidate or Employer).");
-      return;
-    }
-    if (!isLoaded) return alert("Clerk not loaded yet.");
 
-    try {
-      // 1. Clerk account create
-      await signUp.create({
-        emailAddress: email,
-        UserName: UserName,
-        // phoneNumber: Phone,
-        password: password,
-      });
-
-      // 2. Send verification codes
-      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
-      // await signUp.preparePhoneNumberVerification({ strategy: "phone_code" });
-      alert("Verification code sent to your email and phone.");
-
-      setVerificationSent(true);
-    } catch (error) {
-      alert(error.errors?.[0]?.message || "Failed to send verification");
+    if (!email) {
+      alert("Please enter email first!!!");
+    } else {
+      try {
+        const res = await axios.post(
+          "http://localhost:9000/send-verify-email",
+          { email }
+        );
+        setLoader("Checking...");
+        alert(res.data.msg);
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 
-  // Handle email/password login
-  const verifyAndRegister = async () => {
-    try {
-      // 3. Verify both codes
-      await signUp.attemptEmailAddressVerification({ code });
-      // await signUp.attemptPhoneNumberVerification({ code });
-      // 4. If verified, now call your backend
-      const payload = {
-        first_name: FirstName?.trim(),
-        last_name: LastName?.trim(),
-        username: UserName?.trim(),
-        email: email?.trim(),
-        phone: Phone,
-        password: password,
-        role: role,
-      };
+  const CheckMailStatus = async () => {
+    if (email) {
+      try {
+        const res = await axios.get(
+          `http://localhost:9000/check-mail-status/${email}`
+        );
+        if (res.data.isVerified) {
+          setLoader("");
+          setIsVerified(true);
+          clearInterval(intervalId);
+        } else {
+          setLoader("Error");
+        }
+      } catch (error) {
+        // console.log(error);
+      }
+    }
+  };
 
+  const intervalId = setInterval(CheckMailStatus, 5000);
+  const submit = async (e) => {
+    //   e.preventDefault();
+    //   if (role !== null) {
+    //     alert("Please select a role (Candidate or Employer).");
+    //     return;
+    //   }
+    //   if (!isLoaded) return alert("Clerk not loaded yet.");
+    //   try {
+    //     // 1. Clerk account create
+    //     await signUp.create({
+    //       emailAddress: email,
+    //       UserName: UserName,
+    //       // phoneNumber: Phone,
+    //       password: password,
+    //     });
+    //     // 2. Send verification codes
+    //     await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+    //     // await signUp.preparePhoneNumberVerification({ strategy: "phone_code" });
+    //     alert("Verification code sent to your email and phone.");
+    //     setVerificationSent(true);
+    //   } catch (error) {
+    //     alert(error.errors?.[0]?.message || "Failed to send verification");
+    //   }
+  };
+
+  // Handle email/password login
+  const verifyAndRegister = async (e) => {
+    e.preventDefault();
+
+    // Just check if role is set before proceeding
+    if (!role) {
+      alert("Please select a role before submitting.");
+      return;
+    }
+
+    const payload = {
+      first_name: FirstName?.trim(),
+      last_name: LastName?.trim(),
+      username: UserName?.trim(),
+      email: email?.trim(),
+      phone: Phone,
+      password: password,
+      role: role, // ✅ role will now have the correct value if selected earlier
+    };
+
+    console.log(payload);
+
+    try {
       const res = await axios.post(
         "http://localhost:9000/employee-signup",
         payload
@@ -222,6 +267,10 @@ const Login = ({ ...props }) => {
       handleGenerate();
     }
   }, [FirstName, LastName]);
+
+  useEffect(() => {
+    console.log("Role selected:", role);
+  }, [role]);
 
   return (
     <Modal {...props} centered>
@@ -440,7 +489,7 @@ const Login = ({ ...props }) => {
             </div>
 
             <form
-              onSubmit={submit}
+              onSubmit={verifyAndRegister}
               id="signUpLink"
               className={`form-account signUp  ${
                 activeTab === "signUpLink" ? "active" : ""
@@ -448,73 +497,43 @@ const Login = ({ ...props }) => {
             >
               <div className="form-group">
                 <div className="row">
-                  {/* <div className="col-6">
+                  <div className="col-6">
                     <div className="col-group">
-                      <label
-                        htmlFor="civi_user_candidate"
-                        className="label-field radio-field"
+                      <button
+                        type="button"
+                        onClick={() => setRole("jobseeker")}
+                        className={
+                          role === "jobseeker"
+                            ? "btn-selected btn btn-primary"
+                            : "btn"
+                        }
                       >
-                        <input
-                          type="radio"
-                          id="civi_user_candidate"
-                          name="account_type"
-                          value="jobseeker"
-                          onChange={(e) => setRole(e.target.value)}
-                        />
                         <span>
                           <FaRegUser className="icon" />
                           Candidate
                         </span>
-                      </label>
+                      </button>
                     </div>
                   </div>
+
                   <div className="col-6">
                     <div className="col-group">
-                      <label
-                        htmlFor="civi_user_employer"
-                        className="label-field radio-field"
+                      <button
+                        type="button"
+                        onClick={() => setRole("employee")}
+                        className={
+                          role === "employee"
+                            ? "btn-selected btn btn-primary"
+                            : "btn"
+                        }
                       >
-                        <input
-                        className="btn-link"
-                          type="radio"
-                          id="civi_user_employer"
-                          name="account_type"
-                          defaultChecked=""
-                          value="employee"
-                          onChange={(e) => setRole(e.target.value)}
-                        />
                         <span>
                           <FaBriefcase className="icon" />
                           Employer
                         </span>
-                      </label>
+                      </button>
                     </div>
-                  </div> */}
-
-                  <select
-                    name="role"
-                    id=""
-                    onChange={(e) => {
-                      e.target.value;
-                    }}
-                  >
-                    <option disabled selected>
-                      --Select Role--
-                    </option>
-                    <option value="employee">
-                      {" "}
-                      <span>
-                        <FaBriefcase className="icon" />
-                        Employer
-                      </span>
-                    </option>
-                    <option value="jobseeker">
-                      <span>
-                        <FaRegUser className="icon" />
-                        Candidate
-                      </span>
-                    </option>
-                  </select>
+                  </div>
                 </div>
               </div>
               <div className="form-group">
@@ -578,6 +597,19 @@ const Login = ({ ...props }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
+
+                {isVerified ? (
+                  <button className="btn btn-success">Verified</button>
+                ) : loader ? (
+                  <p>{loader}</p>
+                ) : (
+                  <button
+                    className="btn btn-primary"
+                    onClick={SendMailVerifcationLink}
+                  >
+                    Click to Verify
+                  </button>
+                )}
               </div>
               <div className="form-group">
                 <label htmlFor="ip_reg_phone" className="label-field">

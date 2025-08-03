@@ -9,6 +9,7 @@ import "react-quill/dist/quill.snow.css";
 import { EmpFooter } from "../index.js";
 import PhoneInput from "react-phone-number-input";
 import axios from "axios";
+import { use } from "react";
 
 const PostJob = () => {
   const navigate = useNavigate();
@@ -23,7 +24,9 @@ const PostJob = () => {
   const [jobtype, setJobType] = useState("");
   const [workPlaceType, setWorkPlaceType] = useState("");
   const [des, setDes] = useState("");
-  const [skill, setSkills] = useState([]);
+  const [skills, setSkills] = useState([]);
+  const [dbskills, setdbSkills] = useState([]);
+
   const [qual, setQualification] = useState("");
   const [quantity, setQuantity] = useState("");
   const [Gender, setGender] = useState("");
@@ -106,7 +109,7 @@ const PostJob = () => {
       job_type: jobtype?.trim(),
       workplace_type: workPlaceType?.trim(),
       description: des?.trim(),
-      required_skills: skill.map((s) => s.value).join(","),
+      required_skills: skills.map((s) => s.value).join(","),
       career_level: careerLevel?.trim(),
       Experience: experiences?.trim(),
       qualification: qual?.trim(),
@@ -156,7 +159,7 @@ const PostJob = () => {
       job_type: jobtype?.trim(),
       workplace_type: workPlaceType?.trim(),
       description: des?.trim(),
-      required_skills: skill.map((s) => s.value).join(","),
+      required_skills: skills.map((s) => s.value).join(","),
       career_level: careerLevel?.trim(),
       Experience: experiences?.trim(),
       qualification: qual?.trim(),
@@ -236,12 +239,14 @@ const PostJob = () => {
     { value: "Hybrid", label: "Hybird" },
   ];
 
-  const skills = [
-    { value: "php", label: "PHP" },
-    { value: "python", label: "Python" },
-    { value: "webDesign", label: "Web Design" },
-    { value: "responsiveDesign", label: "Responsive Design" },
-  ];
+  // const [skills, setSkills] = useState([])
+
+  // const skills = [
+  //   { value: "php", label: "PHP" },
+  //   { value: "python", label: "Python" },
+  //   { value: "webDesign", label: "Web Design" },
+  //   { value: "responsiveDesign", label: "Responsive Design" },
+  // ];
 
   const career = [
     { value: "Fresher", label: "Fresher" },
@@ -319,6 +324,19 @@ const PostJob = () => {
     { value: "sindh", label: "Sindh" },
     { value: "balochistan", label: "Balochistan" },
   ];
+
+  useEffect(() => {
+    const GetSkills = async () => {
+      try {
+        const res = await axios.get("http://localhost:9000/get-skills");
+        setdbSkills(res.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    GetSkills();
+  }, []);
 
   return (
     <div className="dashboardWrapper addCompany">
@@ -443,8 +461,8 @@ const PostJob = () => {
                         <Select
                           isMulti
                           name="skill"
-                          options={skills}
-                          value={skill}
+                          options={dbskills}
+                          value={skills}
                           onChange={(selectedOptions) =>
                             setSkills(selectedOptions || [])
                           }

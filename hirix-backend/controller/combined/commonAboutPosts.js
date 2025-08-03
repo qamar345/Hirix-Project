@@ -48,26 +48,24 @@ const Getposts = (req, res) => {
   const rate = req.query.rate || null;
   const experiences = req.query.experiences || "";
   const careerLevels = req.query.careerLevels || "";
-  let filters = [
-    `jobs.status = "Open"`,
-  ];
+  let filters = [`jobs.status = "Open"`];
   let values = [];
 
   if (search) {
     filters.push(`jobs.title LIKE ?`);
     values.push(`%${search}%`);
   }
-  
+
   if (city) {
     filters.push(`jobs.city LIKE ?`);
     values.push(`%${city}%`);
   }
-  
+
   if (category) {
     filters.push(`jobs.required_skills LIKE ?`);
     values.push(`%${category}%`);
   }
-  
+
   if (jobTypes) {
     filters.push(`jobs.job_type = ?`);
     values.push(jobTypes);
@@ -99,6 +97,8 @@ const Getposts = (req, res) => {
   }
 
   const whereClause = filters.length ? `WHERE ${filters.join(" AND ")}` : "";
+
+  console.log(whereClause)
 
   const sql_getJobs = `
     SELECT 
@@ -152,7 +152,7 @@ const Getposts = (req, res) => {
 };
 
 // getPosts by id
-const  Getpostbyid = (req, res) => {
+const Getpostbyid = (req, res) => {
   const { id } = req.params;
 
   const sql = `
@@ -168,12 +168,12 @@ const  Getpostbyid = (req, res) => {
 
   conn_sql.query(sql, [id], (err, results) => {
     if (err) return res.status(500).json(err);
-    if (results.length === 0) return res.status(404).json({ msg: "Job not found" });
+    if (results.length === 0)
+      return res.status(404).json({ msg: "Job not found" });
 
     res.json(results[0]); // return a single job object with company details
   });
 };
-
 
 // get all jobs of applicant where he/she  applied to
 
@@ -453,7 +453,8 @@ const forgetPassword = (req, res) => {
 
 // For home page get total jobs
 const GetTotalJobs = (req, res) => {
-  const sql = "SELECT COUNT(*) as TotalJobs FROM jobs WHERE status = 'Open' AND expiry_date >= CURDATE()";
+  const sql =
+    "SELECT COUNT(*) as TotalJobs FROM jobs WHERE status = 'Open' AND expiry_date >= CURDATE()";
   conn_sql.query(sql, (err, result) => {
     if (err) return res.status(500).json(err);
     return res.json({ TotalJobs: result[0].TotalJobs });
