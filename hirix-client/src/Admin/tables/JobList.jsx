@@ -77,6 +77,7 @@ const JobList = () => {
 
   useEffect(() => {
     GetAppliedJobs();
+    GetJobPosts();
     // Fetch the applied jobs for the client
   }, [clientId]);
 
@@ -89,6 +90,7 @@ const JobList = () => {
       })
       .catch((err) => {});
   };
+
   return (
     <>
       <Table hover responsive>
@@ -196,7 +198,7 @@ const JobList = () => {
                     <Dropdown>
                       <Dropdown.Toggle as={CustomToggle} />
                       <Dropdown.Menu>
-                        <Dropdown.Item>
+                        {/* <Dropdown.Item>
                           <button
                             className="btn btn-light"
                             onClick={() => Edit(job.id)}
@@ -208,7 +210,7 @@ const JobList = () => {
                           >
                             Edit
                           </button>
-                        </Dropdown.Item>
+                        </Dropdown.Item> */}
                         <Dropdown.Item>
                           <button
                             className="btn btn-light"

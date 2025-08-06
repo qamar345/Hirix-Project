@@ -136,8 +136,11 @@ const ProfileBasicInfo = (req, res) => {
                     });
                   }
 
-                  return res.json({ msg: "Profile Updated", image: imageUrl, firstName: first_name});
-
+                  return res.json({
+                    msg: "Profile Updated",
+                    image: imageUrl,
+                    firstName: first_name,
+                  });
                 }
               );
             } else {

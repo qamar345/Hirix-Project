@@ -120,10 +120,10 @@ const Login = ({ ...props }) => {
         );
         if (res.data.isVerified) {
           setLoader("");
-          setIsVerified(true);
+          setIsVerified(res.data.isVerified);
           clearInterval(intervalId);
         } else {
-          setLoader("Error");
+          CheckMailStatus();
         }
       } catch (error) {
         // console.log(error);

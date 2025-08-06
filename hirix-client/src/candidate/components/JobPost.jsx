@@ -50,6 +50,7 @@ const JobPost = ({ job, fromShare }) => {
     expiry_date,
     province,
     minimum_currency,
+    currency,
     Rate,
     career_level,
     qualification,
@@ -57,6 +58,10 @@ const JobPost = ({ job, fromShare }) => {
     available_seats,
     description,
     required_skills,
+    Email,
+    Phone,
+    Url,
+    ApplyType,
   } = job;
   const today = new Date();
   const expiryDate = new Date(expiry_date);
@@ -144,7 +149,7 @@ const JobPost = ({ job, fromShare }) => {
       .catch((err) => {});
   };
 
-  console.log(title)
+  console.log(title);
 
   return (
     <div id="1" className="jobDetailWrapper">
@@ -296,13 +301,38 @@ const JobPost = ({ job, fromShare }) => {
                 </NavLink>
               </div>
               <div className="right">
-                <NavLink
-                  to="#"
-                  className={`civi-button civi-button-apply civi_form_apply_jobs`}
-                  onClick={handleApply}
-                >
-                  Apply now
-                </NavLink>
+                {ApplyType === "email" && (
+                  <a
+                    href={`mailto:${Email}`}
+                    type="button"
+                    className={`civi-button civi-button-apply civi_form_apply_jobs`}
+                    target="_blank"
+                  >
+                    Apply Now
+                  </a>
+                )}
+
+                {ApplyType === "phone" && (
+                  <a
+                    href={`tel:${Phone}`}
+                    type="button"
+                    className={`civi-button civi-button-apply civi_form_apply_jobs`}
+                    target="_blank"
+                  >
+                    Apply Now
+                  </a>
+                )}
+
+                {ApplyType === "url" && (
+                  <a
+                    href={Url}
+                    type="button"
+                    className={`civi-button civi-button-apply civi_form_apply_jobs`}
+                    target="_blank"
+                  >
+                    Apply Now
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -433,7 +463,8 @@ const JobPost = ({ job, fromShare }) => {
                       <div className="info">
                         <p className="title-info">Offered salary</p>
                         <p className="details-info salary-info">
-                          Min: {minimum_currency} / {Rate}
+                          Min: {minimum_currency}
+                          {currency.toUpperCase()} / {Rate}
                         </p>
                       </div>
                     </li>
@@ -541,12 +572,15 @@ const JobPost = ({ job, fromShare }) => {
                 <div className="civi-description">
                   <h4 className="wp-block-heading">Overview</h4>
 
-                  <p>
+                  <p
+                    dangerouslySetInnerHTML={{
+                      __html: description,
+                    }}
+                  >
                     {/* We are Uxper. With a presence in more than 60 countries,
                     we’re a growing global organization that helps amazing
                     companies engage with customers through mobile messaging,
                     email, voice and video. */}
-                    {description}
                   </p>
 
                   {/* <h4 className="wp-block-heading">Requirements</h4> */}
@@ -868,14 +902,38 @@ const JobPost = ({ job, fromShare }) => {
               <span>{daysLeft > 0 ? daysLeft : 0} </span>days left to apply
             </p>
           </div>
-          <a
-            href="#civi_form_apply_jobs"
-            className="civi-button civi-button-apply civi_form_apply_jobs"
-            data-jobs_id={2071}
-            onClick={handleApply}
-          >
-            Apply now
-          </a>
+          {ApplyType === "email" && (
+            <a
+              href={`mailto:${Email}`}
+              type="button"
+              className={`civi-button civi-button-apply civi_form_apply_jobs`}
+              target="_blank"
+            >
+              Apply Now
+            </a>
+          )}
+
+          {ApplyType === "phone" && (
+            <a
+              href={`tel:${Phone}`}
+              type="button"
+              className={`civi-button civi-button-apply civi_form_apply_jobs`}
+              target="_blank"
+            >
+              Apply Now
+            </a>
+          )}
+
+          {ApplyType === "url" && (
+            <a
+              href={Url}
+              type="button"
+              className={`civi-button civi-button-apply civi_form_apply_jobs`}
+              target="_blank"
+            >
+              Apply Now
+            </a>
+          )}
         </div>
       </div>
     </div>

@@ -14,6 +14,7 @@ const JobCard = ({
   job_type,
   city,
   minimum_currency,
+  currency,
   expiry_date,
   isFeatured,
   isSelected,
@@ -162,7 +163,9 @@ const JobCard = ({
 
             <div className="label label-price">
               {" "}
-              starting from {minimum_currency}
+              Starting from &nbsp;
+              {minimum_currency}
+              {currency.toUpperCase()}
             </div>
           </div>
           <div className="jobs-footer-right">

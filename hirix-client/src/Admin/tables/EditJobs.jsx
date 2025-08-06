@@ -17,31 +17,29 @@ const JobsEdits = () => {
         <div className="entry-title">
           <h4 className="heading">Edit Jobs</h4>
         </div>
-        <form
-          onSubmit={submit}
-        >
-            <div className="row">
-              <div className="entryGroup col-lg-6">
-                <label>Job Title</label>
-                <input
+        <form onSubmit={submit}>
+          <div className="row">
+            <div className="entryGroup col-lg-6">
+              <label>Job Title</label>
+              <input
                 type="text"
-                  className="border p-1 rounded-2"
-                  name="title"
-                  id="title"
-                  value={Title}
-                />
-              </div>
-               <div className="entryGroup col-lg-6">
-                <label>Job Category</label>
-                <input
-                type="text"
-                  className="border p-1 rounded-2"
-                  name="title"
-                  id="title"
-                  value={Title}
-                />
-              </div>
+                className="border p-1 rounded-2"
+                name="title"
+                id="title"
+                value={Title}
+              />
             </div>
+            <div className="entryGroup col-lg-6">
+              <label>Job Category</label>
+              <input
+                type="text"
+                className="border p-1 rounded-2"
+                name="title"
+                id="title"
+                value={Title}
+              />
+            </div>
+          </div>
 
           {/* Control Buttons */}
           <div className="control-btn">

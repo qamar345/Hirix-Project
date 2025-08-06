@@ -86,9 +86,10 @@ const AdminProfile = (req, res) => {
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
   const sqladmin =
-    "UPDATE `admin` SET `name`= ?, `email`= ?, `image`= ? WHERE id=?";
+    "UPDATE `admin` SET `image`= ? WHERE id=?";
   conn_sql.query(sqladmin, [name, email, imageUrl, id], (err, result) => {
     if (err) {
+      console.log(err);
       return res.json(err);
     } else {
       return res.json({ message: "Profile updated...", result, imageUrl });

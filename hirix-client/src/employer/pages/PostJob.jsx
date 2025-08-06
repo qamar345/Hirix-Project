@@ -338,6 +338,8 @@ const PostJob = () => {
     GetSkills();
   }, []);
 
+  console.log(Salary);
+
   return (
     <div className="dashboardWrapper addCompany">
       <div className="entry-my-page submit-company-dashboard">
@@ -645,7 +647,7 @@ const PostJob = () => {
                       </div>
 
                       {/* Conditionally Rendered Fields */}
-                      {Salary === "range" && (
+                      {Salary === "Range" && (
                         <>
                           <div className="entryGroup col-md-6">
                             <label>
@@ -691,7 +693,7 @@ const PostJob = () => {
                         </>
                       )}
 
-                      {Salary === "starting" && (
+                      {Salary === "Starting" && (
                         <>
                           <div className="entryGroup col-md-6">
                             <label>
@@ -726,7 +728,7 @@ const PostJob = () => {
                         </>
                       )}
 
-                      {Salary === "maximum" && (
+                      {Salary === "Maximum" && (
                         <>
                           <div className="entryGroup col-md-6">
                             <label>
@@ -761,7 +763,7 @@ const PostJob = () => {
                         </>
                       )}
 
-                      {Salary === "negotiable" && null}
+                      {Salary === "Negotiable" && null}
                     </div>
                   </div>
 

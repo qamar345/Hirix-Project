@@ -96,7 +96,9 @@ const CheckMailStatus = (req, res) => {
       if (err) {
         return res.json({ isVerified: false });
       } else {
-        return res.json({ isVerified: true });
+        return res.json(
+          data.length > 0 ? { isVerified: true } : { isVerified: false }
+        );
       }
     });
   }

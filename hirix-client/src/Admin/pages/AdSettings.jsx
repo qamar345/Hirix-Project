@@ -54,10 +54,10 @@ const AdSettings = () => {
   const handleLogoUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setSelectedFile(file); 
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = () => {
-        setUploadedImage(reader.result); 
+        setUploadedImage(reader.result);
       };
       reader.readAsDataURL(file);
     }
@@ -79,8 +79,7 @@ const AdSettings = () => {
 
         setUserData(res.data);
         setEditUserData(res.data);
-      } catch (error) {
-              }
+      } catch (error) {}
     };
     GetUserData();
   }, []);
@@ -116,14 +115,13 @@ const AdSettings = () => {
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
-        if (res.data.imageUrl) {
-              sessionStorage.setItem("image", res.data.imageUrl);
-    window.dispatchEvent(new Event("profileUpdated"));
-  }
+      if (res.data.imageUrl) {
+        sessionStorage.setItem("image", res.data.imageUrl);
+        window.dispatchEvent(new Event("profileUpdated"));
+      }
       alert(res.data.message);
       navigate("/admin/dashboard");
-    } catch (err) {
-          }
+    } catch (err) {}
   };
 
   const handlePasswordSubmit = async (e) => {
@@ -152,7 +150,7 @@ const AdSettings = () => {
 
       alert(response.data.msg);
       setEditPasswordData({ currentPass: "", newPass: "", confirmPass: "" });
-          } catch (error) {
+    } catch (error) {
       alert("Error updating password: ", error);
     }
   };
