@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Table from "react-bootstrap/Table";
-import { Link, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { CiCamera } from "react-icons/ci";
 import { FaExternalLinkAlt, FaDownload, FaEllipsisH } from "react-icons/fa";
 import { RiVideoAddFill } from "react-icons/ri";
@@ -50,7 +50,7 @@ const ApplicantList = () => {
       setTotalPages(res.data?.meta?.totalPages ?? 1);
       // setLoading(false);
     } catch (error) {
-            setApplicants([]);
+      setApplicants([]);
       setCurrentPage(1);
       setTotalPages(1);
     }
@@ -82,8 +82,7 @@ const ApplicantList = () => {
     setfiltersUsers(filteredData || []);
   }, [filter, applicants, sort]);
 
-  useEffect(() => {
-      }, [applicants]);
+  useEffect(() => {}, [applicants]);
 
   const Review = async (id) => {
     await axios
@@ -92,8 +91,7 @@ const ApplicantList = () => {
         alert(res.data.msg);
         window.location.reload();
       })
-      .catch((err) => {
-              });
+      .catch((err) => {});
   };
   const Selected = async (id) => {
     await axios
@@ -102,8 +100,7 @@ const ApplicantList = () => {
         alert(res.data.msg);
         window.location.reload();
       })
-      .catch((err) => {
-              });
+      .catch((err) => {});
   };
 
   const Rejected = async (id) => {
@@ -113,8 +110,7 @@ const ApplicantList = () => {
         alert(res.data.msg);
         window.location.reload();
       })
-      .catch((err) => {
-              });
+      .catch((err) => {});
   };
 
   return (
@@ -140,7 +136,11 @@ const ApplicantList = () => {
                           <CiCamera />
                         </div>
                         <div className="info-details">
-                          <NavLink to={`/ApplicantDetails/${applicant.id}`}><h3>{applicant.jobseeker_name}</h3></NavLink>
+                          <NavLink
+                            to={`/ApplicantDetails/${applicant.job_seeker_id}`}
+                          >
+                            <h3>{applicant.jobseeker_name}</h3>
+                          </NavLink>
                           {/* <div className="applied">
                           Applied:
                           <a href="#" target="_blank" rel="noopener noreferrer">
@@ -193,7 +193,7 @@ const ApplicantList = () => {
                                     <button
                                       className="btn btn-light"
                                       onClick={() =>
-                                        Review(applicant.Applicant_id)
+                                        Review(applicant.Applicantion_id)
                                       }
                                       style={{
                                         display: "block",
@@ -208,7 +208,7 @@ const ApplicantList = () => {
                                     <button
                                       className="btn btn-light"
                                       onClick={() =>
-                                        Selected(applicant.Applicant_id)
+                                        Selected(applicant.Applicantion_id)
                                       }
                                       style={{
                                         display: "block",
@@ -223,7 +223,7 @@ const ApplicantList = () => {
                                     <button
                                       className="btn btn-light"
                                       onClick={() =>
-                                        Rejected(applicant.Applicant_id)
+                                        Rejected(applicant.Applicantion_id)
                                       }
                                       style={{
                                         display: "block",
@@ -241,7 +241,7 @@ const ApplicantList = () => {
                                     <button
                                       className="btn btn-light"
                                       onClick={() =>
-                                        Selected(applicant.Applicant_id)
+                                        Selected(applicant.Applicantion_id)
                                       }
                                       style={{
                                         display: "block",
@@ -256,7 +256,7 @@ const ApplicantList = () => {
                                     <button
                                       className="btn btn-light"
                                       onClick={() =>
-                                        Rejected(applicant.Applicant_id)
+                                        Rejected(applicant.Applicantion_id)
                                       }
                                       style={{
                                         display: "block",
@@ -275,7 +275,7 @@ const ApplicantList = () => {
                                     <button
                                       className="btn btn-light"
                                       onClick={() =>
-                                        Rejected(applicant.Applicant_id)
+                                        Rejected(applicant.Applicantion_id)
                                       }
                                       style={{
                                         display: "block",
@@ -293,7 +293,7 @@ const ApplicantList = () => {
                                     <button
                                       className="btn btn-light"
                                       onClick={() =>
-                                        Review(applicant.Applicant_id)
+                                        Review(applicant.Applicantion_id)
                                       }
                                       style={{
                                         display: "block",

@@ -13,44 +13,47 @@ import { CanFooter, VisitChart } from "../index.js";
 import axios from "axios";
 
 const CanDashboard = () => {
-   const [selectedDays, setSelectedDays] = useState(7);
-    const navigate = useNavigate();
-    useEffect(() => {
-      const check = sessionStorage.getItem("isLoggedIn");
-      if (!check) {
-        navigate("/");
+  const name = sessionStorage.getItem("first_name");
+
+  const [selectedDays, setSelectedDays] = useState(7);
+  const navigate = useNavigate();
+  useEffect(() => {
+    const check = sessionStorage.getItem("isLoggedIn");
+    if (!check) {
+      navigate("/");
+    }
+  }, []);
+  const [data, setData] = useState([]);
+  const [ColData, setColData] = useState([]);
+  const id = sessionStorage.getItem("id");
+  useEffect(() => {
+    const GetData = async () => {
+      if (!id) {
+        return;
       }
-    }, []);
-    const [data, setData] = useState([]);
-    const [ColData, setColData] = useState([]);
-    const id = sessionStorage.getItem("id");
-    useEffect(() => {
-      const GetData = async () => {
-        if (!id) {
-                    return;
-        }
-        try {
-          const res = await axios.get(`http://localhost:9000/DasboardJobseeker/${id}`);
-          setData(res.data.data);
-        } catch (err) {
-                  }
-      };
-  
-      GetData();
-    }, []);
-    // useEffect(() => {
-    //   const Data = async () => {
-    //     try {
-    //       const res = await axios.get(
-    //         `http://localhost:9000//${id}`
-    //       );
-    //           //       setColData(res.data.data || []);
-    //     } catch (err) {
-    //           //     }
-    //   };
-  
-    //   Data();
-    // }, []);
+      try {
+        const res = await axios.get(
+          `http://localhost:9000/DasboardJobseeker/${id}`
+        );
+        setData(res.data.data);
+      } catch (err) {}
+    };
+
+    GetData();
+  }, []);
+  // useEffect(() => {
+  //   const Data = async () => {
+  //     try {
+  //       const res = await axios.get(
+  //         `http://localhost:9000//${id}`
+  //       );
+  //           //       setColData(res.data.data || []);
+  //     } catch (err) {
+  //           //     }
+  //   };
+
+  //   Data();
+  // }, []);
   const days = [
     { value: 7, label: "07 days" },
     { value: 15, label: "15 days" },
@@ -66,7 +69,7 @@ const CanDashboard = () => {
       src: meeting,
       color: "#fdd9c3",
     },
-    "reviews": {
+    reviews: {
       src: review,
       color: "#febc9c",
     },
@@ -80,34 +83,34 @@ const CanDashboard = () => {
     <>
       <div className="dashboardWrapper">
         <div className="dashboardPage">
-          <h2 className="heading">Welcome back! Candidate</h2>
+          <h2 className="heading">Welcome back! {name}</h2>
 
           <ul className="row">
             {data?.map((item, index) => {
               const matchedCard = cardAssets[item.label] || {};
-              const src = matchedCard.src
-              const color = matchedCard.color
+              const src = matchedCard.src;
+              const color = matchedCard.color;
               return (
-              <li className="col-xl-3 p-3 col-sm-6" key={index}>
-                <div className="entryCard d-flex   justify-content-between">
-                  <div className="entryDetail">
-                    <div className="entryTitle">
-                      <h3>{item.label}</h3>
+                <li className="col-xl-3 p-3 col-sm-6" key={index}>
+                  <div className="entryCard d-flex   justify-content-between">
+                    <div className="entryDetail">
+                      <div className="entryTitle">
+                        <h3>{item.label}</h3>
+                      </div>
+                      <div className="entryNumber">
+                        <span>{item.num}</span>
+                      </div>
                     </div>
-                    <div className="entryNumber">
-                      <span>{item.num}</span>
+                    <div
+                      className="entryImg"
+                      style={{ background: `${color}` }}
+                    >
+                      <img src={src} alt={item.label} />
                     </div>
                   </div>
-                  <div
-                    className="entryImg"
-                    style={{ background: `${color}` }}
-                  >
-                    <img src={src} alt={item.label} />
-                  </div>
-                </div>
-              </li>
-              )
-})}
+                </li>
+              );
+            })}
           </ul>
 
           <div className="notification-dashboard">
@@ -121,14 +124,12 @@ const CanDashboard = () => {
                         options={days}
                         styles={customStyles}
                         className="border rounded-3"
-                        defaultValue={days.find(
-                          (option) => option.value === 7
-                        )}
+                        defaultValue={days.find((option) => option.value === 7)}
                       />
                     </div>
                   </div>
                   <div>
-                    <VisitChart days={selectedDays}/>
+                    <VisitChart days={selectedDays} />
                   </div>
                 </div>
               </div>

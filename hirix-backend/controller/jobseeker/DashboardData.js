@@ -27,7 +27,7 @@ const JS_Dashboard = (req, res) => {
 
 // Select Skills in search bar
 const Skills_select = (req, res) => {
-  const query_select = `SELECT id, skills FROM skillset`;
+  const query_select = `SELECT id, name FROM skillset`;
   conn_sql.query(query_select, (err, result) => {
     if (err) throw err;
     else {

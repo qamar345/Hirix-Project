@@ -132,13 +132,19 @@ const {
   Award,
   getUserProfileStatus,
   GetProfile,
+  GetEducation,
+  GetExperience,
 } = require("../controller/jobseeker/profileData");
 const {
   SendVerificationLink,
   VerifyEmailLink,
   CheckMailStatus,
 } = require("../utils/SendEmailVerificationLink");
-const { GetSkills } = require("../controller/combined/getSkills");
+const {
+  GetSkills,
+  GetJobCategory,
+  GetSubCategory,
+} = require("../controller/combined/getSkills");
 
 //....................................Admin.......................................
 const router = express.Router();
@@ -191,6 +197,9 @@ router.get("/GetAllProfileData/:id", GetFullApplicantProfile);
 //......................................Combined........................................
 
 router.get("/get-skills", GetSkills);
+
+router.get("/get-job-cat", GetJobCategory);
+router.get("/subcategories/:id", GetSubCategory);
 
 router.get("/get-posts", Getposts);
 
@@ -337,8 +346,10 @@ router.get("/getProfile/:id", GetProfile);
 router.post("/postProfile/:id", upload.single("image"), ProfileBasicInfo);
 
 router.post("/AddEducation/:id", upload.none(), Education);
+router.get("/get-candidate-qualification/:id", GetEducation);
 
 router.post("/AddExperience/:id", Experience);
+router.get("/get-candidate-exp/:id", GetExperience);
 
 router.post("/AddProject/:id", Project);
 

@@ -300,40 +300,66 @@ const JobPost = ({ job, fromShare }) => {
                   {job_type}
                 </NavLink>
               </div>
-              <div className="right">
-                {ApplyType === "email" && (
-                  <a
-                    href={`mailto:${Email}`}
-                    type="button"
-                    className={`civi-button civi-button-apply civi_form_apply_jobs`}
-                    target="_blank"
-                  >
-                    Apply Now
-                  </a>
-                )}
+              {check ? (
+                <div className="right">
+                  {ApplyType === "internal" && (
+                    <a
+                      href="#"
+                      type="button"
+                      className={`civi-button civi-button-apply civi_form_apply_jobs`}
+                      onClick={handleApply}
+                    >
+                      Apply Now
+                    </a>
+                  )}
 
-                {ApplyType === "phone" && (
-                  <a
-                    href={`tel:${Phone}`}
-                    type="button"
-                    className={`civi-button civi-button-apply civi_form_apply_jobs`}
-                    target="_blank"
-                  >
-                    Apply Now
-                  </a>
-                )}
+                  {ApplyType === "email" && (
+                    <a
+                      href={`mailto:${Email}`}
+                      type="button"
+                      className={`civi-button civi-button-apply civi_form_apply_jobs`}
+                      target="_blank"
+                    >
+                      Apply Now
+                    </a>
+                  )}
 
-                {ApplyType === "url" && (
+                  {ApplyType === "phone" && (
+                    <a
+                      href={`tel:${Phone}`}
+                      type="button"
+                      className={`civi-button civi-button-apply civi_form_apply_jobs`}
+                      target="_blank"
+                    >
+                      Apply Now
+                    </a>
+                  )}
+
+                  {ApplyType === "url" && (
+                    <a
+                      href={Url}
+                      type="button"
+                      className={`civi-button civi-button-apply civi_form_apply_jobs`}
+                      target="_blank"
+                    >
+                      Apply Now
+                    </a>
+                  )}
+                </div>
+              ) : (
+                <div className="right">
                   <a
-                    href={Url}
+                    href="#"
                     type="button"
                     className={`civi-button civi-button-apply civi_form_apply_jobs`}
-                    target="_blank"
+                    onClick={() => {
+                      alert("Login first!!!");
+                    }}
                   >
                     Apply Now
                   </a>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -660,7 +686,7 @@ const JobPost = ({ job, fromShare }) => {
               </div>
 
               {/* Map */}
-              <div className="block-archive-inner jobs-maps-details">
+              {/* <div className="block-archive-inner jobs-maps-details">
                 <h4 className="title-jobs">Maps</h4>
                 <div className="entry-detail">
                   <div id="mapbox_map" className="civi-map-warpper">
@@ -674,7 +700,7 @@ const JobPost = ({ job, fromShare }) => {
                     />
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <div

@@ -7,6 +7,7 @@ const PostJob = (req, res) => {
   const {
     title,
     job_category,
+    job_subcategory,
     description,
     job_type,
     workplace_type,
@@ -42,7 +43,7 @@ const PostJob = (req, res) => {
       console.log(id);
       if (result.length > 0) {
         const sqlpost =
-          "INSERT INTO `jobs` (`employee_id`,`title`,`job_category`, `description`, `job_type`,`workplace_type` ,`career_level`, `Experience`, `qualification`,`available_seats`, `gender`,`currency`, `minimum_currency`, `maximum_currency`,`Rate`,`Email`,`Url`,`Phone`,`company_name`,`required_skills`,`expiry_date`,`salary`,`ApplyType`,`province`,`city`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+          "INSERT INTO `jobs` (`employee_id`,`title`,`job_category`, `job_subcategory`, `description`, `job_type`,`workplace_type` ,`career_level`, `Experience`, `qualification`,`available_seats`, `gender`,`currency`, `minimum_currency`, `maximum_currency`,`Rate`,`Email`,`Url`,`Phone`,`company_name`,`required_skills`,`expiry_date`,`salary`,`ApplyType`,`province`,`city`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         conn_sql.query(
           sqlpost,
@@ -50,6 +51,7 @@ const PostJob = (req, res) => {
             id,
             title,
             job_category,
+            job_subcategory,
             description,
             job_type,
             workplace_type,
@@ -100,6 +102,7 @@ const draftJob = (req, res) => {
   const {
     title,
     job_category,
+    job_subcategory,
     description,
     job_type,
     workplace_type,
@@ -135,7 +138,7 @@ const draftJob = (req, res) => {
       console.log(id);
       if (result.length > 0) {
         const sqlpost =
-          "INSERT INTO `jobs` (`employee_id`,`title`,`job_category`, `description`, `job_type`,`workplace_type` ,`career_level`, `Experience`, `qualification`,`available_seats`, `gender`,`currency`, `minimum_currency`, `maximum_currency`,`Rate`,`Email`,`Url`,`Phone`,`company_name`,`required_skills`,`expiry_date`,`salary`,`ApplyType`,`province`,`city`,`status`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Draft')";
+          "INSERT INTO `jobs` (`employee_id`,`title`,`job_category`, `job_subcategory`, `description`, `job_type`,`workplace_type` ,`career_level`, `Experience`, `qualification`,`available_seats`, `gender`,`currency`, `minimum_currency`, `maximum_currency`,`Rate`,`Email`,`Url`,`Phone`,`company_name`,`required_skills`,`expiry_date`,`salary`,`ApplyType`,`province`,`city`,`status`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Draft')";
 
         conn_sql.query(
           sqlpost,
@@ -143,6 +146,7 @@ const draftJob = (req, res) => {
             id,
             title,
             job_category,
+            job_subcategory,
             description,
             job_type,
             workplace_type,

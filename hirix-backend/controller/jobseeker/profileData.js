@@ -194,7 +194,7 @@ const Education = (req, res) => {
   const bodyData = { ...req.body };
   const { id } = req.params;
 
-  const { Title, Level, From, To, Description } = bodyData;
+  const { Title, Institute, Field, From, To } = bodyData;
 
   const sql_checkUser = "SELECT * FROM user_accounts WHERE id = ?";
 
@@ -207,14 +207,19 @@ const Education = (req, res) => {
       return res.status(404).json({ msg: "User not found" });
     }
 
-    const sql_insertDetails = `
-        INSERT INTO user_qualification (user_id, Title, Level, \`From\`, \`To\`, Description)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `;
+    const sql_insertDetails =
+      "INSERT INTO `user_qualification`(`user_id`, `degree_title`, `institute_name`, `field_of_study`, `start_year`, `end_year`) VALUES (?, ?, ?, ?, ?, ?)";
 
     conn_sql.query(
       sql_insertDetails,
-      [id, Title, Level, From, To, Description],
+      [
+        id,
+        Title,
+        Institute,
+        Field,
+        new Date(From).getFullYear(),
+        new Date(To).getFullYear(),
+      ],
       (err, detailsResult) => {
         if (err) {
           console.error("Insert error:", err);
@@ -228,6 +233,15 @@ const Education = (req, res) => {
           .json({ msg: "Qualification added", data: detailsResult });
       }
     );
+  });
+};
+
+const GetEducation = (req, res) => {
+  const { id } = req.params;
+  const sql = "SELECT * FROM `user_qualification` WHERE `user_id` = ?";
+  conn_sql.query(sql, [id], (err, result) => {
+    if (err) return res.json(err);
+    return res.json(result);
   });
 };
 
@@ -249,14 +263,19 @@ const Experience = (req, res) => {
       return res.status(404).json({ msg: "User not found" });
     }
 
-    const sql_insertDetails = `
-        INSERT INTO user_experience (user_id, Title, Company, \`From\`, \`To\`, Description)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `;
+    const sql_insertDetails =
+      "INSERT INTO `user_experience`(`user_id`, `job_title`, `company_name`, `start_date`, `end_date`, `description`) VALUES (?, ?, ?, ?, ?, ?)";
 
     conn_sql.query(
       sql_insertDetails,
-      [id, Title, Company, From, To, Description],
+      [
+        id,
+        Title,
+        Company,
+        new Date(From).getFullYear(),
+        new Date(To).getFullYear(),
+        Description,
+      ],
       (err, detailsResult) => {
         if (err) {
           console.error("Insert error:", err);
@@ -270,6 +289,15 @@ const Experience = (req, res) => {
           .json({ msg: "Experience added", data: detailsResult });
       }
     );
+  });
+};
+
+const GetExperience = (req, res) => {
+  const { id } = req.params;
+  const sql = "SELECT * FROM `user_experience` WHERE `user_id` = ?";
+  conn_sql.query(sql, [id], (err, result) => {
+    if (err) return res.json(err);
+    return res.json(result);
   });
 };
 
@@ -509,4 +537,7 @@ module.exports = {
   Project,
   Award,
   getUserProfileStatus,
+
+  GetEducation,
+  GetExperience,
 };

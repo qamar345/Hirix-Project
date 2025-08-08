@@ -21,12 +21,12 @@ const CanSidebar = ({ isCollapsed, handleSidebarToggle }) => {
   const [now, setNow] = useState(sessionStorage.getItem("Percent") || 0);
   const handleLogout = () => {
     sessionStorage.clear();
-     setUser({ name: "", photoURL: "", role: "" }); // <-- reset user state
-  window.location.reload();
+    setUser({ name: "", photoURL: "", role: "" }); // <-- reset user state
+    window.location.reload();
     alert("LoggedOut Successfully");
     navigate("/");
   };
-   useEffect(() => {
+  useEffect(() => {
     const handlePercentUpdate = () => {
       const updated = sessionStorage.getItem("Percent") || 0;
       setNow(updated);
@@ -36,7 +36,8 @@ const CanSidebar = ({ isCollapsed, handleSidebarToggle }) => {
     window.addEventListener("percentUpdated", handlePercentUpdate);
 
     // Clean up
-    return () => window.removeEventListener("percentUpdated", handlePercentUpdate);
+    return () =>
+      window.removeEventListener("percentUpdated", handlePercentUpdate);
   }, []);
   return (
     <aside
@@ -121,7 +122,11 @@ const CanSidebar = ({ isCollapsed, handleSidebarToggle }) => {
             { src: logout, alt: "Logout", label: "Logout", link: "/" },
           ].map((item, index) => (
             <li className="nav-item" key={index}>
-              <NavLink className="civi-icon-items" onClick={item.label === "Logout" ? handleLogout : null} to={item.link}>
+              <NavLink
+                className="civi-icon-items"
+                onClick={item.label === "Logout" ? handleLogout : null}
+                to={item.link}
+              >
                 <span className="image">
                   <img src={item.src} alt={item.alt} />
                 </span>
@@ -135,11 +140,11 @@ const CanSidebar = ({ isCollapsed, handleSidebarToggle }) => {
           <div className=" mt-5">
             <div className="profile-strength-bar">
               <span className="flex-grow-1">Profile Strength: </span>
-              <span> {now} </span>
+              <span> {Math.floor(now)} </span>
               <span>%</span>
             </div>
             <div className="profile-progress">
-              <ProgressBar now={now} label={`${now}%`} />
+              <ProgressBar now={now} label={`${Math.floor(now)}%`} />
             </div>
           </div>
         )}

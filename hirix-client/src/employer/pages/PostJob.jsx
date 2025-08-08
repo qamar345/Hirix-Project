@@ -21,6 +21,7 @@ const PostJob = () => {
   const [title, setTitle] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
   const [category, setCategory] = useState("");
+  const [dbCategory, setDBCategory] = useState([]);
   const [jobtype, setJobType] = useState("");
   const [workPlaceType, setWorkPlaceType] = useState("");
   const [des, setDes] = useState("");
@@ -47,6 +48,10 @@ const PostJob = () => {
   const [Province, setProvince] = useState("");
   const [City, setCity] = useState("");
   const [CompanyData, setCompanyData] = useState([]);
+  const [dbSubcategories, setDBSubcategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null); // Store full object
+  const [selectedSubCategory, setSelectedSubCategory] = useState(null);
 
   // useEffect(() => {
   //   if (editId && editId !== "new") {
@@ -105,7 +110,8 @@ const PostJob = () => {
     const payload = {
       title: title?.trim(),
       Email: email?.trim(),
-      job_category: category?.trim(),
+      job_category: category.label,
+      job_subcategory: subcategories.label,
       job_type: jobtype?.trim(),
       workplace_type: workPlaceType?.trim(),
       description: des?.trim(),
@@ -155,7 +161,8 @@ const PostJob = () => {
     const payload = {
       title: title?.trim(),
       Email: email?.trim(),
-      job_category: category?.trim(),
+      job_category: category,
+      job_subcategory: subcategories,
       job_type: jobtype?.trim(),
       workplace_type: workPlaceType?.trim(),
       description: des?.trim(),
@@ -216,12 +223,12 @@ const PostJob = () => {
     };
   }, []);
 
-  const cats = [
-    { value: "analytics", label: "Analytics" },
-    { value: "customerService", label: "Customer Service" },
-    { value: "designCreative", label: "Design & Creative" },
-    { value: "developmentIT", label: "Development & IT" },
-  ];
+  // const cats = [
+  //   { value: "analytics", label: "Analytics" },
+  //   { value: "customerService", label: "Customer Service" },
+  //   { value: "designCreative", label: "Design & Creative" },
+  //   { value: "developmentIT", label: "Development & IT" },
+  // ];
 
   const type = [
     { value: "Full Time", label: "Full Time" },
@@ -325,7 +332,19 @@ const PostJob = () => {
     { value: "balochistan", label: "Balochistan" },
   ];
 
+  // const [jobCat, setJobCat] = useState([]);
+
+  // Fetch job categories on mount
   useEffect(() => {
+    const GetJobCategory = async () => {
+      try {
+        const res = await axios.get("http://localhost:9000/get-job-cat");
+        setDBCategory(res.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
     const GetSkills = async () => {
       try {
         const res = await axios.get("http://localhost:9000/get-skills");
@@ -334,11 +353,33 @@ const PostJob = () => {
         console.log(error);
       }
     };
-
     GetSkills();
+    GetJobCategory();
   }, []);
 
-  console.log(Salary);
+  const categoryOptions = Array.isArray(dbCategory)
+    ? dbCategory.map((res) => ({
+        value: res.id, // this will be used to fetch subcategories
+        label: res.name,
+      }))
+    : [];
+
+  const subCategoryOptions = dbSubcategories.map((sub) => ({
+    value: sub.id,
+    label: sub.name,
+  }));
+
+  // Fetch subcategories based on selectedCategory.value
+  useEffect(() => {
+    if (selectedCategory?.value) {
+      axios
+        .get(`http://localhost:9000/subcategories/${selectedCategory.value}`)
+        .then((res) => setDBSubcategories(res.data))
+        .catch((err) => console.error(err));
+    } else {
+      setDBSubcategories([]);
+    }
+  }, [selectedCategory]);
 
   return (
     <div className="dashboardWrapper addCompany">
@@ -385,35 +426,49 @@ const PostJob = () => {
                           id="company_title"
                           name="title"
                           value={title}
-                          placeholder="Name"
+                          placeholder="Job Title"
                           onChange={(e) => setTitle(e.target.value)}
                         />
                       </div>
 
-                      <div className="entryGroup col-lg-6">
+                      <div className="entryGroup col-lg-4">
                         <label>
                           Jobs Categories <sup>*</sup>
                         </label>
-
                         <Select
-                          options={cats}
+                          options={categoryOptions}
                           styles={customStyles}
-                          className="border p-1 rounded-2"
+                          className="border rounded-2"
                           name="category"
                           id="category"
-                          value={
-                            cats.find((option) => option.value === category) ||
-                            null
-                          }
-                          onChange={(selectedOption) =>
-                            setCategory(
-                              selectedOption ? selectedOption.value : ""
-                            )
-                          }
+                          value={selectedCategory}
+                          onChange={(option) => {
+                            setSelectedCategory(option);
+                            setCategory(option);
+                            setSelectedSubCategory(null); // reset subcategory
+                          }}
                         />
                       </div>
 
-                      <div className="entryGroup col-lg-6">
+                      <div className="entryGroup col-lg-4">
+                        <label>
+                          Sub Categories <sup>*</sup>
+                        </label>
+                        <Select
+                          name="subCategory"
+                          options={subCategoryOptions}
+                          isDisabled={!selectedCategory}
+                          value={selectedSubCategory}
+                          onChange={(option) => {
+                            setSelectedSubCategory(option);
+                            setSubcategories(option);
+                          }}
+                          placeholder="Select Sub-Category"
+                          className="mt-2"
+                        />
+                      </div>
+
+                      <div className="entryGroup col-lg-4">
                         <label>
                           Job type <sup>*</sup>
                         </label>

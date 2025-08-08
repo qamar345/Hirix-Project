@@ -51,18 +51,22 @@ const Getapplicants = (req, res) => {
     AND (user_accounts.username LIKE ? OR jobs.title LIKE ?)
   `;
 
-  conn_sql.query(countQuery, [id, `%${search}%`, `%${search}%`], (countErr, countResult) => {
-    if (countErr) {
-      return res.json({ error: countErr });
-    }
+  conn_sql.query(
+    countQuery,
+    [id, `%${search}%`, `%${search}%`],
+    (countErr, countResult) => {
+      if (countErr) {
+        return res.json({ error: countErr });
+      }
 
-    const totalData = countResult[0].totalData;
-    const totalPages = Math.ceil(totalData / limit);
+      const totalData = countResult[0].totalData;
+      const totalPages = Math.ceil(totalData / limit);
 
-    // Step 2: Fetch required data
-    const sql_get = `
+      // Step 2: Fetch required data
+      const sql_get = `
       SELECT 
-        applicants.id AS Applicant_id,
+      applicants.job_seeker_id ,
+        applicants.id AS Applicantion_id,
         user_accounts.username AS jobseeker_name,  
         jobs.title AS jobs_title,
         applicants.status AS application_status,
@@ -75,26 +79,28 @@ const Getapplicants = (req, res) => {
       LIMIT ? OFFSET ?
     `;
 
-    conn_sql.query(sql_get, [id, `%${search}%`, `%${search}%`, limit, offset], (err, data) => {
-      if (err) {
-        return res.json({ error: err });
-      }
+      conn_sql.query(
+        sql_get,
+        [id, `%${search}%`, `%${search}%`, limit, offset],
+        (err, data) => {
+          if (err) {
+            return res.json({ error: err });
+          }
 
-      return res.json({
-        data: data,
-        meta: {
-          search,
-          page,
-          limit,
-          totalData,
-          totalPages,
-        },
-      });
-    });
-  });
+          return res.json({
+            data: data,
+            meta: {
+              search,
+              page,
+              limit,
+              totalData,
+              totalPages,
+            },
+          });
+        }
+      );
+    }
+  );
 };
-
-
-
 
 module.exports = { Getapplicants };

@@ -55,14 +55,15 @@ const CanProfile = () => {
   const [City, setCity] = useState("");
   const [linkedin, setlinkedIn] = useState("");
   const [title, setTitle] = useState("");
-  const [EduLevel, setEduLevel] = useState("");
+  const [EduInstitute, setEduInstitute] = useState("");
   const [EduFrom, setEduFrom] = useState(null);
   const [EduTo, setEduTo] = useState(null);
-  const [EduDes, setEduDes] = useState("");
+  const [EduField, setEduField] = useState("");
+  const [EduGrade, setEduGrade] = useState("");
   const [jobtitle, setjobTitle] = useState("");
   const [ExpCompany, setExpCompany] = useState("");
-  const [ExpFrom, setExpFrom] = useState(null);
-  const [ExpTo, setExpTo] = useState(null);
+  const [ExpFrom, setExpFrom] = useState("");
+  const [ExpTo, setExpTo] = useState("");
   const [ExpDes, setExpDes] = useState("");
   const [selectedSkills, setSelectedSkills] = useState([]);
   const [ProjectTitle, setProjectTitle] = useState("");
@@ -80,6 +81,10 @@ const CanProfile = () => {
     projects: false,
     awards: false,
   });
+
+  const [CandidateEdu, setCandidateEdu] = useState([]);
+  const [CandidateExp, setCandidateExp] = useState([]);
+
   sessionStorage.setItem("Percent", percentage);
   const handleActiveTab = (tab) => {
     setActiveTab(tab);
@@ -160,7 +165,7 @@ const CanProfile = () => {
         setlinkedIn(data.LinkedIn);
       })
       .catch((err) => {}, []);
-  });
+  }, []);
   const submit = async (e) => {
     e.preventDefault();
 
@@ -221,14 +226,15 @@ const CanProfile = () => {
     const formData = new FormData();
 
     formData.append("Title", title?.trim());
-    formData.append("Level", EduLevel?.trim());
+    formData.append("Institute", EduInstitute?.trim());
+    formData.append("Field", EduField?.trim());
+
     formData.append("From", EduFrom);
     if (isPresent) {
       formData.append("To", "Present");
     } else if (EduTo) {
       formData.append("To", EduTo);
     }
-    formData.append("Description", EduDes?.trim());
 
     try {
       const res = await axios.post(
@@ -345,6 +351,33 @@ const CanProfile = () => {
       window.location.reload();
     } catch (error) {}
   };
+
+  useEffect(() => {
+    const GetEducation = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:9000/get-candidate-qualification/${id}`
+        );
+        setCandidateEdu(res.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const GetExperience = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:9000/get-candidate-exp/${id}`
+        );
+        setCandidateExp(res.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    GetEducation();
+    GetExperience();
+  }, []);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -958,20 +991,44 @@ const CanProfile = () => {
                         <input
                           type="text"
                           name="title"
-                          placeholder="Enter Title"
-                          value={title}
+                          placeholder="Title Ex: Bachelor/Mastes/Phd"
+                          value={
+                            title
+                              ? title
+                              : CandidateEdu.map((rs) => rs.degree_title)
+                          }
                           onChange={(e) => setTitle(e.target.value)}
                           className="point-mark point-active"
                         />
                       </div>
                       <div className="entryGroup col-md-6">
-                        <label>Level of Education</label>
+                        <label>Field of Study</label>
                         <input
                           type="text"
-                          name="EduLevel"
-                          placeholder="Enter Level"
-                          value={EduLevel}
-                          onChange={(e) => setEduLevel(e.target.value)}
+                          name="field"
+                          placeholder="Field Ex: Computer Science"
+                          value={
+                            EduField
+                              ? EduField
+                              : CandidateEdu.map((rs) => rs.field_of_study)
+                          }
+                          onChange={(e) => setEduField(e.target.value)}
+                          className="point-mark point-active"
+                        />
+                      </div>
+
+                      <div className="entryGroup col-md-12">
+                        <label>Institute Name</label>
+                        <input
+                          type="text"
+                          name="institute"
+                          placeholder="Institute Ex: Riphah International University"
+                          value={
+                            EduInstitute
+                              ? EduInstitute
+                              : CandidateEdu.map((rs) => rs.institute_name)
+                          }
+                          onChange={(e) => setEduInstitute(e.target.value)}
                           className="point-mark point-active"
                         />
                       </div>
@@ -993,9 +1050,19 @@ const CanProfile = () => {
                           From <span style={{ color: "red" }}>*</span>
                         </label>
                         <br></br>
-                        <DatePicker
+                        <input
+                          type={EduFrom ? "date" : "text"}
+                          value={
+                            EduFrom
+                              ? EduFrom
+                              : CandidateEdu.map((rs) => rs.start_year)
+                          }
+                          onChange={(e) => setEduFrom(e.target.value)}
+                          placeholder="From"
+                        />
+                        {/* <DatePicker
                           selected={EduFrom}
-                          onChange={(date) => setEduFrom(date)}
+                          onChange={(date) => setEduFrom(date.getFullYear())}
                           dateFormat="yyyy-MM-dd"
                           className="datepicker point-mark point-active"
                           placeholderText="Starting Date"
@@ -1003,19 +1070,29 @@ const CanProfile = () => {
                           maxDate={new Date()} // 👈 Prevents selection of future dates
                           showYearDropdown
                           scrollableYearDropdown
-                        />
+                        /> */}
                       </div>
                       <div className="entryGroup col-md-6 present-to">
                         <label>To</label>
                         <br></br>
-                        <DatePicker
+                        <input
+                          type={EduTo ? "date" : "text"}
+                          value={
+                            EduTo
+                              ? EduTo
+                              : CandidateEdu.map((rs) => rs.end_year)
+                          }
+                          onChange={(e) => setEduTo(e.target.value)}
+                          placeholder="To"
+                        />
+                        {/* <DatePicker
                           selected={EduTo}
-                          onChange={(date) => setEduTo(date)}
+                          onChange={(date) => setEduTo(date.getFullYear())}
                           dateFormat="yyyy-MM-dd"
                           className="datepicker point-mark point-active"
                           placeholderText="Ending Date"
                           id="toId"
-                        />
+                        /> */}
                       </div>
                       {/* <div className="entryGroup col-md-12">
                           <label>Description</label>
@@ -1027,14 +1104,14 @@ const CanProfile = () => {
                             className="point-mark point-active"
                           />
                         </div> */}
-                      <div className="entryGroup col-md-12">
+                      {/* <div className="entryGroup col-md-12">
                         <label htmlFor="candidate_des">Description</label>
                         <ReactQuill
                           value={EduDes}
                           onChange={setEduDes}
                           placeholder="Enter Job Details..."
                         />
-                      </div>
+                      </div> */}
                     </div>
 
                     <Link
@@ -1097,7 +1174,11 @@ const CanProfile = () => {
                           type="text"
                           name="candidate_experience_job"
                           placeholder="Enter Job Title"
-                          value={jobtitle}
+                          value={
+                            jobtitle
+                              ? jobtitle
+                              : CandidateExp.map((rs) => rs.job_title)
+                          }
                           onChange={(e) => setjobTitle(e.target.value)}
                           className="point-mark point-active"
                         />
@@ -1108,7 +1189,11 @@ const CanProfile = () => {
                           type="text"
                           name="candidate_experience_company"
                           placeholder="Enter Company"
-                          value={ExpCompany}
+                          value={
+                            ExpCompany
+                              ? ExpCompany
+                              : CandidateExp.map((rs) => rs.company_name)
+                          }
                           onChange={(e) => setExpCompany(e.target.value)}
                           className="point-mark point-active"
                         />
@@ -1131,7 +1216,18 @@ const CanProfile = () => {
                           From <span style={{ color: "red" }}>*</span>
                         </label>
                         <br></br>
-                        <DatePicker
+                        <input
+                          type={ExpFrom ? "date" : "text"}
+                          onChange={(e) => {
+                            setExpFrom(e.target.value);
+                          }}
+                          value={
+                            ExpFrom
+                              ? ExpFrom
+                              : CandidateExp.map((rs) => rs.start_date)
+                          }
+                        />
+                        {/* <DatePicker
                           selected={ExpFrom}
                           onChange={(date) => setExpFrom(date)}
                           dateFormat="yyyy-MM-dd"
@@ -1141,30 +1237,41 @@ const CanProfile = () => {
                           maxDate={new Date()}
                           showYearDropdown
                           scrollableYearDropdown
-                        />
+                        /> */}
                       </div>
                       <div className="entryGroup col-md-6 present-to">
                         <label>To</label>
                         <br></br>
-                        <DatePicker
-                          selected={ExpTo}
-                          onChange={(date) => setExpTo(date)}
-                          dateFormat="yyyy-MM-dd"
-                          className="datepicker point-mark point-active"
-                          placeholderText="End Date"
-                          id="fromId"
-                          maxDate={new Date()}
-                          showYearDropdown
-                          scrollableYearDropdown
+                        <input
+                          type={ExpTo ? "date" : "text"}
+                          onChange={(e) => {
+                            setExpTo(e.target.value);
+                          }}
+                          value={
+                            ExpTo
+                              ? ExpTo
+                              : CandidateExp.map((rs) => rs.end_date)
+                          }
                         />
                       </div>
                       <div className="entryGroup col-md-12">
                         <label htmlFor="candidate_des">Description</label>
-                        <ReactQuill
-                          value={ExpDes}
-                          onChange={setExpDes}
-                          placeholder="Enter Experience Details..."
-                        />
+
+                        {ExpDes ? (
+                          <>
+                            <ReactQuill
+                              value={ExpDes}
+                              onChange={setExpDes}
+                              placeholder="Enter Experience Details..."
+                            />
+                          </>
+                        ) : (
+                          <p
+                            dangerouslySetInnerHTML={{
+                              __html: CandidateExp.map((rs) => rs.description),
+                            }}
+                          ></p>
+                        )}
                       </div>
                     </div>
 
@@ -1421,13 +1528,13 @@ const CanProfile = () => {
                   <div className="progress-index">
                     <CircularProgressbarWithChildren
                       className="progressIcon"
-                      value={percentage}
+                      value={Math.floor(percentage)}
                       maxValue={100}
                       strokeWidth={2}
                       styles={{ path: { strokeLinecap: "butt" } }}
                     >
                       <h1>
-                        <span>{percentage}</span>
+                        <span>{Math.floor(percentage)}</span>
                         <span>%</span>
                       </h1>
                       <div>Profile Strength</div>

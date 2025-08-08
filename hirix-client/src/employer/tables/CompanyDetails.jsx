@@ -4,7 +4,7 @@ import axios from "axios";
 
 const CompanyDetail = () => {
   const { id } = useParams();
-  const[companies, setCompanies] = useState(null);
+  const [companies, setCompanies] = useState(null);
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -12,9 +12,8 @@ const CompanyDetail = () => {
         const res = await axios.get(
           `http://localhost:9000/getSpecificCompany/${id}`
         );
-                setCompanies(res.data[0]);
-      } catch (err) {
-              }
+        setCompanies(res.data[0]);
+      } catch (err) {}
     };
 
     fetchJob();
@@ -35,50 +34,57 @@ const CompanyDetail = () => {
           <h5 className="fw-semibold pt-3 pb-3">Company Details</h5>
           <div className="row p-3">
             <div className="col-md-6 mb-3">
-              <strong className="text-secondary">Category:</strong>{"  "}
+              <strong className="text-secondary">Category:</strong>
+              {"  "}
               {companies.categories}
             </div>
             <div className="col-md-6 mb-3">
-              <strong className="text-secondary">Email:</strong>{"  "}
+              <strong className="text-secondary">Email:</strong>
+              {"  "}
               {companies.E_mail}
             </div>
-             <div className="col-md-6 mb-3">
-              <strong className="text-secondary">Contact:</strong>{"  "}
+            <div className="col-md-6 mb-3">
+              <strong className="text-secondary">Contact:</strong>
+              {"  "}
               {companies.Contact}
             </div>
             <div className="col-md-6 mb-3">
-              <strong className="text-secondary">Total Members:</strong>{"  "}
+              <strong className="text-secondary">Total Members:</strong>
+              {"  "}
               {companies.total_members}
             </div>
-             <div className="col-md-6 mb-3">
-              <strong className="text-secondary">Ntn:</strong>{"  "}
+            <div className="col-md-6 mb-3">
+              <strong className="text-secondary">Ntn:</strong>
+              {"  "}
               {companies.postalCode}
             </div>
-             <div className="col-md-6 mb-3">
-              <strong className="text-secondary">Founded In:</strong>{"  "}
+            <div className="col-md-6 mb-3">
+              <strong className="text-secondary">Founded In:</strong>
+              {"  "}
               {companies.founded_in}
             </div>
-             <div className="col-md-6 mb-3">
-              <strong className="text-secondary">Location:</strong>{"  "}
+            <div className="col-md-6 mb-3">
+              <strong className="text-secondary">Location:</strong>
+              {"  "}
               {companies.province} , {companies.city}
             </div>
-             <div className="col-md-6 mb-3">
-              <strong className="text-secondary">Website Link:</strong>{"  "}
+            <div className="col-md-6 mb-3">
+              <strong className="text-secondary">Website Link:</strong>
+              {"  "}
               {companies.website_link}
             </div>
-            
           </div>
         </div>
-      <div className="mb-5">
-  <h5 className="fw-semibold mb-3">About Company</h5>
-  <div className="d-flex flex-wrap gap-2">
-   {companies.About}
-  </div>
-</div>
-
-
-
-
+        <div className="mb-5">
+          <h5 className="fw-semibold mb-3">About Company</h5>
+          <div className="d-flex flex-wrap gap-2">
+            <p
+              dangerouslySetInnerHTML={{
+                __html: companies.About,
+              }}
+            ></p>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -41,10 +41,9 @@ function JobList() {
       });
 
       setJobs(res.data.data);
-            setCurrentPage(res.data.meta.page);
+      setCurrentPage(res.data.meta.page);
       setTotalPages(res.data.meta.totalPages);
-    } catch (error) {
-          }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -75,8 +74,7 @@ function JobList() {
         alert(res.data.msg);
         window.location.reload();
       })
-      .catch((err) => {
-              });
+      .catch((err) => {});
   };
 
   const DeleteJob = async (id) => {
@@ -86,8 +84,7 @@ function JobList() {
         alert(res.data.msg);
         window.location.reload();
       })
-      .catch((err) => {
-              });
+      .catch((err) => {});
   };
 
   const EditJob = async (id) => {
@@ -102,8 +99,7 @@ function JobList() {
         alert(res.data.msg);
         window.location.reload();
       })
-      .catch((err) => {
-              });
+      .catch((err) => {});
   };
 
   const StatusPause = async (id) => {
@@ -113,8 +109,7 @@ function JobList() {
         alert(res.data.msg);
         window.location.reload();
       })
-      .catch((err) => {
-              });
+      .catch((err) => {});
   };
 
   return (
@@ -204,8 +199,9 @@ function JobList() {
                             : "red",
                       }}
                     >
-                     {jobStatus === "Closed" ? "Expired" : new Date(job.expiry_date).toLocaleDateString()}
-
+                      {jobStatus === "Closed"
+                        ? "Expired"
+                        : new Date(job.expiry_date).toLocaleDateString()}
                     </span>
                   </td>
                   <td>
@@ -336,7 +332,7 @@ function JobList() {
                     <Dropdown>
                       <Dropdown.Toggle as={CustomToggle} />
                       <Dropdown.Menu>
-                        <Dropdown.Item>
+                        {/* <Dropdown.Item>
                           <button
                             className="btn btn-light"
                             onClick={() => EditJob(job.id)}
@@ -348,7 +344,7 @@ function JobList() {
                           >
                             Edit
                           </button>
-                        </Dropdown.Item>
+                        </Dropdown.Item> */}
                         <Dropdown.Item>
                           <button
                             className="btn btn-light"
