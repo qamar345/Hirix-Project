@@ -8,6 +8,7 @@ const GetSkills = (req, res) => {
       const formatedData = data.map((res) => ({
         value: res.name.toLowerCase().replace(/\s+/g, "_"),
         label: res.name,
+        id: res.id,
       }));
 
       return res.json(formatedData);
@@ -32,8 +33,42 @@ const GetSubCategory = (req, res) => {
   });
 };
 
+const GetCandidateSkills = (req, res) => {
+  const { id } = req.params;
+
+  const sql =
+    "SELECT jobseeker_skills.id as candidateSkillId, skillset.name as candidateSkillName FROM `jobseeker_skills` JOIN skillset ON jobseeker_skills.skillset_id = skillset.id WHERE jobseeker_skills.job_seeker_id = ?";
+  conn_sql.query(sql, [id], (err, result) => {
+    if (err) return res.json(err);
+    return res.json(result);
+  });
+};
+
+const RemoveCandidateSkills = (req, res) => {
+  const { id } = req.params;
+
+  const sql = "DELETE FROM `jobseeker_skills` WHERE `id` = ?";
+  conn_sql.query(sql, [id], (err, result) => {
+    if (err) return res.json({ msg: err });
+    return res.json({ msg: "Skill removed!!!" });
+  });
+};
+
+const GetCandidateProjects = (req, res) => {
+  const { id } = req.params;
+
+  const sql = "SELECT * FROM `user_projects` WHERE `user_id` = ?";
+  conn_sql.query(sql, [id], (err, result) => {
+    if (err) return res.json(err);
+    return res.json(result);
+  });
+};
+
 module.exports = {
   GetSkills,
   GetJobCategory,
   GetSubCategory,
+  GetCandidateSkills,
+  RemoveCandidateSkills,
+  GetCandidateProjects,
 };

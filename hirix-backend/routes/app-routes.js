@@ -144,6 +144,9 @@ const {
   GetSkills,
   GetJobCategory,
   GetSubCategory,
+  GetCandidateSkills,
+  RemoveCandidateSkills,
+  GetCandidateProjects,
 } = require("../controller/combined/getSkills");
 
 //....................................Admin.......................................
@@ -197,6 +200,7 @@ router.get("/GetAllProfileData/:id", GetFullApplicantProfile);
 //......................................Combined........................................
 
 router.get("/get-skills", GetSkills);
+router.get("/get-candidate-skills/:id", GetCandidateSkills);
 
 router.get("/get-job-cat", GetJobCategory);
 router.get("/subcategories/:id", GetSubCategory);
@@ -352,11 +356,14 @@ router.post("/AddExperience/:id", Experience);
 router.get("/get-candidate-exp/:id", GetExperience);
 
 router.post("/AddProject/:id", Project);
+router.get("/get-candidate-projects/:id", GetCandidateProjects);
 
 router.post("/AddAward/:id", Award);
 
 router.get("/profile-status/:id", getUserProfileStatus);
 
 router.get("/GenerateAutoUserName", GenerateUserName);
+
+router.delete("/remove-skill/:id", RemoveCandidateSkills);
 
 module.exports = router;

@@ -8,6 +8,7 @@ import { IoCloseSharp } from "react-icons/io5";
 import "react-quill/dist/quill.snow.css";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import RemoveIcon from "../assets/icons/remove.svg";
 
 import {
   FaTimes,
@@ -81,9 +82,12 @@ const CanProfile = () => {
     projects: false,
     awards: false,
   });
+  const [dbSkills, setDbSkills] = useState([]);
 
   const [CandidateEdu, setCandidateEdu] = useState([]);
   const [CandidateExp, setCandidateExp] = useState([]);
+  const [CandidateSkills, setCandidateSkills] = useState([]);
+  const [CandidateProj, setCandidateProj] = useState([]);
 
   sessionStorage.setItem("Percent", percentage);
   const handleActiveTab = (tab) => {
@@ -286,7 +290,7 @@ const CanProfile = () => {
     e.preventDefault();
 
     const payload = {
-      skills: selectedSkills.map((skill) => skill.label),
+      skills: selectedSkills.map((skill) => skill.id),
     };
 
     try {
@@ -299,9 +303,21 @@ const CanProfile = () => {
           },
         }
       );
-      alert(res.data.msg);
+      alert(res.data.message);
       window.location.reload();
     } catch (error) {}
+  };
+
+  const RemoveSkills = async (id) => {
+    try {
+      const res = await axios.delete(
+        `http://localhost:9000/remove-skill/${id}`
+      );
+      alert(res.data.msg);
+      window.location.reload();
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const ProjectSubmit = async (e) => {
@@ -375,8 +391,42 @@ const CanProfile = () => {
       }
     };
 
+    const GetDBSkills = async () => {
+      try {
+        const res = await axios.get("http://localhost:9000/get-skills");
+        setDbSkills(res.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const CandidateSkills = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:9000/get-candidate-skills/${id}`
+        );
+        setCandidateSkills(res.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const GetCandidateProjects = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:9000/get-candidate-projects/${id}`
+        );
+        setCandidateProj(res.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
     GetEducation();
     GetExperience();
+    GetDBSkills();
+    CandidateSkills();
+    GetCandidateProjects();
   }, []);
 
   useEffect(() => {
@@ -541,6 +591,7 @@ const CanProfile = () => {
       setage("");
     }
   }, [dop]);
+
   return (
     <div id="candidate-profile" className="dashboardWrapper addCompany">
       <div className="entry-my-page candidate-profile-dashboard">
@@ -1314,14 +1365,46 @@ const CanProfile = () => {
                 <div className="skills-info block-from">
                   <h6 className="block-heading">Skills</h6>
                   <div className="sub-head mb-5">
-                    We recommend at least one skill entry
+                    <label htmlFor="candidate_skills">Selected Skills</label>
+                    <br />
+                    {CandidateSkills.length > 0 ? (
+                      CandidateSkills.map((res) => (
+                        <>
+                          <span
+                            className="badge"
+                            style={{
+                              color: "white",
+                              backgroundColor: "#126ebb",
+                              margin: "5px",
+                              padding: "6px",
+                            }}
+                          >
+                            {res.candidateSkillName}
+                          </span>
+                          <a
+                            href="#"
+                            type="button"
+                            onClick={() => RemoveSkills(res.candidateSkillId)}
+                          >
+                            <img
+                              src={RemoveIcon}
+                              alt="Remove Skill"
+                              width={20}
+                              height={20}
+                            />
+                          </a>
+                        </>
+                      ))
+                    ) : (
+                      <p> We recommend at least one skill entry</p>
+                    )}
                   </div>
                   <div className="row">
                     <div className="entryGroup col-md-12">
                       <label htmlFor="candidate_skills">Select Skills</label>
                       <Select
                         isMulti
-                        options={skills}
+                        options={dbSkills}
                         styles={customStyles}
                         className="border p-1 rounded-2"
                         name="skills"
@@ -1366,18 +1449,29 @@ const CanProfile = () => {
                 <div className="project-info block-from">
                   <h6 className="block-heading">Projects</h6>
                   <div className="sub-head mb-5">
-                    We recommend at least one project entry
+                    {CandidateProj.length > 0 ? (
+                      CandidateProj.map((res) => (
+                        <div>
+                          <h4>Title: {res.title}</h4>
+                          Link:{" "}
+                          <a href={res.link} target="_blank">
+                            Visit
+                          </a>{" "}
+                          <br />
+                          Description:
+                          <span
+                            dangerouslySetInnerHTML={{
+                              __html: res.description,
+                            }}
+                          ></span>
+                        </div>
+                      ))
+                    ) : (
+                      <p>We recommend at least one project entry</p>
+                    )}
                   </div>
                   <div className="info-wrapper">
                     <div className="row">
-                      {/* <div className="col-md-12 d-flex gap-2 mb-2 border-bottom pb-3 mb-5">
-                          <FaTimes />
-                          <h6 className="education flex-grow-1">
-                            Project <span>1</span>
-                          </h6>
-                          <FaChevronUp className="" />
-                        </div> */}
-
                       <div className="entryGroup col-md-6">
                         <label>Title</label>
                         <input

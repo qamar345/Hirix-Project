@@ -321,7 +321,7 @@ const Project = (req, res) => {
     }
 
     const sql_insertDetails = `
-        INSERT INTO user_projects (user_id, Title, Link, Description)
+        INSERT INTO user_projects (user_id, title, link, description)
         VALUES (?, ?, ?, ?)
       `;
 
