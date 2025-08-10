@@ -1,5 +1,5 @@
 const { conn_sql } = require("../../config/connection");
-
+const { chromium } = require("playwright");
 const upload = require("../../middleware/upload");
 
 // Get Profile data
@@ -347,7 +347,7 @@ const Award = (req, res) => {
   const bodyData = { ...req.body };
   const { id } = req.params;
 
-  const { Title, date_awarded, Description } = bodyData;
+  const { Title, AwardedBy, date_awarded, Description } = bodyData;
 
   const sql_checkUser = "SELECT * FROM user_accounts WHERE id = ?";
 
@@ -360,14 +360,12 @@ const Award = (req, res) => {
       return res.status(404).json({ msg: "User not found" });
     }
 
-    const sql_insertDetails = `
-        INSERT INTO user_awards (user_id, Title, date_awarded, Description)
-        VALUES (?, ?, ?, ?)
-      `;
+    const sql_insertDetails =
+      "INSERT INTO `user_awards`(`user_id`, `title`, `description`, `awarded_by`, `award_date`) VALUES (?, ?, ?, ?, ?)";
 
     conn_sql.query(
       sql_insertDetails,
-      [id, Title, date_awarded, Description],
+      [id, Title, Description, AwardedBy, date_awarded],
       (err, detailsResult) => {
         if (err) {
           console.error("Insert error:", err);
@@ -529,6 +527,157 @@ const getUserProfileStatus = (req, res) => {
   });
 };
 
+const GenerateCv = (req, res) => {
+  const { id } = req.params;
+
+  // Fetch all data in parallel
+  const queries = {
+    user: `SELECT first_name, last_name, email, image, phone, location FROM user_accounts WHERE id = ${id}`,
+    exp: `SELECT job_title, company_name, start_date, end_date, description FROM user_experience WHERE user_id = ${id}`,
+    edu: `SELECT degree_title, field_of_study, institute_name, start_year, end_year FROM user_qualification WHERE user_id = ${id}`,
+    skills: `SELECT skillset.name as skill_name FROM jobseeker_skills JOIN skillset ON jobseeker_skills.skillset_id = skillset.id WHERE jobseeker_skills.job_seeker_id = ${id}`,
+    awards: `SELECT title, awarded_by, award_date, description FROM user_awards WHERE user_id = ${id}`,
+    projects: `SELECT title, description, link FROM user_projects WHERE user_id = ${id}`,
+  };
+
+  conn_sql.query(queries.user, (err, userRows) => {
+    if (err) throw err;
+    const user = userRows[0];
+    const path = `../..${user.image}`;
+
+    conn_sql.query(queries.exp, (err, expRows) => {
+      if (err) throw err;
+
+      conn_sql.query(queries.edu, (err, eduRows) => {
+        if (err) throw err;
+
+        conn_sql.query(queries.skills, (err, skillRows) => {
+          if (err) throw err;
+
+          conn_sql.query(queries.awards, (err, awardRows) => {
+            if (err) throw err;
+
+            conn_sql.query(queries.projects, async (err, projectRows) => {
+              if (err) throw err;
+
+              // Watermark CSS
+              const watermarkCSS = `
+                body::before {
+                  content: "Hirix.pk";
+                  position: fixed;
+                  top: 50%;
+                  left: 50%;
+                  transform: translate(-50%, -50%) rotate(-30deg);
+                  font-size: 100px;
+                  color: rgba(0, 0, 0, 0.05);
+                  z-index: -1;
+                  white-space: nowrap;
+                }
+              `;
+
+              // HTML Template
+              const html = `
+                <html>
+                <head>
+                  <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; position: relative; }
+                    ${watermarkCSS}
+                    h1 { color: rgb(18, 110, 187); }
+                    h2 { margin-top: 20px; border-bottom: 1px solid #ccc; }
+                    img { width: 100px; border-radius: 50%; }
+                    ul { padding-left: 20px; }
+                  </style>
+                </head>
+                <body>
+                 <div style="text-align: center;">
+                    <h1>${user.first_name} ${user.last_name}</h1>
+                    <p>${user.email}</p>
+                    <p>${user.phone}</p>
+                    <p>${user.location}</p>
+                  </div>
+                  <h2>Experience</h2>
+                  <ul>
+                    ${expRows
+                      .map(
+                        (e) =>
+                          `<li><b>${e.job_title}</b> at ${e.company_name} (${e.start_date} - ${e.end_date})<br>${e.description}</li>`
+                      )
+                      .join("")}
+                  </ul>
+
+                  <h2>Education</h2>
+                  <ul>
+                    ${eduRows
+                      .map(
+                        (e) =>
+                          `<li>${e.degree_title} in ${e.field_of_study} - ${e.institute_name} (${e.start_year} - ${e.end_year})</li>`
+                      )
+                      .join("")}
+                  </ul>
+
+                  <h2>Skills</h2>
+                  <p>${skillRows.map((s) => s.skill_name).join(", ")}</p>
+
+                  <h2>Awards</h2>
+                  <ul>
+                    ${awardRows
+                      .map(
+                        (a) =>
+                          `<li>${a.title} <br> ${a.awarded_by} <br> ${a.award_date}</li>`
+                      )
+                      .join("")}
+                  </ul>
+
+                  <h2>Projects</h2>
+                  <ul>
+                    ${projectRows
+                      .map(
+                        (p) =>
+                          `<li><b>${p.title}</b> <br> Project: <a href="${p.link}" target="_blank">Link</a><br>${p.description}</li>`
+                      )
+                      .join("")}
+                  </ul>
+                </body>
+                </html>
+              `;
+
+              // Generate PDF
+              const browser = await chromium.launch({
+                headless: true,
+                args: ["--no-sandbox", "--disable-setuid-sandbox"],
+              });
+
+              const context = await browser.newContext({
+                // Emulate print media to include backgrounds
+                // (Playwright applies printBackground automatically for pdf)
+                viewport: { width: 1200, height: 800 }, // optional
+              });
+
+              const page = await context.newPage();
+              await page.setContent(html, { waitUntil: "networkidle" });
+
+              const pdfBuffer = await page.pdf({
+                format: "A4",
+                printBackground: true,
+              });
+
+              await browser.close();
+
+              res.setHeader("Content-Type", "application/pdf");
+              res.setHeader("Content-Length", pdfBuffer.length);
+              res.setHeader(
+                "Content-Disposition",
+                "inline; filename=resume.pdf"
+              );
+              res.send(pdfBuffer);
+            });
+          });
+        });
+      });
+    });
+  });
+};
+
 module.exports = {
   GetProfile,
   ProfileBasicInfo,
@@ -537,7 +686,7 @@ module.exports = {
   Project,
   Award,
   getUserProfileStatus,
-
   GetEducation,
   GetExperience,
+  GenerateCv,
 };

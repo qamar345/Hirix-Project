@@ -134,6 +134,7 @@ const {
   GetProfile,
   GetEducation,
   GetExperience,
+  GenerateCv,
 } = require("../controller/jobseeker/profileData");
 const {
   SendVerificationLink,
@@ -365,5 +366,7 @@ router.get("/profile-status/:id", getUserProfileStatus);
 router.get("/GenerateAutoUserName", GenerateUserName);
 
 router.delete("/remove-skill/:id", RemoveCandidateSkills);
+
+router.get("/download-cv/:id", GenerateCv);
 
 module.exports = router;

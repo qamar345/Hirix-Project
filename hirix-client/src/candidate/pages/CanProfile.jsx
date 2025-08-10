@@ -88,6 +88,7 @@ const CanProfile = () => {
   const [CandidateExp, setCandidateExp] = useState([]);
   const [CandidateSkills, setCandidateSkills] = useState([]);
   const [CandidateProj, setCandidateProj] = useState([]);
+  const [awardedBy, setAwardedBy] = useState("");
 
   sessionStorage.setItem("Percent", percentage);
   const handleActiveTab = (tab) => {
@@ -349,9 +350,12 @@ const CanProfile = () => {
 
     const payload = {
       Title: AwardTitle?.trim(),
+      AwardedBy: awardedBy?.trim(),
       date_awarded: dateAwarded,
       Description: AwardDes?.trim(),
     };
+
+    console.log(payload);
 
     try {
       const res = await axios.post(
@@ -365,8 +369,19 @@ const CanProfile = () => {
       );
       alert(res.data.msg);
       window.location.reload();
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   };
+
+  // const DownloadCv = async (uid) => {
+  //   try {
+  //     const res = await axios.get(`http://localhost:9000/download-cv/${uid}`);
+  //     console.log(res);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
 
   useEffect(() => {
     const GetEducation = async () => {
@@ -650,6 +665,21 @@ const CanProfile = () => {
               >
                 <Link>Awards</Link>
               </li>
+
+              {Math.floor(percentage) === 100 && (
+                <li
+                  className={`tab-item ${
+                    activeTab === "downloadcv" ? "active" : ""
+                  }`}
+                >
+                  <Link
+                    to={`http://localhost:9000/download-cv/${id}`}
+                    target="_blank"
+                  >
+                    Download Profile as CV
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -801,7 +831,8 @@ const CanProfile = () => {
                       />
                     </div>
                     <div className="entryGroup col-md-6">
-                      <label htmlFor="candidate_dob">Date of Birth</label>
+                      <label htmlFor="candidate_dob">Date of Birth</label>{" "}
+                      <br />
                       <DatePicker
                         selected={dop}
                         onChange={(date) => setdop(date)}
@@ -1552,29 +1583,34 @@ const CanProfile = () => {
                           </h6>
                           <FaChevronUp className="" />
                         </div> */}
-                      <div className="entryGroup col-md-6">
+                      <div className="entryGroup col-md-4">
                         <label>Title</label>
                         <input
                           type="text"
                           name="candidate_award_title"
-                          placeholder="Name of award"
+                          placeholder="Name of Award"
                           value={AwardTitle}
                           onChange={(e) => setAwardTitle(e.target.value)}
                           className="point-mark point-active"
                         />
                       </div>
-                      <div className="entryGroup col-md-6">
-                        <label>Date awarded</label>
-                        <DatePicker
-                          selected={dateAwarded}
-                          onChange={(date) => setdateAwarded(date)}
-                          dateFormat="yyyy-MM-dd"
-                          className="datepicker point-mark point-active"
-                          placeholderText="Award Date"
-                          id="awardDate"
-                          maxDate={new Date()}
-                          showYearDropdown
-                          scrollableYearDropdown
+                      <div className="entryGroup col-md-4">
+                        <label>Awarded By</label>
+                        <input
+                          type="text"
+                          name="candidate_award_title"
+                          placeholder="Ex: Cisco/IEEE/Google/MircoSoft"
+                          value={awardedBy}
+                          onChange={(e) => setAwardedBy(e.target.value)}
+                          className="point-mark point-active"
+                        />
+                      </div>
+                      <div className="entryGroup col-md-4">
+                        <label>Date Awarded</label>
+
+                        <input
+                          type="date"
+                          onChange={(e) => setdateAwarded(e.target.value)}
                         />
                       </div>
                       <div className="entryGroup col-md-12">
@@ -1608,6 +1644,7 @@ const CanProfile = () => {
                 </div>
               </form>
             </div>
+            {/* Download Profile as Cv */}
             {/* Strength */}
             <form
               className={`candidate-profile-form form-dashboard  col-lg-8 col-md-7  ${
