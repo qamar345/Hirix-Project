@@ -5,26 +5,31 @@ import { format } from "date-fns";
 const ApplicantDetail = () => {
   const { id } = useParams();
   const [applicant, setApplicant] = useState(null);
+  const token = sessionStorage.getItem("token");
 
- const formatDate = (dateString) => {
-  if (!dateString || dateString == "Present") {
-    return "Present";
-  }
-  try {
-    return format(new Date(dateString), "yyyy-MM-dd");
-  } catch {
-    return "Invalid Date";
-  }
-};
+  const formatDate = (dateString) => {
+    if (!dateString || dateString == "Present") {
+      return "Present";
+    }
+    try {
+      return format(new Date(dateString), "yyyy-MM-dd");
+    } catch {
+      return "Invalid Date";
+    }
+  };
   useEffect(() => {
     const fetchJob = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:9000/GetAllProfileData/${id}`
+          `http://localhost:9000/GetAllProfileData/${id}`,
+          {
+            headers: {
+              "x-access-token": token,
+            },
+          }
         );
         setApplicant(res.data);
-      } catch (err) {
-              }
+      } catch (err) {}
     };
 
     fetchJob();
@@ -32,7 +37,8 @@ const ApplicantDetail = () => {
 
   if (!applicant) return <div className="text-center mt-5">Loading...</div>;
 
-   const { user, details, projects, awards, qualification, experience } = applicant;
+  const { user, details, projects, awards, qualification, experience, skills } =
+    applicant;
 
   return (
     <div className="container my-5 d-flex justify-content-center">
@@ -48,11 +54,11 @@ const ApplicantDetail = () => {
         <div className="mb-4">
           <h5 className="fw-semibold pt-3 pb-3">Personal Details</h5>
           <div className="row p-3">
-            <div className="col-md-6 mb-3">
+            {/* <div className="col-md-6 mb-3">
               <strong className="text-secondary">Username:</strong>
               {"  "}
               {user?.username  || "N/A"}
-            </div>
+            </div> */}
             <div className="col-md-6 mb-3">
               <strong className="text-secondary">Email:</strong>
               {"  "}
@@ -68,47 +74,47 @@ const ApplicantDetail = () => {
               {"  "}
               {user?.qualification || "N/A"}
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Current Position:</strong>
               {"  "}
               {details?.CurrentPosition || "N/A"}
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Category:</strong>
               {"  "}
               {details?.Category || "N/A"}
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Age:</strong>
               {"  "}
               {details?.Age || "N/A"}
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Gender:</strong>
               {"  "}
               {details?.Gender || "N/A"}
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Language:</strong>
               {"  "}
               {details?.Language || "N/A"}
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Experience:</strong>
               {"  "}
               {details?.Experience || "N/A"} Years
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Offer Salary:</strong>
               {"  "}
               {details?.offer_salary || "N/A"}
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Salary Type:</strong>
               {"  "}
               {details?.Salary_type || "N/A"}
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Currency:</strong>
               {"  "}
               {details?.Currency || "N/A"}
@@ -118,10 +124,14 @@ const ApplicantDetail = () => {
               {"  "}
               {user?.province || "N/A"}, {user?.location || "N/A"}
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Linkedin:</strong>
               {"  "}
-              {details?.LinkedIn || "N/A"}
+              {(
+                <a href={details?.LinkedIn} target="_blank">
+                  {details?.LinkedIn}
+                </a>
+              ) || "N/A"}
             </div>
           </div>
         </div>
@@ -130,17 +140,19 @@ const ApplicantDetail = () => {
           {qualification.length > 0 ? (
             <div className="row">
               {qualification.map((qual, index) => (
-                <div className="col-md-6 mb-3" key={index}>
+                <div className="col-md-12 mb-3" key={index}>
                   <div className="border rounded p-3 shadow-sm">
-                    <h6 className="fw-bold text-primary">{qual?.Title || "N/A"}</h6>
+                    <h6 className="fw-bold text-primary">
+                      {qual?.degree_title || "N/A"}
+                    </h6>
                     <p className="mb-1">
-                      <strong>Level:</strong> {qual?.Level || "N/A"}
+                      <strong>Field:</strong> {qual?.field_of_study || "N/A"}
                     </p>
                     <p className="mb-1">
-                      <strong>From:</strong> {formatDate(qual?.From || "N/A")}
+                      <strong>From:</strong> {qual?.start_year || "N/A"}
                     </p>
                     <p className="mb-1">
-                      <strong>To:</strong>  {formatDate(qual?.To || "N/A")}
+                      <strong>To:</strong> {qual?.end_year || "N/A"}
                     </p>
                   </div>
                 </div>
@@ -156,14 +168,21 @@ const ApplicantDetail = () => {
           {projects.length > 0 ? (
             <div className="row">
               {projects.map((pro, index) => (
-                <div className="col-md-6 mb-3" key={index}>
+                <div className="col-md-12 mb-3" key={index}>
                   <div className="border rounded p-3 shadow-sm">
-                    <h6 className="fw-bold text-primary">{pro?.Title || "N/A"}</h6>
+                    <h6 className="fw-bold text-primary">
+                      {pro?.title || "N/A"}
+                    </h6>
                     <p className="mb-1">
-                      <strong>Link:</strong> {pro?.Link || "N/A"}
+                      <strong>Link:</strong>{" "}
+                      {(
+                        <a href={pro?.link} target="_blank">
+                          {pro?.link}
+                        </a>
+                      ) || "N/A"}
                     </p>
                     <p className="mb-1">
-                      <strong>Description:</strong> {pro?.Description || "N/A"}
+                      <strong>Description:</strong> {pro?.description || "N/A"}
                     </p>
                   </div>
                 </div>
@@ -179,17 +198,19 @@ const ApplicantDetail = () => {
           {experience.length > 0 ? (
             <div className="row">
               {experience.map((exp, index) => (
-                <div className="col-md-6 mb-3" key={index}>
+                <div className="col-md-12 mb-3" key={index}>
                   <div className="border rounded p-3 shadow-sm">
-                    <h6 className="fw-bold text-primary">{exp?.Title || "N/A"}</h6>
+                    <h6 className="fw-bold text-primary">
+                      {exp?.job_title || "N/A"}
+                    </h6>
                     <p className="mb-1">
-                      <strong>Company:</strong> {exp?.Company || "N/A"}
+                      <strong>Company:</strong> {exp?.company_name || "N/A"}
                     </p>
                     <p className="mb-1">
-                      <strong>From:</strong>  {formatDate(exp?.From || "N/A")}
+                      <strong>From:</strong> {exp?.start_date || "N/A"}
                     </p>
                     <p className="mb-1">
-                      <strong>To:</strong>  {formatDate(exp?.From || "N/A")}
+                      <strong>To:</strong> {exp?.end_date || "N/A"}
                     </p>
                   </div>
                 </div>
@@ -204,18 +225,59 @@ const ApplicantDetail = () => {
           {awards.length > 0 ? (
             <div className="row">
               {awards.map((award, index) => (
-                <div className="col-md-6 mb-3" key={index}>
+                <div className="col-md-12 mb-3" key={index}>
                   <div className="border rounded p-3 shadow-sm">
-                    <h6 className="fw-bold text-primary">{award?.Title || "N/A"}</h6>
+                    <h6 className="fw-bold text-primary">
+                      {award?.title || "N/A"}
+                    </h6>
                     <p className="mb-1">
-                      <strong>Date Awarded:</strong> {formatDate(award?.date_awarded || "N/A")}
+                      <strong>Awarded By:</strong> {award?.awarded_by || "N/A"}
                     </p>
                     <p className="mb-1">
-                      <strong>Description:</strong> {award?.Description || "N/A"}
+                      <strong>Date Awarded:</strong>{" "}
+                      {formatDate(award?.award_date || "N/A")}
                     </p>
+                    {/* <p className="mb-1">
+                      <strong>Description:</strong> {award?.description || "N/A"}
+                    </p> */}
                   </div>
                 </div>
               ))}
+            </div>
+          ) : (
+            <p className="text-muted">No Award Added.</p>
+          )}
+        </div>
+        <div className="mb-5">
+          <h5 className="fw-semibold mb-3">Skills</h5>
+          {skills.length > 0 ? (
+            <div className="row">
+              <div className="col-md-12 mb-3">
+                <div className="border rounded p-3 shadow-sm">
+                  {/* <h6 className="fw-bold text-primary">{award?.title || "N/A"}</h6> */}
+                  {skills.map((skill, index) => (
+                    <span
+                      className="mb-1 badge"
+                      style={{
+                        color: "white",
+                        backgroundColor: "#126ebb",
+                        margin: "5px",
+                        padding: "6px",
+                      }}
+                      key={index}
+                    >
+                      {skill?.name || "N/A"}
+                    </span>
+                  ))}
+
+                  {/* <p className="mb-1">
+                      <strong>Date Awarded:</strong> {formatDate(award?.award_date || "N/A")}
+                    </p> */}
+                  {/* <p className="mb-1">
+                      <strong>Description:</strong> {award?.description || "N/A"}
+                    </p> */}
+                </div>
+              </div>
             </div>
           ) : (
             <p className="text-muted">No Award Added.</p>

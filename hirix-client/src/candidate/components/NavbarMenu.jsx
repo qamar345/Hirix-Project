@@ -7,6 +7,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import Login from "../../userAuthentication/Login.jsx";
 import { AdLogin } from "../../Admin/index.js";
 import { FaChevronDown } from "react-icons/fa";
+import { dashboard, logout } from "../assets/icons/index.js";
 
 const NavbarMenu = () => {
   const [modalShow, setModalShow] = React.useState(false);
@@ -53,7 +54,7 @@ const NavbarMenu = () => {
       <div className="container">
         <div className="row flex-wrap">
           <div className="left-header px-0 col-auto">
-            <div className=" ">
+            {/* <div className=" ">
               <a
                 href="#"
                 className="icon-menu "
@@ -64,9 +65,9 @@ const NavbarMenu = () => {
               >
                 <FaBars className=" menu-bars d-block d-xl-none" />
               </a>
-              {/* <div className="bg-overlay" /> */}
+              <div className="bg-overlay" />
               <MobileNavBar />
-            </div>
+            </div> */}
 
             <div className="site-logo">
               <NavLink to="/">
@@ -128,7 +129,7 @@ const NavbarMenu = () => {
                             textDecoration: "none",
                           }}
                         >
-                          Dashboard
+                          <img src={dashboard} alt="" /> &nbsp; Dashboard
                         </NavLink>
 
                         <div
@@ -139,13 +140,14 @@ const NavbarMenu = () => {
                             window.location.reload();
                           }}
                           style={{
+                            marginLeft: "7px",
                             display: "block",
                             padding: "2px 5px",
                             color: "#333",
                             cursor: "pointer",
                           }}
                         >
-                          Logout
+                          <img src={logout} alt="" /> &nbsp; Logout
                         </div>
                       </div>
                     )}
@@ -173,23 +175,104 @@ const NavbarMenu = () => {
                 )}
               </div>
             </div>
+
             <div className="d-xl-none">
               <div className="block-search search-icon civi-ajax-search">
                 <div className="icon-search">
-                  <NavLink
-                    className={`btn-login`}
-                    type="button"
-                    variant="primary"
-                    onClick={() => setModalShow(true)}
-                  >
-                    Login
-                  </NavLink>
+                  {user?.name ? (
+                    <div
+                      className="profile d-flex align-items-center "
+                      onClick={() => setShowDropdown(!showDropdown)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {/* <img
+                        src={user.photoURL}
+                        // alt={user.name}
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          borderRadius: "50%",
+                          marginRight: "10px",
+                        }}
+                      /> */}
+                      <span style={{ marginLeft: "-35px" }}>{user.name}</span>
+                      <FaChevronDown
+                        style={{ marginLeft: "8px", fontSize: "14px" }}
+                      />
 
-                  <Login show={modalShow} onHide={() => setModalShow(false)} />
-                  <AdLogin
-                    show={adModalShow}
-                    onHide={() => setAdModalShow(false)}
-                  />
+                      {showDropdown && (
+                        <div
+                          className="dropdown-menu show"
+                          style={{
+                            position: "absolute",
+                            top: "100%",
+                            right: 0,
+                            background: "white",
+                            boxShadow: "0px 2px 8px rgba(0,0,0,0.3)",
+                            paddingRight: "20px",
+                            fontSize: "14px",
+                          }}
+                        >
+                          <NavLink
+                            to={`/${
+                              user?.role === "jobseeker"
+                                ? "candidate"
+                                : user?.role === "employee"
+                                ? "employer"
+                                : "dashboard"
+                            }/dashboard`}
+                            className="dropdown-item"
+                            style={{
+                              display: "block",
+                              padding: "5px 10px",
+                              color: "#334",
+                              textDecoration: "none",
+                            }}
+                          >
+                            <img src={dashboard} alt="" /> &nbsp; Dashboard
+                          </NavLink>
+
+                          <div
+                            className="dropdown-item"
+                            onClick={() => {
+                              sessionStorage.clear();
+                              setUser({ name: "", photoURL: "", role: "" }); // <-- reset user state
+                              window.location.reload();
+                            }}
+                            style={{
+                              display: "block",
+                              padding: "5px 10px",
+                              color: "#333",
+                              cursor: "pointer",
+                            }}
+                          >
+                            <img src={logout} alt="" /> &nbsp; Logout
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      <NavLink
+                        className={`btn-login`}
+                        style={{ marginLeft: "-15px" }}
+                        type="button"
+                        variant="primary"
+                        onClick={() => setModalShow(true)}
+                      >
+                        Login
+                      </NavLink>
+
+                      <Login
+                        show={modalShow}
+                        onHide={() => setModalShow(false)}
+                      />
+                      <AdLogin
+                        show={adModalShow}
+                        onHide={() => setAdModalShow(false)}
+                      />
+                    </>
+                  )}
                 </div>
               </div>
             </div>

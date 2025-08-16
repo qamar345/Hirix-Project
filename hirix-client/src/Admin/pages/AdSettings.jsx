@@ -10,6 +10,7 @@ import axios from "axios";
 
 const AdSettings = () => {
   const check = sessionStorage.getItem("isLoggedIn");
+  const token = sessionStorage.getItem("token");
   const [editUserData, setEditUserData] = useState({});
   const [editPasswordData, setEditPasswordData] = useState({
     currentPass: "",
@@ -74,7 +75,12 @@ const AdSettings = () => {
     const GetUserData = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:9000/GetAdmin/${sessionStorage.getItem("id")}`
+          `http://localhost:9000/GetAdmin/${sessionStorage.getItem("id")}`,
+          {
+            headers: {
+              "x-access-token": token,
+            },
+          }
         );
 
         setUserData(res.data);
@@ -113,7 +119,12 @@ const AdSettings = () => {
       const res = await axios.put(
         `http://localhost:9000/admin-profile/${sessionStorage.getItem("id")}`,
         formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            "x-access-token": token,
+          },
+        }
       );
       if (res.data.imageUrl) {
         sessionStorage.setItem("image", res.data.imageUrl);
@@ -145,6 +156,11 @@ const AdSettings = () => {
         `http://localhost:9000/change-password/${sessionStorage.getItem("id")}`,
         {
           editPasswordData,
+        },
+        {
+          headers: {
+            "x-access-token": token,
+          },
         }
       );
 

@@ -1,5 +1,6 @@
 const { conn_sql } = require("../../config/connection");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 //job seeker login
 const userlogin = (req, res) => {
@@ -12,7 +13,14 @@ const userlogin = (req, res) => {
       let user = data[0];
       bcrypt.compare(password, user.password, function (err, result) {
         if (result) {
-          return res.json({ msg: "Login Successfully !...", result });
+          const secretKey = process.env.SECRETKEY;
+          return res.json({
+            token: jwt.sign({ email: user.email }, secretKey, {
+              expiresIn: 86400,
+            }),
+            msg: "Login Successfully !...",
+            result,
+          });
         } else {
           return res.json({ msg: "Invalid User" });
         }

@@ -1,39 +1,42 @@
-const express= require('express');
+const express = require("express");
 const multer = require("multer");
 const path = require("path");
-const cors = require('cors');
-const router = require('./routes/app-routes');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
+const cors = require("cors");
+const router = require("./routes/app-routes");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 
-const { databaseconfig } = require('./config/connection');
+const { databaseconfig } = require("./config/connection");
 
-const {AdminSetup} = require('./controller/admin/adminlogin');
+const { AdminSetup } = require("./controller/admin/adminlogin");
 
 const dotenv = require("dotenv").config();
 
 const port = process.env.PORT;
 
-const app= express();
+const app = express();
 
 AdminSetup();
 
 app.use(express.json());
 
-app.use(cors({
-    origin: "http://localhost:5173"
-}));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+    allowedHeaders: ["x-access-token", "Content-Type"],
+    methods: ["GET", "PUT", "POST", "DELETE"],
+  })
+);
 databaseconfig();
 app.use("/uploads", express.static("uploads"));
 app.use(router);
 
-
-app.listen(port, ()=>{
-    console.log("express app running on port 9000");
+app.listen(port, () => {
+  console.log("express app running on port 9000");
 });
 
-
-require("./controller/admin/adminlogin"); 
+require("./controller/admin/adminlogin");
 require("./controller/admin/adminHaveData");
 require("./controller/combined/commonAboutPosts");
 require("./controller/admin/activeORfreezeBYadmin");
@@ -44,7 +47,7 @@ require("./controller/jobseeker/reviews");
 require("./controller/employee/regardingApplication");
 require("./controller/employee/companies");
 require("./controller/employee/reviewApplicants");
-require("./controller/employee/messages")
+require("./controller/employee/messages");
 
 // Generating JWT
 // app.post("/user/generateToken", (req, res) => {

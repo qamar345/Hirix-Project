@@ -21,6 +21,7 @@ const CustomToggle = React.forwardRef(({ onClick }, ref) => (
   </span>
 ));
 const JobList = () => {
+  const token = sessionStorage.getItem("token");
   const [datauser, setdatauser] = useState([]);
   const [currentPage, settCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -41,6 +42,9 @@ const JobList = () => {
           page: page,
           search: search,
         },
+        headers: {
+          "x-access-token": token,
+        },
       });
       setdatauser(res.data.data);
       setfiltersUsers(res.data.data);
@@ -53,7 +57,12 @@ const JobList = () => {
     if (clientId) {
       try {
         const res = await axios.get(
-          `http://localhost:9000/getPostSpecific/${clientId}`
+          `http://localhost:9000/getPostSpecific/${clientId}`,
+          {
+            headers: {
+              "x-access-token": token,
+            },
+          }
         );
         useEffect(() => {
           let filteredData =
@@ -83,7 +92,11 @@ const JobList = () => {
 
   const Delete = async (id) => {
     await axios
-      .delete(`http://localhost:9000/deleteJob/${id}`)
+      .delete(`http://localhost:9000/deleteJob/${id}`, {
+        headers: {
+          "x-access-token": token,
+        },
+      })
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();

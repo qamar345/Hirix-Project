@@ -24,6 +24,7 @@ const ManagersList = () => {
   const [managersData, setmanagerData] = useState([]);
   const [currentPage, settCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const token = sessionStorage.getItem("token");
 
   const GetManagerData = async (page) => {
     // setLoading(true);
@@ -31,6 +32,9 @@ const ManagersList = () => {
       const res = await axios.get("http://localhost:9000/getManagers", {
         params: {
           page: page,
+        },
+        headers: {
+          "x-access-token": token,
         },
       });
       setmanagerData(res.data.data);
@@ -49,7 +53,11 @@ const ManagersList = () => {
   }, [currentPage]);
   const ActiveAccount = async (id) => {
     await axios
-      .put(`http://localhost:9000/activeManager/${id}`)
+      .put(`http://localhost:9000/activeManager/${id}`, null, {
+        headers: {
+          "x-access-token": token,
+        },
+      })
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();
@@ -59,7 +67,11 @@ const ManagersList = () => {
 
   const InActiveAccount = async (id) => {
     await axios
-      .put(`http://localhost:9000/freezeManager/${id}`)
+      .put(`http://localhost:9000/freezeManager/${id}`, null, {
+        headers: {
+          "x-access-token": token,
+        },
+      })
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();

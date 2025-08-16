@@ -1,5 +1,6 @@
 const { conn_sql } = require("../../config/connection");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 const upload = require("../../middleware/upload");
 
@@ -77,8 +78,12 @@ const employeelogin = (req, res) => {
         }
 
         if (result) {
+          const secretKey = process.env.SECRETKEY;
           // If passwords match, return success
           return res.json({
+            token: jwt.sign({ email: user.email }, secretKey, {
+              expiresIn: 86400,
+            }),
             isloggedin: true,
             msg: "Login successful!",
             data: user,

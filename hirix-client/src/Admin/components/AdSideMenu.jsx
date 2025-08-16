@@ -92,6 +92,11 @@ const AdSideMenu = () => {
                   alt: "Logout",
                   label: "Logout",
                   link: "/",
+                  logOut: () => {
+                    sessionStorage.clear();
+                    alert("Logout Successfuly!!!");
+                    // window.location.reload()
+                  },
                 },
               ].map((item, index) => (
                 <li
@@ -107,7 +112,13 @@ const AdSideMenu = () => {
                     <span className="canvas-image">
                       <img src={item.src} alt={item.alt} />
                     </span>
-                    <span>{item.label}</span>
+                    <span
+                      onClick={
+                        item.label === "Logout" ? () => item.logOut() : "#"
+                      }
+                    >
+                      {item.label}
+                    </span>
                   </NavLink>
                 </li>
               ))}

@@ -25,13 +25,14 @@ const EmployeeList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [filterUsers, setfiltersUsers] = useState([]);
   const location = useLocation();
+  const token = sessionStorage.getItem("token");
 
   const queryParams = new URLSearchParams(location.search);
   const filter = queryParams.get("filter") || "";
 
   const querysearch = new URLSearchParams(location.search);
   const searchQuery = querysearch.get("search") || "";
-const sort = queryParams.get("sort") || "newest"; 
+  const sort = queryParams.get("sort") || "newest";
   const GetEmployee = async (page, search = "") => {
     // setLoading(true);
     try {
@@ -40,14 +41,17 @@ const sort = queryParams.get("sort") || "newest";
           page: page,
           search: search,
         },
+
+        headers: {
+          "x-access-token": token,
+        },
       });
       setdatauser(res.data.data);
       setfiltersUsers(res.data.data);
       settCurrentPage(res.data.meta.page);
       setTotalPages(res.data.meta.totalPages);
       // setLoading(false);
-    } catch (error) {
-          }
+    } catch (error) {}
   };
 
   const handlePageChange = (page) => {
@@ -63,34 +67,44 @@ const sort = queryParams.get("sort") || "newest";
       filter == ""
         ? datauser
         : datauser.filter((user) => user.account_status == filter);
-         if (sort === "newest") {
-      filteredData = filteredData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    if (sort === "newest") {
+      filteredData = filteredData.sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
     } else if (sort === "oldest") {
-      filteredData = filteredData.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      filteredData = filteredData.sort(
+        (a, b) => new Date(a.created_at) - new Date(b.created_at)
+      );
     }
     setfiltersUsers(filteredData);
   }, [filter, datauser, sort]);
 
   const ActiveAccount = async (id) => {
     await axios
-      .put(`http://localhost:9000/active-employee/${id}`)
+      .put(`http://localhost:9000/active-employee/${id}`, null, {
+        headers: {
+          "x-access-token": token,
+        },
+      })
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();
       })
-      .catch((err) => {
-              });
+      .catch((err) => {});
   };
 
   const FreezeAccount = async (id) => {
     await axios
-      .put(`http://localhost:9000/freezeusers/${id}`)
+      .put(`http://localhost:9000/freezeusers/${id}`, null, {
+        headers: {
+          "x-access-token": token,
+        },
+      })
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();
       })
-      .catch((err) => {
-              });
+      .catch((err) => {});
   };
 
   // const applicantsData = [
@@ -179,16 +193,16 @@ const sort = queryParams.get("sort") || "newest";
                         )}
                       </div>
                       <NavLink to={`/employeeDetails/${applicant.id}`}>
-                      <div className="info-details">
-                        <h3>{applicant.username}</h3>
-                        {/* <div className="applied">
+                        <div className="info-details">
+                          <h3>{applicant.username}</h3>
+                          {/* <div className="applied">
                         Applied:
                         <a href="#" target="_blank" rel="noopener noreferrer">
                           <span> {applicant.qualification}</span>
                           <FaExternalLinkAlt className="externalIcon" />
                         </a>
                       </div> */}
-                      </div>
+                        </div>
                       </NavLink>
                     </td>
                     <td className="status">

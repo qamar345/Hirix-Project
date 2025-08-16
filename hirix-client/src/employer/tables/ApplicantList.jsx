@@ -137,6 +137,7 @@ const ApplicantList = () => {
                         </div>
                         <div className="info-details">
                           <NavLink
+                            target="_self"
                             to={`/ApplicantDetails/${applicant.job_seeker_id}`}
                           >
                             <h3>{applicant.jobseeker_name}</h3>

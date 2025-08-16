@@ -9,6 +9,7 @@ import axios from "axios";
 
 const AddManager = () => {
   const check = sessionStorage.getItem("isLoggedIn");
+  const token = sessionStorage.getItem("token");
   const [isScrolled, setIsScrolled] = useState(false);
   const [FirstName, setFirstName] = useState("");
   const [role, setRole] = useState("");
@@ -74,15 +75,18 @@ const AddManager = () => {
 
     try {
       await axios
-        .post("http://localhost:9000/addManager",payload)
+        .post("http://localhost:9000/addManager", payload, {
+          headers: {
+            "x-access-token": token,
+          },
+        })
         .then((res) => {
           alert(res.data.msg);
           navigate(`/admin/user-management`);
         })
-        .catch((err) => {
-                  });
+        .catch((err) => {});
     } catch (error) {
-          } finally {
+    } finally {
       setIsLoading(false);
     }
   };

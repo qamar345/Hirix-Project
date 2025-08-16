@@ -73,6 +73,8 @@ const Login = ({ ...props }) => {
             sessionStorage.setItem("role", res.data.data.role);
             sessionStorage.setItem("email", res.data.data.email);
             sessionStorage.setItem("isLoggedIn", res.data.data.isloggedin);
+            sessionStorage.setItem("token", res.data.token);
+
             if (res.data.data.role === "employee") {
               navigate("employer/dashboard");
             } else if (res.data.data.role === "jobseeker") {

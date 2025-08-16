@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import {
   FaLinkedin,
@@ -9,9 +9,24 @@ import {
 } from "react-icons/fa";
 import { letterBox } from "../assets/icons/index.js";
 import { NavLink } from "react-router-dom";
+import axios from "axios";
 
 const Footer = () => {
-   const currentYear = new Date().getFullYear();
+  const currentYear = new Date().getFullYear();
+  const [email, setEmail] = useState("");
+
+  const SubmitNewsLetter = (e) => {
+    e.preventDefault();
+    axios
+      .post("http://localhost:9000/news-letter", { email })
+      .then((res) => {
+        alert(res.data.msg);
+        window.location.reload();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
   return (
     <footer className="footerWrapper">
       <section className="footer-top border-bottom">
@@ -29,25 +44,33 @@ const Footer = () => {
               </div>
             </div>
             <div className="">
-              <form action="#" className="">
+              <form action="#" className="" onSubmit={SubmitNewsLetter}>
                 <div className="container">
                   <div className="row justify-content-between gap-4 gap-md-0">
                     <div className="col-md-6">
                       <input
-                        type="text"
+                        type="email"
                         required
                         placeholder="Enter your email"
-                        className="searchInput "
+                        className="searchInput"
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                        }}
                       />
                     </div>
                     <div className="col-md-4  d-flex ">
-                      <NavLink
+                      <button
                         type="submit"
                         className={`btn-submit flex-grow-1 text-center`}
-                        to=""
                       >
                         Subscribe
-                      </NavLink>
+                      </button>
+                      {/* <NavLink
+                        type="submit"
+                        className=
+                      >
+                        Subscribe
+                      </NavLink> */}
                     </div>
                   </div>
                 </div>

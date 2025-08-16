@@ -23,6 +23,7 @@ const CompanyList = () => {
   const [companydata, setcompanydata] = useState([]);
   const [currentPage, settCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const token = sessionStorage.getItem("token");
 
   const getcompanies = async (page) => {
     // setLoading(true);
@@ -31,13 +32,15 @@ const CompanyList = () => {
         params: {
           page: page,
         },
+        headers: {
+          "x-access-token": token,
+        },
       });
       setcompanydata(res.data.data);
       settCurrentPage(res.data.meta.page);
       setTotalPages(res.data.meta.totalPages);
       // setLoading(false);
-    } catch (error) {
-          }
+    } catch (error) {}
   };
 
   const handlePageChange = (page) => {
@@ -62,23 +65,29 @@ const CompanyList = () => {
   // }, []);
   const ApprovedCompany = async (id) => {
     await axios
-      .put(`http://localhost:9000/approvedCompany/${id}`)
+      .put(`http://localhost:9000/approvedCompany/${id}`, null, {
+        headers: {
+          "x-access-token": token,
+        },
+      })
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();
       })
-      .catch((err) => {
-              });
+      .catch((err) => {});
   };
   const RejectCompany = async (id) => {
     await axios
-      .put(`http://localhost:9000/rejectCompany/${id}`)
+      .put(`http://localhost:9000/rejectCompany/${id}`, null, {
+        headers: {
+          "x-access-token": token,
+        },
+      })
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();
       })
-      .catch((err) => {
-              });
+      .catch((err) => {});
   };
   // const companies = [
   //   {

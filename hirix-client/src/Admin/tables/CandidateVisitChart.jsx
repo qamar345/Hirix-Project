@@ -13,18 +13,23 @@ import {
 } from "recharts";
 import { format } from "date-fns";
 
-function VisitChart({days}) {
+function VisitChart({ days }) {
   const [graph, setGraph] = useState([]);
   const [selectedDays, setSelectedDays] = useState(7);
+  const token = sessionStorage.getItem("token");
   useEffect(() => {
     const fetchDataGraph = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:9000/Candidategraph/${days}`
+          `http://localhost:9000/Candidategraph/${days}`,
+          {
+            headers: {
+              "x-access-token": token,
+            },
+          }
         );
-                setGraph(res.data);
-      } catch (error) {
-              }
+        setGraph(res.data);
+      } catch (error) {}
     };
 
     fetchDataGraph();

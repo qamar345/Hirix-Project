@@ -150,52 +150,61 @@ const {
   GetCandidateProjects,
 } = require("../controller/combined/getSkills");
 
+
+
+const { Subscribe } = require("../utils/NewLetterSubsription");
+
 //....................................Admin.......................................
 const router = express.Router();
 
 router.post("/admin-login", Adminlogin);
 
-router.put("/admin-profile/:id", upload.single("image"), AdminProfile);
+router.put(
+  "/admin-profile/:id",
+  verifyToken,
+  upload.single("image"),
+  AdminProfile
+);
 
-router.get("/GetAdmin/:id", GetAdmin);
+router.get("/GetAdmin/:id", verifyToken, GetAdmin);
 
-router.get("/get-data", Getdata);
+router.get("/get-data", verifyToken, Getdata);
 
-router.get("/getusers", Getusers);
+router.get("/getusers", verifyToken, Getusers);
 
-router.get("/DashboardData", GetDashboard);
+router.get("/DashboardData", verifyToken, GetDashboard);
 
-router.get("/graph/:days", Graph);
+router.get("/graph/:days", verifyToken, Graph);
 
-router.get("/Candidategraph/:days", CandidateGraph);
+router.get("/Candidategraph/:days", verifyToken, CandidateGraph);
 
 // router.put("/approved-request/:id",verifyToken, request);
 
 // router.put("/rejected/:id",verifyToken, requestrejected);
 
-router.put("/active-employee/:id", Active);
+router.put("/active-employee/:id", verifyToken, Active);
 
-router.put("/freezeusers/:id", FreezeUsers);
+router.put("/freezeusers/:id", verifyToken, FreezeUsers);
 
-router.post("/freeze-employee/:id", verifyToken, Freeze);
+router.post("/freeze-employee/:id", verifyToken, verifyToken, Freeze);
 
-router.get("/getManagers", GetManagers);
+router.get("/getManagers", verifyToken, GetManagers);
 
-router.put("/activeManager/:id", ActiveManagers);
+router.put("/activeManager/:id", verifyToken, ActiveManagers);
 
-router.put("/freezeManager/:id", InactiveManagers);
+router.put("/freezeManager/:id", verifyToken, InactiveManagers);
 
-router.post("/addManager", AddManager);
+router.post("/addManager", verifyToken, AddManager);
 
-router.put("/change-password/:id", AdminChangePassword);
+router.put("/change-password/:id", verifyToken, AdminChangePassword);
 
-router.get("/getPostSpecific/:id", GetSpecificPost);
+router.get("/getPostSpecific/:id", verifyToken, GetSpecificPost);
 
-router.post("/verify-emailForAdmin", SendCodeForAdmin);
+router.post("/verify-emailForAdmin", verifyToken, SendCodeForAdmin);
 
-router.put("/forget-passwordForAdmin", forgetPasswordForAdmin);
+router.put("/forget-passwordForAdmin", verifyToken, forgetPasswordForAdmin);
 
-router.get("/GetAllProfileData/:id", GetFullApplicantProfile);
+router.get("/GetAllProfileData/:id", verifyToken, GetFullApplicantProfile);
 
 // router.get("/pagination", pagination);
 //......................................Combined........................................
@@ -214,11 +223,11 @@ router.get("/getTotal_jobs", GetTotalJobs);
 
 router.get("/get-post-by-id/:id", Getpostbyid);
 
-router.get("/getcompanies", Getcompanies);
+router.get("/getcompanies", verifyToken, Getcompanies);
 
-router.put("/approvedCompany/:id", Approvedcompany);
+router.put("/approvedCompany/:id", verifyToken, Approvedcompany);
 
-router.put("/rejectCompany/:id", Rejectcompany);
+router.put("/rejectCompany/:id", verifyToken, Rejectcompany);
 
 router.get("/get-reviews", verifyToken, Getreviews);
 
@@ -233,6 +242,8 @@ router.post("/send-verify-email", SendVerificationLink);
 router.get("/verify-mail-link/:token", VerifyEmailLink);
 
 router.get("/check-mail-status/:email", CheckMailStatus);
+
+router.post("/news-letter", Subscribe);
 
 //........................................Employee........................................
 

@@ -28,11 +28,11 @@ const AdLogin = ({ ...props }) => {
         "http://localhost:9000/admin-login",
         payload
       );
-            if (res.data.loginStatus) {
+      if (res.data.loginStatus) {
         sessionStorage.setItem("id", res.data.admin.id);
         sessionStorage.setItem("name", res.data.admin.name);
         sessionStorage.setItem("image", res.data.admin.image);
-        // sessionStorage.setItem("token", res.data.token);
+        sessionStorage.setItem("token", res.data.token);
         sessionStorage.setItem("isLoggedIn", res.data.loginStatus);
         navigate("/admin/dashboard");
       } else {
@@ -41,7 +41,7 @@ const AdLogin = ({ ...props }) => {
       }
     } catch (error) {
       setError(error.message); // Show error message
-          } finally {
+    } finally {
       setLoading(false);
     }
   };
@@ -181,7 +181,7 @@ const AdLogin = ({ ...props }) => {
                     <span
                       toggle="#ip_password"
                       className="field-icon civi-toggle-password"
-                       onClick={() => setShowPassword(!showPassword)}
+                      onClick={() => setShowPassword(!showPassword)}
                     >
                       <FaRegEye className="mb-3" />
                     </span>
@@ -248,7 +248,7 @@ const AdLogin = ({ ...props }) => {
                       Password
                     </label>
                     <input
-                     type={showPassword ? "text" : "password"}
+                      type={showPassword ? "text" : "password"}
                       className="form-control input-field valid"
                       name="password"
                       autoComplete="on"
@@ -260,7 +260,7 @@ const AdLogin = ({ ...props }) => {
                     <span
                       toggle="#ip_password"
                       className="field-icon civi-toggle-password"
-                       onClick={() => setShowPassword(!showPassword)}
+                      onClick={() => setShowPassword(!showPassword)}
                     >
                       <FaRegEye className="mb-3" />
                     </span>

@@ -1,27 +1,26 @@
 const dotenv = require("dotenv").config();
-const secretKey = process.env.secretKey;
+const secretKey = process.env.SECRETKEY;
 const jwt = require("jsonwebtoken");
 
 function verifyToken(req, res, next) {
   const token = req.headers["x-access-token"];
+  console.log(token);
 
-  const origin = req.headers["origin"];
+  if (!token) return res.json({ msg: "Token not provided" });
 
-  if (origin !== "http://localhost:5173") {
-    return res.json("Origin Invalid");
-  }
-
-  // console.log(req.headers);
-  if (!token) {
-    return res.json("Token not provided");
-  } else {
+  try {
     jwt.verify(token, secretKey, (err, decoded) => {
       if (err) {
+        console.log(err);
         return res.json("Failed to authenticate token");
       }
-      req.adminEmail = decoded.email;
+
+      req.userEmail = decoded.email;
       next();
     });
+  } catch (error) {
+    console.log(error);
+    return res.json({ msg: "Token not provided" });
   }
 }
 

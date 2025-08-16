@@ -4,6 +4,7 @@ import { FaPlus } from "react-icons/fa";
 import { AdSideBar, ManagersList, AdHeader, AdFooter } from "../index.js";
 const AdManagement = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  
 
   const handleSidebarToggle = () => {
     setIsCollapsed(!isCollapsed);

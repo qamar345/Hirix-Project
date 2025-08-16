@@ -14,6 +14,7 @@ import {
 
 const AdJobs = () => {
   const navigate = useNavigate();
+  const token = sessionStorage.getItem("token");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -81,21 +82,21 @@ const AdJobs = () => {
               />
 
               <div className="action-search selectFull">
-                  <input
-                    type="text"
-                    // name="jobs_search"
-                    placeholder="Search jobs title"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
+                <input
+                  type="text"
+                  // name="jobs_search"
+                  placeholder="Search jobs title"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
                 <button
-                    onClick={handleSearchSubmit}
-                    className="btn-search d-flex"
-                    style={{ all: "unset", cursor: "pointer" }}
-                  >
-                    <IoIosSearch className="mx-3" />
-                  </button>
- 
+                  onClick={handleSearchSubmit}
+                  className="btn-search d-flex"
+                  style={{ all: "unset", cursor: "pointer" }}
+                >
+                  <IoIosSearch className="mx-3" />
+                </button>
+
                 {/* <NavLink
                   className="btn-search d-flex"
                   to={`/search?query=${encodeURIComponent(searchQuery)}`}

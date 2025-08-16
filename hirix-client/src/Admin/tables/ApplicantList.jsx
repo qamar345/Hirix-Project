@@ -22,6 +22,7 @@ const CustomToggle = React.forwardRef(({ onClick }, ref) => (
 ));
 const ApplicantList = () => {
   const navigate = useNavigate();
+  const token = sessionStorage.getItem("token");
   const [datauser, setdatauser] = useState([]);
   const [currentPage, settCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -34,7 +35,7 @@ const ApplicantList = () => {
 
   const querysearch = new URLSearchParams(location.search);
   const searchQuery = querysearch.get("search") || "";
- const sort = queryParams.get("sort") || "newest"; 
+  const sort = queryParams.get("sort") || "newest";
   const GetApplicants = async (page, search = "") => {
     // setLoading(true);
     try {
@@ -43,14 +44,17 @@ const ApplicantList = () => {
           page: page,
           search: search,
         },
+
+        headers: {
+          "x-access-token": token,
+        },
       });
       setdatauser(res.data.data);
       setfiltersUsers(res.data.data);
       settCurrentPage(res.data.meta.page);
       setTotalPages(res.data.meta.totalPages);
       // setLoading(false);
-    } catch (error) {
-          }
+    } catch (error) {}
   };
 
   const handlePageChange = (page) => {
@@ -66,34 +70,49 @@ const ApplicantList = () => {
       filter == ""
         ? datauser
         : datauser.filter((user) => user.account_status == filter);
-         if (sort === "newest") {
-      filteredData = filteredData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    if (sort === "newest") {
+      filteredData = filteredData.sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
     } else if (sort === "oldest") {
-      filteredData = filteredData.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      filteredData = filteredData.sort(
+        (a, b) => new Date(a.created_at) - new Date(b.created_at)
+      );
     }
     setfiltersUsers(filteredData);
   }, [filter, datauser, sort]);
 
   const ActiveAccount = async (id) => {
+    const token = sessionStorage.getItem("token");
+
     await axios
-      .put(`http://localhost:9000/active-employee/${id}`)
+      .put(`http://localhost:9000/active-employee/${id}`, null, {
+        headers: {
+          "x-access-token": token,
+        },
+      })
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();
       })
-      .catch((err) => {
-              });
+      .catch((err) => {});
   };
 
   const FreezeAccount = async (id) => {
+    const token = sessionStorage.getItem("token");
+
     await axios
-      .put(`http://localhost:9000/freezeusers/${id}`)
+      .put(`http://localhost:9000/freezeusers/${id}`, null, {
+        headers: {
+          "x-access-token": token,
+        },
+      })
+
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();
       })
-      .catch((err) => {
-              });
+      .catch((err) => {});
   };
   const handleClick = (Jid) => {
     navigate(`/admin/jobs?highlight=${Jid}`);
@@ -185,7 +204,9 @@ const ApplicantList = () => {
                         )}
                       </div>
                       <div className="info-details">
-                        <NavLink to={`/ApplicantDetails/${applicant.id}`}><h3>{applicant.username}</h3></NavLink>
+                        <NavLink to={`/ApplicantDetails/${applicant.id}`}>
+                          <h3>{applicant.username}</h3>
+                        </NavLink>
                         <div className="applied">
                           Applied:
                           <NavLink to={`/admin/jobs?Jid=${applicant.id}`}>

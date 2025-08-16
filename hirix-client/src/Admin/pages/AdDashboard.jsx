@@ -9,6 +9,7 @@ import axios from "axios";
 
 const EmpDashboard = () => {
   const check = sessionStorage.getItem("isLoggedIn");
+  const token = sessionStorage.getItem("token");
   const [selectedDays, setSelectedDays] = useState();
   const navigate = useNavigate();
   const [data, setData] = useState([
@@ -31,46 +32,56 @@ const EmpDashboard = () => {
     if (!check) navigate("/admin-login");
   });
 
- useEffect(() => {
-  const GetUsers = async () => {
-    try {
-      const res = await axios.get("http://localhost:9000/DashboardData");
-      const fetchedData = res.data;
+  useEffect(() => {
+    const GetUsers = async () => {
+      try {
+        const res = await axios.get("http://localhost:9000/DashboardData", {
+          headers: {
+            "x-access-token": token,
+          },
+        });
+        const fetchedData = res.data;
 
-      const updatedData = [
-        {
-          src: edit,
-          label: "Total jobs",
-          color: "#b3e5fb",
-          num: fetchedData.find((item) => item.label === "Total jobs")?.num || 0,
-        },
-        {
-          src: applicant,
-          label: "Candidates",
-          color: "#cabffd",
-          num: fetchedData.find((item) => item.label.toLowerCase() === "candidates")?.num || 0,
-        },
-        {
-          src: text,
-          label: "Employees",
-          color: "#febc9c",
-          num: fetchedData.find((item) => item.label === "Employees")?.num || 0,
-        },
-        {
-          src: candidate,
-          label: "Total companies",
-          color: "#b7e4cb",
-          num: fetchedData.find((item) => item.label === "Total companies")?.num || 0,
-        },
-      ];
+        const updatedData = [
+          {
+            src: edit,
+            label: "Total jobs",
+            color: "#b3e5fb",
+            num:
+              fetchedData.find((item) => item.label === "Total jobs")?.num || 0,
+          },
+          {
+            src: applicant,
+            label: "Candidates",
+            color: "#cabffd",
+            num:
+              fetchedData.find(
+                (item) => item.label.toLowerCase() === "candidates"
+              )?.num || 0,
+          },
+          {
+            src: text,
+            label: "Employees",
+            color: "#febc9c",
+            num:
+              fetchedData.find((item) => item.label === "Employees")?.num || 0,
+          },
+          {
+            src: candidate,
+            label: "Total companies",
+            color: "#b7e4cb",
+            num:
+              fetchedData.find((item) => item.label === "Total companies")
+                ?.num || 0,
+          },
+        ];
 
-      setData(updatedData);
-    } catch (err) {
-          }
-  };
+        setData(updatedData);
+      } catch (err) {}
+    };
 
-  GetUsers();
-}, []);
+    GetUsers();
+  }, []);
 
   const days = [
     { value: 7, label: "Last 7 Days" },
@@ -124,7 +135,7 @@ const EmpDashboard = () => {
                     </div>
                   </div>
                   <div>
-                    <VisitChart days={selectedDays}/>
+                    <VisitChart days={selectedDays} />
                   </div>
                 </div>
               </div>
@@ -138,9 +149,7 @@ const EmpDashboard = () => {
                         options={days}
                         styles={customStyles}
                         className="border p-1 rounded-2 text-nowrap mb-2 selectFull"
-                        defaultValue={days.find(
-                          (option) => option.value === 7
-                        )}
+                        defaultValue={days.find((option) => option.value === 7)}
                       />
                     </div>
                   </div>

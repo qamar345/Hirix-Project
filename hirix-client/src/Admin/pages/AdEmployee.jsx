@@ -14,12 +14,13 @@ const AdEmployee = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const token = sessionStorage.getItem("token");
 
   const handleSidebarToggle = () => {
     setIsCollapsed(!isCollapsed);
   };
 
-   const handleSortChange = (selectedOption) => {
+  const handleSortChange = (selectedOption) => {
     const sort = selectedOption.value;
     navigate(`/admin/employees?sort=${sort}`);
   };
@@ -85,7 +86,7 @@ const AdEmployee = () => {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
-<button
+                  <button
                     type="submit"
                     className="btn-search d-flex"
                     style={{ all: "unset", cursor: "pointer" }}
@@ -107,7 +108,7 @@ const AdEmployee = () => {
                 defaultValue={jobAge.find(
                   (option) => option.value === "newest"
                 )}
-                 onChange={handleSortChange}
+                onChange={handleSortChange}
               />
             </div>
           </div>
