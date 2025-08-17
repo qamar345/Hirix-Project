@@ -59,8 +59,7 @@ async function sendNewsletter() {
               (job) => `
           <div style="padding:10px 0;border-bottom:1px solid #ddd;">
             <h3 style="margin:0;color:#126ebb;">${job.title}</h3>
-            <p style="margin:4px 0;">📍 ${job.location} | 💼 ${job.type}</p>
-            <p style="margin:4px 0;color:#555;">${job.description}</p>
+            <p style="margin:4px 0;">📍 ${job.city} | 💼 ${job.workplace_type}</p>
           </div>
         `
             )
@@ -83,7 +82,7 @@ async function sendNewsletter() {
           </div>
           <div style="background:#f1f1f1;padding:15px;text-align:center;color:#888;font-size:12px;">
             You are receiving this email because you subscribed to Hirix job alerts.<br>
-            © 2025 Hirix. All rights reserved.
+            © ${new Date().getFullYear()} Hirix. All rights reserved.
           </div>
         </div>
         `;
