@@ -3,28 +3,33 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import { format } from "date-fns";
 const ApplicantDetail = () => {
+  const token = sessionStorage.getItem("token");
   const { id } = useParams();
   const [applicant, setApplicant] = useState(null);
 
- const formatDate = (dateString) => {
-  if (!dateString || dateString == "Present") {
-    return "Present";
-  }
-  try {
-    return format(new Date(dateString), "yyyy-MM-dd");
-  } catch {
-    return "Invalid Date";
-  }
-};
+  const formatDate = (dateString) => {
+    if (!dateString || dateString == "Present") {
+      return "Present";
+    }
+    try {
+      return format(new Date(dateString), "yyyy-MM-dd");
+    } catch {
+      return "Invalid Date";
+    }
+  };
   useEffect(() => {
     const fetchJob = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:9000/GetAllProfileData/${id}`
+          `http://localhost:9000/GetAllProfileData/${id}`,
+          {
+            headers: {
+              "x-access-token": token,
+            },
+          }
         );
         setApplicant(res.data);
-      } catch (err) {
-              }
+      } catch (err) {}
     };
 
     fetchJob();
@@ -32,7 +37,8 @@ const ApplicantDetail = () => {
 
   if (!applicant) return <div className="text-center mt-5">Loading...</div>;
 
-   const { user, details, projects, awards, qualification, experience } = applicant;
+  const { user, details, projects, awards, qualification, experience } =
+    applicant;
 
   return (
     <div className="container my-5 d-flex justify-content-center">
@@ -51,7 +57,7 @@ const ApplicantDetail = () => {
             <div className="col-md-6 mb-3">
               <strong className="text-secondary">Username:</strong>
               {"  "}
-              {user?.username  || "N/A"}
+              {user?.username || "N/A"}
             </div>
             <div className="col-md-6 mb-3">
               <strong className="text-secondary">Email:</strong>
@@ -68,47 +74,47 @@ const ApplicantDetail = () => {
               {"  "}
               {user?.qualification || "N/A"}
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Current Position:</strong>
               {"  "}
               {details?.CurrentPosition || "N/A"}
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Category:</strong>
               {"  "}
               {details?.Category || "N/A"}
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Age:</strong>
               {"  "}
               {details?.Age || "N/A"}
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Gender:</strong>
               {"  "}
               {details?.Gender || "N/A"}
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Language:</strong>
               {"  "}
               {details?.Language || "N/A"}
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Experience:</strong>
               {"  "}
               {details?.Experience || "N/A"} Years
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Offer Salary:</strong>
               {"  "}
               {details?.offer_salary || "N/A"}
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Salary Type:</strong>
               {"  "}
               {details?.Salary_type || "N/A"}
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Currency:</strong>
               {"  "}
               {details?.Currency || "N/A"}
@@ -118,7 +124,7 @@ const ApplicantDetail = () => {
               {"  "}
               {user?.province || "N/A"}, {user?.location || "N/A"}
             </div>
-             <div className="col-md-6 mb-3">
+            <div className="col-md-6 mb-3">
               <strong className="text-secondary">Linkedin:</strong>
               {"  "}
               {details?.LinkedIn || "N/A"}
@@ -132,7 +138,9 @@ const ApplicantDetail = () => {
               {qualification.map((qual, index) => (
                 <div className="col-md-6 mb-3" key={index}>
                   <div className="border rounded p-3 shadow-sm">
-                    <h6 className="fw-bold text-primary">{qual?.Title || "N/A"}</h6>
+                    <h6 className="fw-bold text-primary">
+                      {qual?.Title || "N/A"}
+                    </h6>
                     <p className="mb-1">
                       <strong>Level:</strong> {qual?.Level || "N/A"}
                     </p>
@@ -140,7 +148,7 @@ const ApplicantDetail = () => {
                       <strong>From:</strong> {formatDate(qual?.From || "N/A")}
                     </p>
                     <p className="mb-1">
-                      <strong>To:</strong>  {formatDate(qual?.To || "N/A")}
+                      <strong>To:</strong> {formatDate(qual?.To || "N/A")}
                     </p>
                   </div>
                 </div>
@@ -158,7 +166,9 @@ const ApplicantDetail = () => {
               {projects.map((pro, index) => (
                 <div className="col-md-6 mb-3" key={index}>
                   <div className="border rounded p-3 shadow-sm">
-                    <h6 className="fw-bold text-primary">{pro?.Title || "N/A"}</h6>
+                    <h6 className="fw-bold text-primary">
+                      {pro?.Title || "N/A"}
+                    </h6>
                     <p className="mb-1">
                       <strong>Link:</strong> {pro?.Link || "N/A"}
                     </p>
@@ -181,15 +191,17 @@ const ApplicantDetail = () => {
               {experience.map((exp, index) => (
                 <div className="col-md-6 mb-3" key={index}>
                   <div className="border rounded p-3 shadow-sm">
-                    <h6 className="fw-bold text-primary">{exp?.Title || "N/A"}</h6>
+                    <h6 className="fw-bold text-primary">
+                      {exp?.Title || "N/A"}
+                    </h6>
                     <p className="mb-1">
                       <strong>Company:</strong> {exp?.Company || "N/A"}
                     </p>
                     <p className="mb-1">
-                      <strong>From:</strong>  {formatDate(exp?.From || "N/A")}
+                      <strong>From:</strong> {formatDate(exp?.From || "N/A")}
                     </p>
                     <p className="mb-1">
-                      <strong>To:</strong>  {formatDate(exp?.From || "N/A")}
+                      <strong>To:</strong> {formatDate(exp?.From || "N/A")}
                     </p>
                   </div>
                 </div>
@@ -206,12 +218,16 @@ const ApplicantDetail = () => {
               {awards.map((award, index) => (
                 <div className="col-md-6 mb-3" key={index}>
                   <div className="border rounded p-3 shadow-sm">
-                    <h6 className="fw-bold text-primary">{award?.Title || "N/A"}</h6>
+                    <h6 className="fw-bold text-primary">
+                      {award?.Title || "N/A"}
+                    </h6>
                     <p className="mb-1">
-                      <strong>Date Awarded:</strong> {formatDate(award?.date_awarded || "N/A")}
+                      <strong>Date Awarded:</strong>{" "}
+                      {formatDate(award?.date_awarded || "N/A")}
                     </p>
                     <p className="mb-1">
-                      <strong>Description:</strong> {award?.Description || "N/A"}
+                      <strong>Description:</strong>{" "}
+                      {award?.Description || "N/A"}
                     </p>
                   </div>
                 </div>

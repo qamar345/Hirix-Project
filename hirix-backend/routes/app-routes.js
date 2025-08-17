@@ -150,8 +150,6 @@ const {
   GetCandidateProjects,
 } = require("../controller/combined/getSkills");
 
-
-
 const { Subscribe } = require("../utils/NewLetterSubsription");
 
 //....................................Admin.......................................
@@ -249,61 +247,67 @@ router.post("/news-letter", Subscribe);
 
 router.put(
   "/employee-profile-update/:id",
+  verifyToken,
   upload.single("image"),
   EmployeeProfile
 );
 
-router.put("/Employer-password/:id", EmployeeChangePassword);
+router.put("/Employer-password/:id", verifyToken, EmployeeChangePassword);
 
 router.post("/employee-login", employeelogin);
 
-router.get("/EmployerGraph/:id/:days", EmployerGraph);
+router.get("/EmployerGraph/:id/:days", verifyToken, EmployerGraph);
 
-router.get("/DashEmpData/:id", Dashboard);
+router.get("/DashEmpData/:id", verifyToken, Dashboard);
 
-router.get("/dashDataEmployer/:id", dashData);
+router.get("/dashDataEmployer/:id", verifyToken, dashData);
 
-router.post("/employee-signup", employeesignup);
+router.post("/employee-signup", verifyToken, employeesignup);
 
-router.get("/getEmployer/:id", GetEmployee);
+router.get("/getEmployer/:id", verifyToken, GetEmployee);
 
-router.get("/GetEmployeesWithCompanies/:id", GetEmpAndCom);
+router.get("/GetEmployeesWithCompanies/:id", verifyToken, GetEmpAndCom);
 
-router.post("/postbyEmployee/:id", PostJob);
+router.post("/postbyEmployee/:id", verifyToken, PostJob);
 
-router.post("/saveAsDraft/:id", draftJob);
+router.post("/saveAsDraft/:id", verifyToken, draftJob);
 
-router.get("/GetCompanies/:id", SelectCompanies);
+router.get("/GetCompanies/:id", verifyToken, SelectCompanies);
 
-router.put("/edit-posts/:id", editposts);
+router.put("/edit-posts/:id", verifyToken, editposts);
 
-router.put("/del-job-posts/:id", delposts);
+router.put("/del-job-posts/:id", verifyToken, delposts);
 
-router.delete("/deleteJob/:id", jobDel);
+router.delete("/deleteJob/:id", verifyToken, jobDel);
 
-router.get("/getjobPost/:id", GetJob);
+router.get("/getjobPost/:id", verifyToken, GetJob);
 
-router.put("/update-status-opening/:id", post_status);
+router.put("/update-status-opening/:id", verifyToken, post_status);
 
-router.put("/status_Pause/:id", status_pause);
+router.put("/status_Pause/:id", verifyToken, status_pause);
 
-router.put("/status-review/:id", status_review);
+router.put("/status-review/:id", verifyToken, status_review);
 
-router.put("/statusselected/:id", status_selected);
+router.put("/statusselected/:id", verifyToken, status_selected);
 
-router.put("/statusrejected/:id", status_rejected);
+router.put("/statusrejected/:id", verifyToken, status_rejected);
 
-router.post("/add-company/:id", upload.single("image"), Addcompany);
+router.post(
+  "/add-company/:id",
+  verifyToken,
+  upload.single("image"),
+  Addcompany
+);
 
-router.put("/edit-company/:id", Editcompany);
+router.put("/edit-company/:id", verifyToken, Editcompany);
 
-router.get("/select-company/:id", Selectcompany);
+router.get("/select-company/:id", verifyToken, Selectcompany);
 
-router.delete("/deletecompany/:id", DeleteCompany);
+router.delete("/deletecompany/:id", verifyToken, DeleteCompany);
 
-router.get("/getSpecificCompany/:id", GetCompanySpecific);
+router.get("/getSpecificCompany/:id", verifyToken, GetCompanySpecific);
 
-router.get("/get-applicants/:id", Getapplicants);
+router.get("/get-applicants/:id", verifyToken, Getapplicants);
 
 router.post("/send-message/:id", verifyToken, send_message);
 
@@ -317,7 +321,7 @@ router.get("/outbox/:id", verifyToken, outbox_message);
 
 // router.put("/edit-skillset/:id", Editskillset);
 
-router.get("/get-his-posts/:id", Gethisposts);
+router.get("/get-his-posts/:id", verifyToken, Gethisposts);
 
 // router.post("/required-skills/:id", required_skills);
 

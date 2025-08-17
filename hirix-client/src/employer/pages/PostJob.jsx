@@ -12,6 +12,7 @@ import axios from "axios";
 import { use } from "react";
 
 const PostJob = () => {
+  const token = sessionStorage.getItem("token");
   const navigate = useNavigate();
   const id = sessionStorage.getItem("id");
   const check = sessionStorage.getItem("isLoggedIn");
@@ -92,7 +93,14 @@ const PostJob = () => {
   useEffect(() => {
     const fetchCompany = async () => {
       try {
-        const res = await axios.get(`http://localhost:9000/GetCompanies/${id}`);
+        const res = await axios.get(
+          `http://localhost:9000/GetCompanies/${id}`,
+          {
+            headers: {
+              "x-access-token": token,
+            },
+          }
+        );
         const formattedCompanies = res.data.map((company) => ({
           label: company.name,
           value: company.id,
@@ -137,7 +145,11 @@ const PostJob = () => {
 
     try {
       await axios
-        .post(`http://localhost:9000/postbyEmployee/${id}`, payload)
+        .post(`http://localhost:9000/postbyEmployee/${id}`, payload, {
+          headers: {
+            "x-access-token": token,
+          },
+        })
         .then((res) => {
           alert(res.data.msg);
           navigate(`/employer/jobs`);
@@ -188,7 +200,11 @@ const PostJob = () => {
 
     try {
       await axios
-        .post(`http://localhost:9000/saveAsDraft/${id}`, payload)
+        .post(`http://localhost:9000/saveAsDraft/${id}`, payload, {
+          headers: {
+            "x-access-token": token,
+          },
+        })
         .then((res) => {
           alert(res.data.msg);
           navigate(`/employer/jobs`);
@@ -338,7 +354,11 @@ const PostJob = () => {
   useEffect(() => {
     const GetJobCategory = async () => {
       try {
-        const res = await axios.get("http://localhost:9000/get-job-cat");
+        const res = await axios.get("http://localhost:9000/get-job-cat", {
+          headers: {
+            "x-access-token": token,
+          },
+        });
         setDBCategory(res.data);
       } catch (error) {
         console.log(error);
@@ -347,7 +367,11 @@ const PostJob = () => {
 
     const GetSkills = async () => {
       try {
-        const res = await axios.get("http://localhost:9000/get-skills");
+        const res = await axios.get("http://localhost:9000/get-skills", {
+          headers: {
+            "x-access-token": token,
+          },
+        });
         setdbSkills(res.data);
       } catch (error) {
         console.log(error);
@@ -373,7 +397,11 @@ const PostJob = () => {
   useEffect(() => {
     if (selectedCategory?.value) {
       axios
-        .get(`http://localhost:9000/subcategories/${selectedCategory.value}`)
+        .get(`http://localhost:9000/subcategories/${selectedCategory.value}`, {
+          headers: {
+            "x-access-token": token,
+          },
+        })
         .then((res) => setDBSubcategories(res.data))
         .catch((err) => console.error(err));
     } else {

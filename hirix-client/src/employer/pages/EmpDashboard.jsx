@@ -7,6 +7,7 @@ import { EmpFooter, VisitChart } from "../index.js";
 import axios from "axios";
 const EmpDashboard = () => {
   const [selectedDays, setSelectedDays] = useState(7);
+  const token = sessionStorage.getItem("token");
   const navigate = useNavigate();
   useEffect(() => {
     const check = sessionStorage.getItem("isLoggedIn");
@@ -27,13 +28,16 @@ const EmpDashboard = () => {
   useEffect(() => {
     const GetData = async () => {
       if (!id) {
-                return;
+        return;
       }
       try {
-        const res = await axios.get(`http://localhost:9000/DashEmpData/${id}`);
+        const res = await axios.get(`http://localhost:9000/DashEmpData/${id}`, {
+          headers: {
+            "x-access-token": token,
+          },
+        });
         setData(res.data.data);
-      } catch (err) {
-              }
+      } catch (err) {}
     };
 
     GetData();
@@ -43,11 +47,15 @@ const EmpDashboard = () => {
     const Data = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:9000/dashDataEmployer/${id}`
+          `http://localhost:9000/dashDataEmployer/${id}`,
+          {
+            headers: {
+              "x-access-token": token,
+            },
+          }
         );
-                setColData(res.data.data || []);
-      } catch (err) {
-              }
+        setColData(res.data.data || []);
+      } catch (err) {}
     };
 
     Data();

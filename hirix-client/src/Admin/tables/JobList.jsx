@@ -20,6 +20,7 @@ const CustomToggle = React.forwardRef(({ onClick }, ref) => (
     <FaEllipsisH />
   </span>
 ));
+
 const JobList = () => {
   const token = sessionStorage.getItem("token");
   const [datauser, setdatauser] = useState([]);
@@ -34,74 +35,95 @@ const JobList = () => {
   const searchQuery = queryParams.get("search") || "";
   const sort = queryParams.get("sort") || "newest";
   const clientId = queryParams.get("Jid"); // Fetch the clientId from query params
+
+  // ✅ Final data to display
   const dataToShow = clientId ? appliedJobs : filterUsers;
-  const GetJobPosts = async (page, search = "") => {
+
+  // ✅ Fetch all job posts
+  const GetJobPosts = async (page = 1, search = "") => {
     try {
       const res = await axios.get("http://localhost:9000/get-postsBYAdmin", {
-        params: {
-          page: page,
-          search: search,
-        },
-        headers: {
-          "x-access-token": token,
-        },
+        params: { page, search },
+        headers: { "x-access-token": token },
       });
-      setdatauser(res.data.data);
-      setfiltersUsers(res.data.data);
-      settCurrentPage(res.data.meta.page);
-      setTotalPages(res.data.meta.totalPages);
-    } catch (error) {}
+
+      const jobs = Array.isArray(res.data.data) ? res.data.data : [];
+      console.log(jobs);
+      setdatauser(jobs);
+      setfiltersUsers(jobs);
+      settCurrentPage(res.data.meta?.page || 1);
+      setTotalPages(res.data.meta?.totalPages || 1);
+    } catch (error) {
+      console.error("Error fetching job posts:", error);
+      setdatauser([]);
+      setfiltersUsers([]);
+    }
   };
 
+  // ✅ Fetch applied jobs
   const GetAppliedJobs = async () => {
     if (clientId) {
       try {
         const res = await axios.get(
           `http://localhost:9000/getPostSpecific/${clientId}`,
-          {
-            headers: {
-              "x-access-token": token,
-            },
-          }
+          { headers: { "x-access-token": token } }
         );
-        useEffect(() => {
-          let filteredData =
-            filter === ""
-              ? [...datauser]
-              : datauser.filter((user) => user.status === filter);
-          if (sort === "newest") {
-            filteredData = filteredData.sort(
-              (a, b) => new Date(b.created_at) - new Date(a.created_at)
-            );
-          } else if (sort === "oldest") {
-            filteredData = filteredData.sort(
-              (a, b) => new Date(a.created_at) - new Date(b.created_at)
-            );
-          }
-          setfiltersUsers(filteredData || []);
-        }, [filter, datauser, sort]);
-      } catch (err) {}
+
+        const jobs = Array.isArray(res.data) ? res.data : [];
+        setdatauser(jobs);
+        setAppliedJobs(jobs); // <-- Important
+      } catch (err) {
+        console.error("Error fetching applied jobs:", err);
+        setdatauser([]);
+        setAppliedJobs([]);
+      }
     }
   };
 
+  // ✅ Initial fetch
   useEffect(() => {
-    GetAppliedJobs();
+    // GetAppliedJobs();
     GetJobPosts();
-    // Fetch the applied jobs for the client
   }, [clientId]);
 
+  // ✅ Filtering + sorting
+  // useEffect(() => {
+  //   console.log(datauser);
+  //   if (!Array.isArray(datauser) || datauser.length === 0) {
+  //     setfiltersUsers([]);
+  //     return;
+  //   }
+
+  //   let filteredData = [...datauser];
+
+  //   if (filter !== "") {
+  //     filteredData = filteredData.filter((user) => user.status === filter);
+  //   }
+
+  //   if (sort === "newest") {
+  //     filteredData.sort(
+  //       (a, b) => new Date(b.created_at) - new Date(a.created_at)
+  //     );
+  //   } else if (sort === "oldest") {
+  //     filteredData.sort(
+  //       (a, b) => new Date(a.created_at) - new Date(b.created_at)
+  //     );
+  //   }
+
+  //   setfiltersUsers(filteredData);
+  // }, [filter, datauser, sort]);
+
+  // ✅ Delete handler
   const Delete = async (id) => {
-    await axios
-      .delete(`http://localhost:9000/deleteJob/${id}`, {
-        headers: {
-          "x-access-token": token,
-        },
-      })
-      .then((res) => {
-        alert(res.data.msg);
-        window.location.reload();
-      })
-      .catch((err) => {});
+    try {
+      const res = await axios.delete(`http://localhost:9000/deleteJob/${id}`, {
+        headers: { "x-access-token": token },
+      });
+      alert(res.data.msg);
+      GetJobPosts(currentPage, searchQuery); // refresh instead of reload
+    } catch (err) {
+      console.error("Delete failed:", err);
+    }
   };
 
   return (
@@ -120,26 +142,28 @@ const JobList = () => {
         <tbody>
           {Array.isArray(dataToShow) && dataToShow.length > 0 ? (
             dataToShow.map((job, index) => {
-              const postDate = new Date(job.created_at)
-                .toISOString()
-                .split("T")[0];
+              const postDate = job.created_at
+                ? new Date(job.created_at).toISOString().split("T")[0]
+                : "N/A";
               const expiryDate = job.expiry_date
                 ? new Date(job.expiry_date).toISOString().split("T")[0]
                 : null;
 
-              // Update status dynamically for expired jobs
+              // ✅ Expired check
               const jobStatus =
-                job.expiry_date < new Date() ? "Closed" : job.status;
+                job.expiry_date && new Date(job.expiry_date) < new Date()
+                  ? "Closed"
+                  : job.status || "Open";
 
-              // Check if the current job is in the applied jobs list
-              const isApplied = appliedJobs.some(
-                (appliedJob) => appliedJob.job_id === job.id
-              );
+              // ✅ Applied check
+              const isApplied = Array.isArray(appliedJobs)
+                ? appliedJobs.some((appliedJob) => appliedJob.job_id === job.id)
+                : false;
 
               return (
                 <tr
                   key={index}
-                  className={isApplied ? "highlight-applied-job" : ""} // Highlight the row if the client has applied
+                  className={isApplied ? "highlight-applied-job" : ""}
                 >
                   <td>
                     <h3 className="title-jobs-dashboard">
@@ -164,12 +188,12 @@ const JobList = () => {
                     </h3>
                     <p>
                       <span>
-                        {job.career_level} / {job.job_type}
+                        {job.career_level || "N/A"} / {job.job_type || "N/A"}
                       </span>
                     </p>
                   </td>
                   <td className="title-jobs-dashboard">
-                    <span className="number">{job.applicant_count} </span>
+                    <span className="number">{job.applicant_count ?? 0} </span>
                     <NavLink to=""> Application</NavLink>
                   </td>
                   <td>
@@ -193,17 +217,15 @@ const JobList = () => {
                       className="expires-time"
                       style={{
                         color:
-                          jobStatus === "Pending"
-                            ? "rgb(19, 175, 151)"
+                          jobStatus === "Closed"
+                            ? "red"
                             : jobStatus === "Open"
                             ? "green"
-                            : jobStatus === "Closed"
-                            ? "red"
                             : "orange",
                       }}
                     >
                       {jobStatus === "Closed"
-                        ? "Expire"
+                        ? "Expired"
                         : expiryDate || "No Expiry Date"}
                     </span>
                   </td>
@@ -211,19 +233,6 @@ const JobList = () => {
                     <Dropdown>
                       <Dropdown.Toggle as={CustomToggle} />
                       <Dropdown.Menu>
-                        {/* <Dropdown.Item>
-                          <button
-                            className="btn btn-light"
-                            onClick={() => Edit(job.id)}
-                            style={{
-                              display: "block",
-                              width: "100%",
-                              fontSize: "1.5rem",
-                            }}
-                          >
-                            Edit
-                          </button>
-                        </Dropdown.Item> */}
                         <Dropdown.Item>
                           <button
                             className="btn btn-light"
@@ -231,7 +240,7 @@ const JobList = () => {
                             style={{
                               display: "block",
                               width: "100%",
-                              fontSize: "1.5rem",
+                              fontSize: "1.2rem",
                             }}
                           >
                             Delete
@@ -245,13 +254,14 @@ const JobList = () => {
             })
           ) : (
             <tr>
-              <td colSpan="5" className="text-gray-500 text-center">
+              <td colSpan="6" className="text-gray-500 text-center">
                 No data yet.
               </td>
             </tr>
           )}
         </tbody>
       </Table>
+
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}

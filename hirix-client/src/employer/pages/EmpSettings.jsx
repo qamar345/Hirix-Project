@@ -9,6 +9,7 @@ import { EmpFooter } from "../index.js";
 import axios from "axios";
 
 const EmpSettings = () => {
+  const token = sessionStorage.getItem("token");
   const check = sessionStorage.getItem("isLoggedIn");
   const id = sessionStorage.getItem("id");
   const [editUserData, setEditUserData] = useState({});
@@ -73,11 +74,14 @@ const EmpSettings = () => {
   useEffect(() => {
     const GetData = async () => {
       try {
-        const res = await axios.get(`http://localhost:9000/getEmployer/${id}`);
-         setUserData(res.data[0]);
+        const res = await axios.get(`http://localhost:9000/getEmployer/${id}`, {
+          headers: {
+            "x-access-token": token,
+          },
+        });
+        setUserData(res.data[0]);
         setEditUserData(res.data[0]);
-      } catch (error) {
-              }
+      } catch (error) {}
     };
     GetData();
   }, []);
@@ -112,17 +116,21 @@ const EmpSettings = () => {
       const res = await axios.put(
         `http://localhost:9000/employee-profile-update/${id}`,
         formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            "x-access-token": token,
+          },
+        }
       );
-      
-const updatedData = res.data.result;
 
-sessionStorage.setItem("image", updatedData.image);
-sessionStorage.setItem("first_name", updatedData.first_name);
-window.dispatchEvent(new Event("profileUpdated"));
+      const updatedData = res.data.result;
+
+      sessionStorage.setItem("image", updatedData.image);
+      sessionStorage.setItem("first_name", updatedData.first_name);
+      window.dispatchEvent(new Event("profileUpdated"));
       alert(res.data.message);
-    } catch (error) {
-          }
+    } catch (error) {}
   };
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
@@ -145,12 +153,17 @@ window.dispatchEvent(new Event("profileUpdated"));
         `http://localhost:9000/Employer-password/${id}`,
         {
           editPasswordData,
+        },
+        {
+          headers: {
+            "x-access-token": token,
+          },
         }
       );
 
       alert(response.data.msg);
       setEditPasswordData({ currentPass: "", newPass: "", confirmPass: "" });
-          } catch (error) {
+    } catch (error) {
       alert("Error updating password: ", error);
     }
   };

@@ -99,7 +99,10 @@ const EmpSideMenu = () => {
                   src: logout,
                   alt: "Logout",
                   label: "Logout",
-                  link: "/",
+                  logOut: () => {
+                    sessionStorage.clear();
+                    alert("Logout Successfuly");
+                  },
                 },
               ].map((item, index) => (
                 <li
@@ -115,7 +118,13 @@ const EmpSideMenu = () => {
                     <span className="canvas-image">
                       <img src={item.src} alt={item.alt} />
                     </span>
-                    <span>{item.label}</span>
+                    <span
+                      onClick={
+                        item.label === "Logout" ? () => item.logOut() : "#"
+                      }
+                    >
+                      {item.label}
+                    </span>
                   </NavLink>
                 </li>
               ))}

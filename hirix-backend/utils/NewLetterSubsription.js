@@ -112,8 +112,8 @@ async function sendNewsletter() {
 }
 
 // ✅ Schedule cron job (every 6 hours)
-// cron.schedule("0 */6 * * *", sendNewsletter);
-setTimeout(sendNewsletter, 5000);
+cron.schedule("0 */6 * * *", sendNewsletter);
+// setTimeout(sendNewsletter, 5000);
 
 module.exports = {
   Subscribe,

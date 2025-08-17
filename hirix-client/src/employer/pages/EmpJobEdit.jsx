@@ -12,6 +12,7 @@ import "react-phone-number-input/style.css";
 import axios from "axios";
 
 const EmpJobEdit = () => {
+  const token = sessionStorage.getItem("token");
   const navigate = useNavigate();
   const editId = sessionStorage.getItem("editJobData");
   const id = sessionStorage.getItem("id");
@@ -49,7 +50,14 @@ const EmpJobEdit = () => {
   useEffect(() => {
     const fetchCompany = async () => {
       try {
-        const res = await axios.get(`http://localhost:9000/GetCompanies/${id}`);
+        const res = await axios.get(
+          `http://localhost:9000/GetCompanies/${id}`,
+          {
+            headers: {
+              "x-access-token": token,
+            },
+          }
+        );
         const formattedCompanies = res.data.map((company) => ({
           label: company.name,
           value: company.id,
@@ -63,7 +71,13 @@ const EmpJobEdit = () => {
 
   useEffect(async () => {
     if (editId && editId !== "new") {
-      axios.get(`http://localhost:9000/getjobPost/${editId}`).then((res) => {});
+      axios
+        .get(`http://localhost:9000/getjobPost/${editId}`, {
+          headers: {
+            "x-access-token": token,
+          },
+        })
+        .then((res) => {});
     }
   });
 
@@ -100,7 +114,12 @@ const EmpJobEdit = () => {
     try {
       const res = await axios.put(
         `http://localhost:9000/edit-posts/${editId}`,
-        payload
+        payload,
+        {
+          headers: {
+            "x-access-token": token,
+          },
+        }
       );
       alert(res.data.msg);
       navigate(`/employer/jobs`);

@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 
 const CompanyDetail = () => {
+  const token = sessionStorage.getItem("token");
   const { id } = useParams();
   const [companies, setCompanies] = useState(null);
 
@@ -10,10 +11,17 @@ const CompanyDetail = () => {
     const fetchJob = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:9000/getSpecificCompany/${id}`
+          `http://localhost:9000/getSpecificCompany/${id}`,
+          {
+            headers: {
+              "x-access-token": token,
+            },
+          }
         );
         setCompanies(res.data[0]);
-      } catch (err) {}
+      } catch (err) {
+        console.log(err);
+      }
     };
 
     fetchJob();

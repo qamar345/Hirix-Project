@@ -22,6 +22,7 @@ const CustomToggle = React.forwardRef(({ onClick }, ref) => (
 ));
 const CompanyList = () => {
   const navigate = useNavigate();
+  const token = sessionStorage.getItem("token");
   // const companies = [
   //   {
   //     name: "New",
@@ -67,6 +68,9 @@ const CompanyList = () => {
           params: {
             page: page,
           },
+          headers: {
+            "x-access-token": token,
+          },
         }
       );
       setcompanydata(res.data.data);
@@ -96,7 +100,13 @@ const CompanyList = () => {
 
     try {
       const res = await axios.delete(
-        `http://localhost:9000/deletecompany/${did}`
+        `http://localhost:9000/deletecompany/${did}`,
+        null,
+        {
+          headers: {
+            "x-access-token": token,
+          },
+        }
       );
       alert(res.data.msg);
       // Instead of reloading, remove the deleted item from the state if using React

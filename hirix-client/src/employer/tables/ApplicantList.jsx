@@ -20,6 +20,7 @@ const CustomToggle = React.forwardRef(({ onClick }, ref) => (
   </span>
 ));
 const ApplicantList = () => {
+  const token = sessionStorage.getItem("token");
   const [applicants, setApplicants] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -42,6 +43,9 @@ const ApplicantList = () => {
           params: {
             page: page,
             search: search,
+          },
+          headers: {
+            "x-access-token": token,
           },
         }
       );
@@ -86,7 +90,11 @@ const ApplicantList = () => {
 
   const Review = async (id) => {
     await axios
-      .put(`http://localhost:9000/status-review/${id}`)
+      .put(`http://localhost:9000/status-review/${id}`, null, {
+        headers: {
+          "x-access-token": token,
+        },
+      })
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();
@@ -95,7 +103,11 @@ const ApplicantList = () => {
   };
   const Selected = async (id) => {
     await axios
-      .put(`http://localhost:9000/statusselected/${id}`)
+      .put(`http://localhost:9000/statusselected/${id}`, null, {
+        headers: {
+          "x-access-token": token,
+        },
+      })
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();
@@ -105,7 +117,11 @@ const ApplicantList = () => {
 
   const Rejected = async (id) => {
     await axios
-      .put(`http://localhost:9000/statusrejected/${id}`)
+      .put(`http://localhost:9000/statusrejected/${id}`, null, {
+        headers: {
+          "x-access-token": token,
+        },
+      })
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();

@@ -11,10 +11,11 @@ import "react-quill/dist/quill.snow.css";
 import { EmpFooter } from "../index.js";
 import axios from "axios";
 import PhoneInput from "react-phone-number-input";
-import 'react-phone-number-input/style.css'
+import "react-phone-number-input/style.css";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 const AddCompany = () => {
+  const token = sessionStorage.getItem("token");
   const navigate = useNavigate();
   const id = sessionStorage.getItem("id");
   const check = sessionStorage.getItem("isLoggedIn");
@@ -28,7 +29,7 @@ const AddCompany = () => {
   const [category, setCategory] = useState("");
   const [des, setDes] = useState("");
   const [websiteLink, setWebsiteLink] = useState("");
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [foundedIn, setFoundedIn] = useState(null);
   const [companySize, setCompanySize] = useState("");
@@ -106,13 +107,13 @@ const AddCompany = () => {
         {
           headers: {
             "Content-Type": "multipart/form-data",
+            "x-access-token": token,
           },
         }
       );
       alert(res.data.msg);
       navigate(`/employer/company`);
-    } catch (error) {
-          }
+    } catch (error) {}
   };
 
   const cats = [
@@ -266,7 +267,7 @@ const AddCompany = () => {
                           /> */}
                           <PhoneInput
                             className="mt-1"
-                            value={phone?.toString() || ''}
+                            value={phone?.toString() || ""}
                             onChange={setPhone}
                             defaultCountry="PK"
                           />

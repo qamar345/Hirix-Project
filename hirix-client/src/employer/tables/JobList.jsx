@@ -20,6 +20,7 @@ const CustomToggle = React.forwardRef(({ onClick }, ref) => (
   </span>
 ));
 function JobList() {
+  const token = sessionStorage.getItem("token");
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
   const [filteredJobs, setFilteredJobs] = useState([]);
@@ -38,6 +39,9 @@ function JobList() {
     try {
       const res = await axios.get(`http://localhost:9000/get-his-posts/${id}`, {
         params: { page, search, status: statusFilter, sort: sortOrder },
+        headers: {
+          "x-access-token": token,
+        },
       });
 
       setJobs(res.data.data);
@@ -69,7 +73,11 @@ function JobList() {
 
   const StatusClosed = async (id) => {
     await axios
-      .put(`http://localhost:9000/del-job-posts/${id}`)
+      .put(`http://localhost:9000/del-job-posts/${id}`, {
+        headers: {
+          "x-access-token": token,
+        },
+      })
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();
@@ -79,7 +87,11 @@ function JobList() {
 
   const DeleteJob = async (id) => {
     await axios
-      .delete(`http://localhost:9000/deleteJob/${id}`)
+      .delete(`http://localhost:9000/deleteJob/${id}`, null, {
+        headers: {
+          "x-access-token": token,
+        },
+      })
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();
@@ -94,7 +106,11 @@ function JobList() {
 
   const StatusOpen = async (id) => {
     await axios
-      .put(`http://localhost:9000/update-status-opening/${id}`)
+      .put(`http://localhost:9000/update-status-opening/${id}`, null, {
+        headers: {
+          "x-access-token": token,
+        },
+      })
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();
@@ -104,7 +120,11 @@ function JobList() {
 
   const StatusPause = async (id) => {
     await axios
-      .put(`http://localhost:9000/status_Pause/${id}`)
+      .put(`http://localhost:9000/status_Pause/${id}`, null, {
+        headers: {
+          "x-access-token": token,
+        },
+      })
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();
@@ -366,7 +386,7 @@ function JobList() {
             })
           ) : (
             <tr>
-              <td colSpan="5" className="text-gray-500 text-center">
+              <td colSpan="7" className="text-gray-500 text-center">
                 No jobs found.
               </td>
             </tr>
