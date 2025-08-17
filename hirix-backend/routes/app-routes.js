@@ -240,8 +240,7 @@ router.post("/send-verify-email", SendVerificationLink);
 router.get("/verify-mail-link/:token", VerifyEmailLink);
 
 router.get("/check-mail-status/:email", CheckMailStatus);
-
-router.post("/news-letter", Subscribe);
+verifyToken, router.post("/news-letter", Subscribe);
 
 //........................................Employee........................................
 
@@ -329,59 +328,64 @@ router.get("/get-his-posts/:id", verifyToken, Gethisposts);
 
 router.post("/user-login", verifyToken, userlogin);
 
-router.get("/DasboardJobseeker/:id", JS_Dashboard);
+router.get("/DasboardJobseeker/:id", verifyToken, JS_Dashboard);
 
-router.get("/UserGraph/:id/:days", GraphUser);
+router.get("/UserGraph/:id/:days", verifyToken, GraphUser);
 
 router.get("/getSkills", Skills_select);
 
 router.put("/update-user-profile/:id", verifyToken, UserProfile);
 
-router.put("/updatePassword/:id", JobSeekerChangePassword);
+router.put("/updatePassword/:id", verifyToken, JobSeekerChangePassword);
 
 router.post("/add-review", verifyToken, AddReview);
 
 router.put("/edit-review/:id", verifyToken, editreview);
 
-router.get("/appliedTo/:id", appliedTo);
+router.get("/appliedTo/:id", verifyToken, appliedTo);
 
-router.put("/apply/:id", Apply);
+router.put("/apply/:id", verifyToken, Apply);
 
-router.put("/Deleted/:id", DeleteFromTable);
+router.put("/Deleted/:id", verifyToken, DeleteFromTable);
 
-router.delete("/cancleApplication/:id", CancleApplication);
+router.delete("/cancleApplication/:id", verifyToken, CancleApplication);
 
-router.post("/apply-for-job/:id", ApplyForJob);
+router.post("/apply-for-job/:id", verifyToken, ApplyForJob);
 
-router.post("/addWishlist/:id", AddToWishlist);
+router.post("/addWishlist/:id", verifyToken, AddToWishlist);
 
-router.get("/getWishlists/:id", GetWishlist);
+router.get("/getWishlists/:id", verifyToken, GetWishlist);
 
 router.get("/show-jobs/:id", verifyToken, showjobs);
 
-router.post("/add-skillset/:id", Addskillset);
+router.post("/add-skillset/:id", verifyToken, Addskillset);
 
-router.get("/getProfile/:id", GetProfile);
+router.get("/getProfile/:id", verifyToken, GetProfile);
 
-router.post("/postProfile/:id", upload.single("image"), ProfileBasicInfo);
+router.post(
+  "/postProfile/:id",
+  verifyToken,
+  upload.single("image"),
+  ProfileBasicInfo
+);
 
-router.post("/AddEducation/:id", upload.none(), Education);
-router.get("/get-candidate-qualification/:id", GetEducation);
+router.post("/AddEducation/:id", verifyToken, upload.none(), Education);
+router.get("/get-candidate-qualification/:id", verifyToken, GetEducation);
 
-router.post("/AddExperience/:id", Experience);
-router.get("/get-candidate-exp/:id", GetExperience);
+router.post("/AddExperience/:id", verifyToken, Experience);
+router.get("/get-candidate-exp/:id", verifyToken, GetExperience);
 
-router.post("/AddProject/:id", Project);
-router.get("/get-candidate-projects/:id", GetCandidateProjects);
+router.post("/AddProject/:id", verifyToken, Project);
+router.get("/get-candidate-projects/:id", verifyToken, GetCandidateProjects);
 
-router.post("/AddAward/:id", Award);
+router.post("/AddAward/:id", verifyToken, Award);
 
-router.get("/profile-status/:id", getUserProfileStatus);
+router.get("/profile-status/:id", verifyToken, getUserProfileStatus);
 
 router.get("/GenerateAutoUserName", GenerateUserName);
 
-router.delete("/remove-skill/:id", RemoveCandidateSkills);
+router.delete("/remove-skill/:id", verifyToken, RemoveCandidateSkills);
 
-router.get("/download-cv/:id", GenerateCv);
+router.get("/download-cv/:id", verifyToken, GenerateCv);
 
 module.exports = router;

@@ -18,19 +18,12 @@ const appliedTo = (req, res) => {
   }
 
   const sql_applied = `
-    SELECT jobs.*, applicants.id, applicants.status, applicants.created_at
-    FROM jobs
-    JOIN applicants ON jobs.id = applicants.job_id
-    WHERE applicants.job_seeker_id = ? 
-      AND applicants.delete = 0 
-       ${statusCondition}
-      AND (
-        jobs.title LIKE ? OR 
-        jobs.job_type LIKE ? OR 
-        jobs.workplace_type LIKE ? OR 
-        jobs.job_category LIKE ?
-      )
-  `;
+  SELECT jobs.*, applicants.id, applicants.status, applicants.created_at
+  FROM jobs
+  JOIN applicants ON jobs.id = applicants.job_id
+  WHERE applicants.job_seeker_id = ?
+    ${statusCondition}
+`;
 
   conn_sql.query(
     sql_applied,
@@ -44,7 +37,7 @@ const appliedTo = (req, res) => {
       SELECT COUNT(*) AS total_applications
       FROM applicants 
       WHERE job_seeker_id = ? 
-        AND \`delete\` = 0 
+        
          ${countCondition}
     `;
 

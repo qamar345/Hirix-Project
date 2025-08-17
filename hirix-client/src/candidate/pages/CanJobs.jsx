@@ -26,13 +26,14 @@ const CustomToggle = React.forwardRef(({ onClick }, ref) => (
   </span>
 ));
 const CanJobs = () => {
+  const token = sessionStorage.getItem("token");
   const navigate = useNavigate();
   const id = sessionStorage.getItem("id");
   const [Alljobs, setJobs] = useState([]);
   // const [total, setTotal] = useState(0);
   const [appliedCount, setAppliedCount] = useState(0);
-const [wishlistCount, setWishlistCount] = useState(0);
-    const [filteredJobs, setFilteredJobs] = useState([]);
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const [filteredJobs, setFilteredJobs] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("applied");
   const queryParams = new URLSearchParams(location.search);
@@ -45,15 +46,18 @@ const [wishlistCount, setWishlistCount] = useState(0);
     try {
       const res = await axios.get(`http://localhost:9000/appliedTo/${id}`, {
         params: { search, sort: sortOrder, type },
+        headers: {
+          "x-access-token": token,
+        },
       });
-  
+
       // Set specific count based on type
       if (type === "applied") {
         setAppliedCount(res.data.TotalApplications || 0);
       } else if (type === "wishlist") {
         setWishlistCount(res.data.TotalApplications || 0);
       }
-  
+
       // Set job data
       if (res.data.jobs && res.data.jobs.length > 0) {
         setJobs(res.data.jobs);
@@ -61,8 +65,8 @@ const [wishlistCount, setWishlistCount] = useState(0);
         setJobs([]);
       }
     } catch (error) {
-            setJobs([]);
-      
+      setJobs([]);
+
       // Reset specific count based on type
       if (type === "applied") {
         setAppliedCount(0);
@@ -71,13 +75,12 @@ const [wishlistCount, setWishlistCount] = useState(0);
       }
     }
   };
-  
+
   useEffect(() => {
     // Initial load: fetch both counts
-    fetchJobs(searchbar, sort, 'applied');
-    fetchJobs(searchbar, sort, 'wishlist');
+    fetchJobs(searchbar, sort, "applied");
+    fetchJobs(searchbar, sort, "wishlist");
   }, []);
-  
 
   useEffect(() => {
     fetchJobs(searchbar, sort, activeTab);
@@ -85,40 +88,50 @@ const [wishlistCount, setWishlistCount] = useState(0);
 
   useEffect(() => {
     if (Alljobs && Array.isArray(Alljobs)) {
-      let filteredData = [...Alljobs]; 
-  
+      let filteredData = [...Alljobs];
+
       if (sort === "newest") {
-        filteredData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        filteredData.sort(
+          (a, b) => new Date(b.created_at) - new Date(a.created_at)
+        );
       } else if (sort === "oldest") {
-        filteredData.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        filteredData.sort(
+          (a, b) => new Date(a.created_at) - new Date(b.created_at)
+        );
       }
-  
+
       setFilteredJobs(filteredData);
     } else {
-      setFilteredJobs([]); 
+      setFilteredJobs([]);
     }
   }, [sort, Alljobs]);
-  
+
   const StatusDelete = async (application_id) => {
     await axios
-      .put(`http://localhost:9000/Deleted/${application_id}`)
+      .put(`http://localhost:9000/Deleted/${application_id}`, null, {
+        headers: {
+          "x-access-token": token,
+        },
+      })
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();
       })
-      .catch((err) => {
-              });
+      .catch((err) => {});
   };
 
   const StatusApply = async (application_id) => {
     await axios
-      .put(`http://localhost:9000/apply/${application_id}`)
+      .put(`http://localhost:9000/apply/${application_id}`, null, {
+        headers: {
+          "x-access-token": token,
+        },
+      })
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();
       })
-      .catch((err) => {
-              });
+      .catch((err) => {});
   };
 
   const StatusCancelApplication = async (application_id) => {
@@ -127,13 +140,20 @@ const [wishlistCount, setWishlistCount] = useState(0);
     );
     if (confirm) {
       await axios
-        .delete(`http://localhost:9000/cancleApplication/${application_id}`)
+        .delete(
+          `http://localhost:9000/cancleApplication/${application_id}`,
+          null,
+          {
+            headers: {
+              "x-access-token": token,
+            },
+          }
+        )
         .then((res) => {
           alert(res.data.msg);
           window.location.reload();
         })
-        .catch((err) => {
-                  });
+        .catch((err) => {});
     }
   };
   const jobAge = [
@@ -152,9 +172,9 @@ const [wishlistCount, setWishlistCount] = useState(0);
     navigate(`/candidate/jobs?sort=${sort}`);
   };
 
-  const handleSearchSubmit = (e) =>{
+  const handleSearchSubmit = (e) => {
     e.preventDefault();
-    if(searchQuery.trim()!== ""){
+    if (searchQuery.trim() !== "") {
       navigate(`/candidate/jobs?search=${encodeURIComponent(searchQuery)}`);
       setSearchQuery("");
     }
@@ -167,28 +187,28 @@ const [wishlistCount, setWishlistCount] = useState(0);
         </div>
         <div className="tab-dashboard">
           <div className=" d-grid">
-                  <ul className="tab-list overflow-x-auto">
-                    <li
-                      className={`tab-item ${
-                        activeTab === "applied" ? "active" : ""
-                      }`}
-                      onClick={() => handleActiveTab("applied")}
-                    >
-                      <Link>
-                        Applied<span> ({appliedCount})</span>
-                      </Link>
-                    </li>
-                    <li
-                      className={`tab-item ${
-                        activeTab === "wishlist" ? "active" : ""
-                      }`}
-                      onClick={() => handleActiveTab("wishlist")}
-                    >
-                      <Link>
-                        Wishlist<span>({wishlistCount})</span>
-                      </Link>
-                    </li>
-                    {/* <li
+            <ul className="tab-list overflow-x-auto">
+              <li
+                className={`tab-item ${
+                  activeTab === "applied" ? "active" : ""
+                }`}
+                onClick={() => handleActiveTab("applied")}
+              >
+                <Link>
+                  Applied<span> ({appliedCount})</span>
+                </Link>
+              </li>
+              <li
+                className={`tab-item ${
+                  activeTab === "wishlist" ? "active" : ""
+                }`}
+                onClick={() => handleActiveTab("wishlist")}
+              >
+                <Link>
+                  Wishlist<span>({wishlistCount})</span>
+                </Link>
+              </li>
+              {/* <li
                       className={`tab-item ${
                         activeTab === "invite" ? "active" : ""
                       }`}
@@ -198,7 +218,7 @@ const [wishlistCount, setWishlistCount] = useState(0);
                         Invite<span>(5)</span>
                       </Link>
                     </li> */}
-                  </ul>
+            </ul>
           </div>
 
           <div className="tab-content">
@@ -212,21 +232,21 @@ const [wishlistCount, setWishlistCount] = useState(0);
                   <div className="search-left">
                     <div className="action-search">
                       <form onSubmit={handleSearchSubmit}>
-                      <input
-                        className="search-control"
-                        type="text"
-                        name="jobs_search"
-                        placeholder="Search title,description"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
-                       <button
-                                          type="submit"
-                                          className="btn-search d-flex"
-                                          style={{ all: "unset", cursor: "pointer" }}
-                                        >
-                                          <FaSearch className="mx-3" />
-                                        </button>
+                        <input
+                          className="search-control"
+                          type="text"
+                          name="jobs_search"
+                          placeholder="Search title,description"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        <button
+                          type="submit"
+                          className="btn-search d-flex"
+                          style={{ all: "unset", cursor: "pointer" }}
+                        >
+                          <FaSearch className="mx-3" />
+                        </button>
                       </form>
                       {/* <Link className="me-3">
                         <FaSearch />
@@ -279,8 +299,8 @@ const [wishlistCount, setWishlistCount] = useState(0);
                                       <span>{job.title}</span>
                                     </h3>
                                     <p>
-                                      {job.job_category} / {job.job_type} /
-                                      {job.workplace_type}
+                                      {job.job_category} / &nbsp;{job.job_type}{" "}
+                                      / &nbsp;{job.workplace_type}
                                     </p>
                                   </div>
                                 </div>
@@ -290,8 +310,8 @@ const [wishlistCount, setWishlistCount] = useState(0);
                                   className={`label ${
                                     job.status === "Applied"
                                       ? "label-open"
-                                      :job.status === "Review"
-                                      ? "label-open" 
+                                      : job.status === "Review"
+                                      ? "label-open"
                                       : job.status === "Selected"
                                       ? "label-pending"
                                       : "label-close"
@@ -343,7 +363,6 @@ const [wishlistCount, setWishlistCount] = useState(0);
                                     </Dropdown.Item>
                                   </Dropdown.Menu>
                                 </Dropdown>
-                             
                               </td>
                             </tr>
                           );
@@ -415,15 +434,15 @@ const [wishlistCount, setWishlistCount] = useState(0);
                 <div className="d-flex flex-wrap gap-3 justify-content-md-between">
                   <div className="search-left">
                     <div className="action-search">
-                    <form onSubmit={handleSearchSubmit}>
-                      <input
-                        className="search-control"
-                        type="text"
-                        name="jobs_search"
-                        placeholder="Search title,description"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
+                      <form onSubmit={handleSearchSubmit}>
+                        <input
+                          className="search-control"
+                          type="text"
+                          name="jobs_search"
+                          placeholder="Search title,description"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
                       </form>
                       <Link className="me-3">
                         <FaSearch />
@@ -457,41 +476,49 @@ const [wishlistCount, setWishlistCount] = useState(0);
                       </tr>
                     </thead>
                     <tbody>
-                    {filteredJobs.length > 0 ? (
+                      {filteredJobs.length > 0 ? (
                         filteredJobs.map((job, index) => {
                           return (
-                      <tr>
-                        <td>
-                          <div className="company-header">
-                            <div className="img-comnpany">
-                              <img
-                                decoding="async"
-                                className="job-logo"
-                                src={avatarUxper}
-                                alt=""
-                              />
-                            </div>
-                            <div className="info-jobs">
-                              <h3 className="title-jobs-dashboard">
-                              <span>{job.title}</span>
-                              </h3>
-                              <p> {job.job_category} / {job.job_type} /
-                              {job.workplace_type} </p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="status">
-                          <span className="label label-open">{job.status}</span>
-                        </td>
-                        <td className="table-time">
-                          <span className="start-time"> {
+                            <tr>
+                              <td>
+                                <div className="company-header">
+                                  <div className="img-comnpany">
+                                    <img
+                                      decoding="async"
+                                      className="job-logo"
+                                      src={avatarUxper}
+                                      alt=""
+                                    />
+                                  </div>
+                                  <div className="info-jobs">
+                                    <h3 className="title-jobs-dashboard">
+                                      <span>{job.title}</span>
+                                    </h3>
+                                    <p>
+                                      {" "}
+                                      {job.job_category} / {job.job_type} /
+                                      {job.workplace_type}{" "}
+                                    </p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="status">
+                                <span className="label label-open">
+                                  {job.status}
+                                </span>
+                              </td>
+                              <td className="table-time">
+                                <span className="start-time">
+                                  {" "}
+                                  {
                                     new Date(job.expiry_date)
                                       .toISOString()
                                       .split("T")[0]
-                                  }</span>
-                        </td>
-                        <td className="action-setting jobs-control">
-                        <Dropdown>
+                                  }
+                                </span>
+                              </td>
+                              <td className="action-setting jobs-control">
+                                <Dropdown>
                                   <Dropdown.Toggle as={CustomToggle} />
                                   <Dropdown.Menu>
                                     <Dropdown.Item>
@@ -510,22 +537,20 @@ const [wishlistCount, setWishlistCount] = useState(0);
                                     <Dropdown.Item>
                                       <button
                                         className="btn btn-light"
-                                        onClick={() =>
-                                          StatusApply(job.id)
-                                        }
+                                        onClick={() => StatusApply(job.id)}
                                         style={{
                                           display: "block",
                                           width: "100%",
                                           fontSize: "1.5rem",
                                         }}
                                       >
-                                       Apply
+                                        Apply
                                       </button>
                                     </Dropdown.Item>
                                   </Dropdown.Menu>
                                 </Dropdown>
-                        </td>
-                      </tr>
+                              </td>
+                            </tr>
                           );
                         })
                       ) : (

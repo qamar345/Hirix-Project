@@ -10,6 +10,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const JobList = ({ onSelectJob }) => {
+  const token = sessionStorage.getItem("token");
   const navigate = useNavigate();
   const [jobData, setjobData] = useState([]);
   const [companies, setCompanies] = useState([]);
@@ -50,6 +51,9 @@ const JobList = ({ onSelectJob }) => {
 
       const res = await axios.get("http://localhost:9000/get-posts", {
         params,
+        headers: {
+          "x-access-token": token,
+        },
       });
 
       setjobData(res.data.data.jobs);
@@ -57,8 +61,7 @@ const JobList = ({ onSelectJob }) => {
       settCurrentPage(res.data.meta.page);
       setTotalPages(res.data.meta.totalPages);
       setCompanies(res.data.data.company);
-    } catch (error) {
-          }
+    } catch (error) {}
   };
 
   const handlePageChange = (page) => {
@@ -95,7 +98,7 @@ const JobList = ({ onSelectJob }) => {
         return (
           <JobCard
             key={job.id}
-            onClick={() => onSelectJob({ ...job, companyDetail})}
+            onClick={() => onSelectJob({ ...job, companyDetail })}
             {...job}
           />
         );

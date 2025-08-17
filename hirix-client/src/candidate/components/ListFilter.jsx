@@ -4,6 +4,7 @@ import { FaArrowsSpin } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 
 const ListFilter = () => {
+  const token = sessionStorage.getItem("token");
   const navigate = useNavigate();
 
   const [selectedJobTypes, setSelectedJobTypes] = useState("");
@@ -56,11 +57,16 @@ const ListFilter = () => {
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
-        const res = await fetch("http://localhost:9000/filtersCountData");
+        const res = await fetch("http://localhost:9000/filtersCountData", {
+          headers: {
+            "x-access-token": token,
+          },
+        });
         const data = await res.json();
         setFilterOptions(data); // set this to state
       } catch (error) {
-              }
+        console.error("Error fetching filter options:", error);
+      }
     };
 
     fetchFilterOptions();
@@ -242,8 +248,7 @@ const ListFilter = () => {
                             name="jobs-experience_id[]"
                             id={`experiences_${index}`}
                             value={type.value}
-                           checked={experiences === String(type.value)}
-
+                            checked={experiences === String(type.value)}
                             onChange={(e) =>
                               handleSingleCheckboxChange(e, setExperiences)
                             }

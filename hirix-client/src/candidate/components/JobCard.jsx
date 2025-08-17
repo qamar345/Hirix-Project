@@ -4,6 +4,7 @@ import { MdOutlineLocationOn } from "react-icons/md";
 import { FaRegHeart } from "react-icons/fa";
 import { urgent, featured } from "../assets/icons/index.js";
 import { Pagination } from "../index.js";
+import { he } from "date-fns/locale";
 
 const JobCard = ({
   id,
@@ -38,6 +39,7 @@ const JobCard = ({
   //   onClick,
   //   (fromShare = false)
   // );
+  const token = sessionStorage.getItem("token");
   const customClass = `${isFeatured ? "civi-jobs-featured" : ""} ${
     isSelected ? "active" : ""
   } ${isUrgent ? "civi-jobs-urgent" : ""}`;
@@ -56,6 +58,11 @@ const JobCard = ({
           null,
           {
             params: { job_id: id },
+          },
+          {
+            headers: {
+              "x-access-token": token,
+            },
           }
         );
 

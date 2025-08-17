@@ -5,6 +5,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { CanSideMenu } from "../index.js";
 
 const CanHeader = () => {
+  const token = sessionStorage.getItem("token");
   const check = sessionStorage.getItem("isLoggedIn");
   const firstName = sessionStorage.getItem("first_name");
   const imageUser = sessionStorage.getItem("image");
@@ -57,7 +58,6 @@ const CanHeader = () => {
               </div>
             )}
             <div className="d-none d-xl-block">
-
               <NavLink
                 to="/candidate/profile"
                 className={`civi-button add-job`}

@@ -13,6 +13,7 @@ import { CanFooter, VisitChart } from "../index.js";
 import axios from "axios";
 
 const CanDashboard = () => {
+  const token = sessionStorage.getItem("token");
   const name = sessionStorage.getItem("first_name");
 
   const [selectedDays, setSelectedDays] = useState(7);
@@ -33,10 +34,17 @@ const CanDashboard = () => {
       }
       try {
         const res = await axios.get(
-          `http://localhost:9000/DasboardJobseeker/${id}`
+          `http://localhost:9000/DasboardJobseeker/${id}`,
+          {
+            headers: {
+              "x-access-token": token,
+            },
+          }
         );
         setData(res.data.data);
-      } catch (err) {}
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+      }
     };
 
     GetData();

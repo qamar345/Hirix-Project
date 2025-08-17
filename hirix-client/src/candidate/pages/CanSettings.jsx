@@ -9,6 +9,7 @@ import { CanFooter } from "../index.js";
 import axios from "axios";
 
 const CanSettings = () => {
+  const token = sessionStorage.getItem("token");
   const check = sessionStorage.getItem("isLoggedIn");
   const id = sessionStorage.getItem("id");
   const [editPasswordData, setEditPasswordData] = useState({
@@ -48,9 +49,9 @@ const CanSettings = () => {
   };
   const [uploadedImage, setUploadedImage] = useState(null);
 
-   useEffect(() => {
-      if (!check) navigate("/");
-    });
+  useEffect(() => {
+    if (!check) navigate("/");
+  });
 
   const handleLogoUpload = (event) => {
     const file = event.target.files[0];
@@ -88,13 +89,21 @@ const CanSettings = () => {
       return;
     }
     try {
-      const response = await axios.put(`http://localhost:9000/Employer-password/${id}`, {
-        editPasswordData,
-      });
+      const response = await axios.put(
+        `http://localhost:9000/Employer-password/${id}`,
+        {
+          editPasswordData,
+        },
+        {
+          headers: {
+            "x-access-token": token,
+          },
+        }
+      );
 
       alert(response.data.msg);
       setEditPasswordData({ currentPass: "", newPass: "", confirmPass: "" });
-          } catch (error) {
+    } catch (error) {
       alert("Error updating password: ", error);
     }
   };

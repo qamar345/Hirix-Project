@@ -6,10 +6,30 @@ const cron = require("node-cron");
 const JS_Dashboard = (req, res) => {
   const { id } = req.params;
 
-  const sql_get = `SELECT 'Applied jobs' AS label, COUNT(*) AS num FROM applicants WHERE job_seeker_id = ? AND status != 'Wishlist'
-    UNION SELECT 'Expired jobs' AS label, COUNT(*) AS num FROM applicants JOIN jobs ON applicants.job_id = jobs.id WHERE applicants.job_seeker_id = ? AND jobs.expiry_date < NOW()
-    UNION  SELECT 'reviews' AS label, COUNT(*) AS num FROM reviews WHERE job_seeker_id = ? 
-    UNION  SELECT 'Selected/Hired' AS label, COUNT(*) AS num FROM applicants WHERE job_seeker_id = ? AND status = 'Selected'`;
+  const sql_get = `SELECT 'Applied jobs' AS label, COUNT(*) AS num
+FROM applicants
+WHERE job_seeker_id = '19' AND applicants.status != 'Wishlist'
+
+UNION
+
+SELECT 'Expired jobs' AS label, COUNT(*) AS num
+FROM applicants
+JOIN jobs ON applicants.job_id = jobs.id
+WHERE applicants.job_seeker_id = '19' AND jobs.expiry_date < NOW()
+
+UNION
+
+SELECT 'reviews' AS label, COUNT(*) AS num
+FROM applicants
+JOIN jobs ON applicants.job_id = jobs.id
+WHERE applicants.job_seeker_id = '19' AND applicants.status != 'Wishlist'
+
+UNION
+
+SELECT 'Selected/Hired' AS label, COUNT(*) AS num
+FROM applicants
+WHERE job_seeker_id = '19' AND applicants.status = 'Selected';
+`;
 
   conn_sql.query(sql_get, [id, id, id, id], (err, result) => {
     if (err) {

@@ -119,7 +119,16 @@ const CanSidebar = ({ isCollapsed, handleSidebarToggle }) => {
               label: "Settings",
               link: "/candidate/settings",
             },
-            { src: logout, alt: "Logout", label: "Logout", link: "/" },
+            {
+              src: logout,
+              alt: "Logout",
+              label: "Logout",
+              logOut: () => {
+                sessionStorage.clear();
+                alert("Logout Successfully");
+                navigate("/");
+              },
+            },
           ].map((item, index) => (
             <li className="nav-item" key={index}>
               <NavLink
@@ -130,7 +139,15 @@ const CanSidebar = ({ isCollapsed, handleSidebarToggle }) => {
                 <span className="image">
                   <img src={item.src} alt={item.alt} />
                 </span>
-                {!isCollapsed && <span>{item.label}</span>}
+                {!isCollapsed && (
+                  <span
+                    onClick={
+                      item.label === "Logout" ? () => item.logOut() : null
+                    }
+                  >
+                    {item.label}
+                  </span>
+                )}
               </NavLink>
             </li>
           ))}

@@ -9,6 +9,7 @@ import { differenceInDays } from "date-fns";
 import axios from "axios";
 
 const JobPost = ({ job, fromShare }) => {
+  const token = sessionStorage.getItem("token");
   const showJob = localStorage.getItem("test");
   // logo,
   // title,
@@ -73,7 +74,12 @@ const JobPost = ({ job, fromShare }) => {
       try {
         const userId = sessionStorage.getItem("id");
         const res = await axios.get(
-          `http://localhost:9000/getWishlists/${userId}`
+          `http://localhost:9000/getWishlists/${userId}`,
+          {
+            headers: {
+              "x-access-token": token,
+            },
+          }
         );
         const jobIds = res.data.map((item) => item.job_id);
         setWishlistJobs(jobIds);
@@ -95,6 +101,9 @@ const JobPost = ({ job, fromShare }) => {
           null,
           {
             params: { job_id: id },
+            headers: {
+              "x-access-token": token,
+            },
           }
         );
 
@@ -119,7 +128,12 @@ const JobPost = ({ job, fromShare }) => {
       const res = await axios.post(
         `http://localhost:9000/addWishlist/${userId}`,
         null,
-        { params: { job_id: id } }
+        {
+          params: { job_id: id },
+          headers: {
+            "x-access-token": token,
+          },
+        }
       );
 
       const message = res.data.msg;

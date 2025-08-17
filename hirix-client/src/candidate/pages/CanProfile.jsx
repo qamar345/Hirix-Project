@@ -24,6 +24,7 @@ import { Tooltip } from "react-tooltip";
 import axios from "axios";
 
 const CanProfile = () => {
+  const token = sessionStorage.getItem("token");
   const navigate = useNavigate();
   const id = sessionStorage.getItem("id");
   const [isPresent, setIsPresent] = useState(false);
@@ -146,7 +147,11 @@ const CanProfile = () => {
   // }, []);
   useEffect(() => {
     axios
-      .get(`http://localhost:9000/getProfile/${id}`)
+      .get(`http://localhost:9000/getProfile/${id}`, {
+        headers: {
+          "x-access-token": token,
+        },
+      })
       .then((res) => {
         const data = res.data;
         setfirstName(data.first_name);
@@ -169,7 +174,9 @@ const CanProfile = () => {
         setCity(data.location);
         setlinkedIn(data.LinkedIn);
       })
-      .catch((err) => {}, []);
+      .catch((err) => {
+        console.error(err);
+      });
   }, []);
   const submit = async (e) => {
     e.preventDefault();
@@ -206,6 +213,7 @@ const CanProfile = () => {
         {
           headers: {
             "Content-Type": "multipart/form-data",
+            "x-access-token": token,
           },
         }
       );
@@ -219,7 +227,9 @@ const CanProfile = () => {
       }
       alert(res.data.msg);
       window.location.reload();
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const EduSubmit = async (e) => {
@@ -248,15 +258,18 @@ const CanProfile = () => {
         {
           headers: {
             "Content-Type": "multipart/form-data",
+            "x-access-token": token,
           },
         }
       );
       alert(res.data.msg);
       window.location.reload();
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  const ExperienceSumit = async (e) => {
+  const ExperienceSubmit = async (e) => {
     e.preventDefault();
 
     if (!ExpFrom) {
@@ -279,12 +292,15 @@ const CanProfile = () => {
         {
           headers: {
             "Content-Type": "application/json",
+            "x-access-token": token,
           },
         }
       );
       alert(res.data.msg);
       window.location.reload();
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const skillsSubmit = async (e) => {
@@ -301,18 +317,27 @@ const CanProfile = () => {
         {
           headers: {
             "Content-Type": "application/json",
+            "x-access-token": token,
           },
         }
       );
       alert(res.data.message);
       window.location.reload();
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const RemoveSkills = async (id) => {
     try {
       const res = await axios.delete(
-        `http://localhost:9000/remove-skill/${id}`
+        `http://localhost:9000/remove-skill/${id}`,
+        null,
+        {
+          headers: {
+            "x-access-token": token,
+          },
+        }
       );
       alert(res.data.msg);
       window.location.reload();
@@ -337,12 +362,15 @@ const CanProfile = () => {
         {
           headers: {
             "Content-Type": "application/json",
+            "x-access-token": token,
           },
         }
       );
       alert(res.data.msg);
       window.location.reload();
-    } catch (error) {}
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const AwardSubmit = async (e) => {
@@ -364,6 +392,7 @@ const CanProfile = () => {
         {
           headers: {
             "Content-Type": "application/json",
+            "x-access-token": token,
           },
         }
       );
@@ -387,7 +416,12 @@ const CanProfile = () => {
     const GetEducation = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:9000/get-candidate-qualification/${id}`
+          `http://localhost:9000/get-candidate-qualification/${id}`,
+          {
+            headers: {
+              "x-access-token": token,
+            },
+          }
         );
         setCandidateEdu(res.data);
       } catch (error) {
@@ -398,7 +432,12 @@ const CanProfile = () => {
     const GetExperience = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:9000/get-candidate-exp/${id}`
+          `http://localhost:9000/get-candidate-exp/${id}`,
+          {
+            headers: {
+              "x-access-token": token,
+            },
+          }
         );
         setCandidateExp(res.data);
       } catch (error) {
@@ -408,7 +447,11 @@ const CanProfile = () => {
 
     const GetDBSkills = async () => {
       try {
-        const res = await axios.get("http://localhost:9000/get-skills");
+        const res = await axios.get("http://localhost:9000/get-skills", {
+          headers: {
+            "x-access-token": token,
+          },
+        });
         setDbSkills(res.data);
       } catch (error) {
         console.log(error);
@@ -418,7 +461,12 @@ const CanProfile = () => {
     const CandidateSkills = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:9000/get-candidate-skills/${id}`
+          `http://localhost:9000/get-candidate-skills/${id}`,
+          {
+            headers: {
+              "x-access-token": token,
+            },
+          }
         );
         setCandidateSkills(res.data);
       } catch (error) {
@@ -429,7 +477,12 @@ const CanProfile = () => {
     const GetCandidateProjects = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:9000/get-candidate-projects/${id}`
+          `http://localhost:9000/get-candidate-projects/${id}`,
+          {
+            headers: {
+              "x-access-token": token,
+            },
+          }
         );
         setCandidateProj(res.data);
       } catch (error) {
@@ -448,7 +501,12 @@ const CanProfile = () => {
     const fetchProfileData = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:9000/profile-status/${id}`
+          `http://localhost:9000/profile-status/${id}`,
+          {
+            headers: {
+              "x-access-token": token,
+            },
+          }
         );
         const { info, education, experience, skills, projects, awards } =
           res.data.status;
@@ -1231,7 +1289,7 @@ const CanProfile = () => {
               }`}
             >
               <form
-                onSubmit={ExperienceSumit}
+                onSubmit={ExperienceSubmit}
                 className={`candidate-profile-form form-dashboard  col-lg-8 col-md-7  ${
                   isScrolled ? "companyData" : ""
                 }`}

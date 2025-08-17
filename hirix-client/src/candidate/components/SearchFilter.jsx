@@ -8,7 +8,6 @@ import { job } from "../assets/icons/index.js";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-
 const SearchFilter = () => {
   const [job, setjob] = useState("");
   const [category, setcategory] = useState("");
@@ -37,7 +36,8 @@ const SearchFilter = () => {
         const res = await axios.get(`http://localhost:9000/getSkills`);
         setSkillsList(res.data);
       } catch (err) {
-              }
+        console.error("Error fetching skills:", err);
+      }
     };
 
     fetchSkills();
@@ -136,8 +136,8 @@ const SearchFilter = () => {
                 >
                   <option value="">All Skills</option>
                   {skillsList.map((skill) => (
-                    <option key={skill.id} value={skill.skills}>
-                      {skill.skills}
+                    <option key={skill.id} value={skill.name}>
+                      {skill.name}
                     </option>
                   ))}
                 </select>
