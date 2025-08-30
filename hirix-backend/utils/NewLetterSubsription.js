@@ -41,7 +41,7 @@ async function sendNewsletter() {
 
       // 2. Get subscribers
       conn_sql.query(
-        "SELECT email FROM news_letters",
+        "SELECT `email` FROM `user_accounts` WHERE `role` = 'jobseeker'",
         async (err, subscribers) => {
           if (err) {
             console.error("❌ Error fetching subscribers:", err);

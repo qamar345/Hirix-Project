@@ -12,7 +12,7 @@ const EmployeeDetail = () => {
     const fetchJob = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:9000/GetEmployeesWithCompanies/${id}`,
+          `https://server.hirix.pk/GetEmployeesWithCompanies/${id}`,
           {
             headers: {
               "x-access-token": token,

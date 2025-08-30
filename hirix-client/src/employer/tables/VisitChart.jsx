@@ -31,7 +31,7 @@ function VisitChart({ days }) {
     const fetchDataGraph = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:9000/EmployerGraph/${id}/${days}`,
+          `https://server.hirix.pk/EmployerGraph/${id}/${days}`,
           {
             headers: {
               "x-access-token": token,

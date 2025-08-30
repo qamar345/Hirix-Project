@@ -74,7 +74,7 @@ const JobPost = ({ job, fromShare }) => {
       try {
         const userId = sessionStorage.getItem("id");
         const res = await axios.get(
-          `http://localhost:9000/getWishlists/${userId}`,
+          `https://server.hirix.pk/getWishlists/${userId}`,
           {
             headers: {
               "x-access-token": token,
@@ -97,7 +97,7 @@ const JobPost = ({ job, fromShare }) => {
       try {
         const userid = sessionStorage.getItem("id");
         const res = await axios.post(
-          `http://localhost:9000/apply-for-job/${userid}`,
+          `https://server.hirix.pk/apply-for-job/${userid}`,
           null,
           {
             params: { job_id: id },
@@ -126,7 +126,7 @@ const JobPost = ({ job, fromShare }) => {
     try {
       const userId = sessionStorage.getItem("id");
       const res = await axios.post(
-        `http://localhost:9000/addWishlist/${userId}`,
+        `https://server.hirix.pk/addWishlist/${userId}`,
         null,
         {
           params: { job_id: id },

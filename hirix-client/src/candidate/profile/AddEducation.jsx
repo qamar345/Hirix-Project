@@ -220,10 +220,7 @@ const AddEducation = () => {
                     >
                       Cancel
                     </Link> */}
-                    <Link
-                      to="/candidate/profile"
-                      className="btn-outline"
-                    >
+                    <Link to="/candidate/profile" className="btn-outline">
                       Draft
                     </Link>
                     <Link

@@ -36,7 +36,7 @@ const EmployeeList = () => {
   const GetEmployee = async (page, search = "") => {
     // setLoading(true);
     try {
-      const res = await axios.get("http://localhost:9000/get-data", {
+      const res = await axios.get("https://server.hirix.pk/get-data", {
         params: {
           page: page,
           search: search,
@@ -81,7 +81,7 @@ const EmployeeList = () => {
 
   const ActiveAccount = async (id) => {
     await axios
-      .put(`http://localhost:9000/active-employee/${id}`, null, {
+      .put(`https://server.hirix.pk/active-employee/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -95,7 +95,7 @@ const EmployeeList = () => {
 
   const FreezeAccount = async (id) => {
     await axios
-      .put(`http://localhost:9000/freezeusers/${id}`, null, {
+      .put(`https://server.hirix.pk/freezeusers/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -186,7 +186,7 @@ const EmployeeList = () => {
                       <div className="image-applicants">
                         {applicant.image ? (
                           <img
-                            src={`http://localhost:9000${applicant.image}`}
+                            src={`https://server.hirix.pk${applicant.image}`}
                           />
                         ) : (
                           <CiCamera />

@@ -51,7 +51,7 @@ const EmpJobEdit = () => {
     const fetchCompany = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:9000/GetCompanies/${id}`,
+          `https://server.hirix.pk/GetCompanies/${id}`,
           {
             headers: {
               "x-access-token": token,
@@ -72,7 +72,7 @@ const EmpJobEdit = () => {
   useEffect(async () => {
     if (editId && editId !== "new") {
       axios
-        .get(`http://localhost:9000/getjobPost/${editId}`, {
+        .get(`https://server.hirix.pk/getjobPost/${editId}`, {
           headers: {
             "x-access-token": token,
           },
@@ -113,7 +113,7 @@ const EmpJobEdit = () => {
 
     try {
       const res = await axios.put(
-        `http://localhost:9000/edit-posts/${editId}`,
+        `https://server.hirix.pk/edit-posts/${editId}`,
         payload,
         {
           headers: {

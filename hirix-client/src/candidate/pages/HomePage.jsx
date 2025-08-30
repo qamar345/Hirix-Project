@@ -38,7 +38,7 @@ const HomePage = () => {
   useEffect(() => {
     const getJobCount = async () => {
       try {
-        const res = await axios.get("http://localhost:9000/getTotal_jobs");
+        const res = await axios.get("https://server.hirix.pk/getTotal_jobs");
         setTotalJobs(res.data.TotalJobs);
       } catch (error) {}
     };
@@ -57,7 +57,7 @@ const HomePage = () => {
         return;
       }
       try {
-        const res = await axios.get("http://localhost:9000/jobs", {
+        const res = await axios.get("https://server.hirix.pk/jobs", {
           params: { search, city, category },
         });
         setJobs(res.data);

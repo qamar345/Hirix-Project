@@ -21,7 +21,7 @@ const ApplicantDetail = () => {
     const fetchJob = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:9000/GetAllProfileData/${id}`,
+          `https://server.hirix.pk/GetAllProfileData/${id}`,
           {
             headers: {
               "x-access-token": token,

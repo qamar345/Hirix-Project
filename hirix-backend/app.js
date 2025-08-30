@@ -9,12 +9,14 @@ const bcrypt = require("bcryptjs");
 const { databaseconfig } = require("./config/connection");
 
 const { AdminSetup } = require("./controller/admin/adminlogin");
+const cookieParser = require("cookie-parser");
 
 const dotenv = require("dotenv").config();
 
 const port = process.env.PORT;
 
 const app = express();
+app.use(cookieParser());
 
 AdminSetup();
 
@@ -22,10 +24,8 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "http://localhost:5173", // frontend URL
     credentials: true,
-    allowedHeaders: ["x-access-token", "Content-Type"],
-    methods: ["GET", "PUT", "POST", "DELETE"],
   })
 );
 databaseconfig();

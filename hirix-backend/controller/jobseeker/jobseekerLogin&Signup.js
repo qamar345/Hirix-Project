@@ -9,15 +9,25 @@ const userlogin = (req, res) => {
     "SELECT * FROM `user_accounts` WHERE `email`= ? AND `password`= ? AND `role`=?";
   conn_sql.query(sqluserlogin, [email, role], (err, result) => {
     if (err) throw err;
-    if (data.length > 0) {
-      let user = data[0];
+    if (result.length > 0) {
+      let user = result[0];
       bcrypt.compare(password, user.password, function (err, result) {
         if (result) {
           const secretKey = process.env.SECRETKEY;
+          const token = jwt.sign(
+            { id: user.id, email: user.email, role: user.role },
+            secretKey,
+            { expiresIn: "15m" }
+          );
+
+          // Set HTTP-only cookie
+          res.cookie("x-access-token", token, {
+            httpOnly: true,
+            secure: false, // true in production
+            maxAge: 15 * 60 * 1000, // 15 minutes
+          });
+
           return res.json({
-            token: jwt.sign({ email: user.email }, secretKey, {
-              expiresIn: 86400,
-            }),
             msg: "Login Successfully !...",
             result,
           });

@@ -4,7 +4,7 @@ import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "./style.css";
-import { ClerkProvider } from "@clerk/clerk-react";
+// import { ClerkProvider } from "@clerk/clerk-react";
 // Candidate
 import {
   HomePage,
@@ -70,13 +70,6 @@ import ApplicantDetail from "./Admin/tables/ApplicantsDetail.jsx";
 
 // Import your Publishable Key
 // const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-const PUBLISHABLE_KEY =
-  "pk_test_ZHJpdmluZy1raXdpLTg4LmNsZXJrLmFjY291bnRzLmRldiQ" ||
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-
-if (!PUBLISHABLE_KEY) {
-  throw Error("Missing Publishable Key");
-}
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -145,9 +138,9 @@ const router = createBrowserRouter(
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
-      <RouterProvider router={router} />
-    </ClerkProvider>
+    {/* <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/"> */}
+    <RouterProvider router={router} />
+    {/* </ClerkProvider> */}
   </React.StrictMode>
 );
 

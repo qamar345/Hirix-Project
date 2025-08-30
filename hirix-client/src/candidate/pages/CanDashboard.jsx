@@ -34,11 +34,10 @@ const CanDashboard = () => {
       }
       try {
         const res = await axios.get(
-          `http://localhost:9000/DasboardJobseeker/${id}`,
+          `https://server.hirix.pk/DasboardJobseeker/${id}`,
+
           {
-            headers: {
-              "x-access-token": token,
-            },
+            withCredentials: true,
           }
         );
         setData(res.data.data);
@@ -53,7 +52,7 @@ const CanDashboard = () => {
   //   const Data = async () => {
   //     try {
   //       const res = await axios.get(
-  //         `http://localhost:9000//${id}`
+  //         `https://server.hirix.pk//${id}`
   //       );
   //           //       setColData(res.data.data || []);
   //     } catch (err) {

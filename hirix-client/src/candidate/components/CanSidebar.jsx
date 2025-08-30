@@ -133,7 +133,7 @@ const CanSidebar = ({ isCollapsed, handleSidebarToggle }) => {
             <li className="nav-item" key={index}>
               <NavLink
                 className="civi-icon-items"
-                onClick={item.label === "Logout" ? handleLogout : null}
+                onClick={item.label === "Logout" ? () => item.logOut() : null}
                 to={item.link}
               >
                 <span className="image">

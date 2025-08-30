@@ -15,10 +15,10 @@ import {
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-import { useSignUp } from "@clerk/clerk-react";
+// import { useSignUp } from "@clerk/clerk-react";
 
 const Login = ({ ...props }) => {
-  const { isLoaded, signUp } = useSignUp();
+  // const { isLoaded, signUp } = useSignUp();
   const [FirstName, setFirstName] = useState("");
   const [LastName, setLastName] = useState("");
   const [UserName, setUserName] = useState("");
@@ -62,8 +62,9 @@ const Login = ({ ...props }) => {
       };
 
       await axios
-        .post("http://localhost:9000/employee-login", { payload })
+        .post("https://server.hirix.pk/employee-login", { payload })
         .then((res) => {
+          console.log(res);
           alert(res.data.msg);
           if (res.data.isloggedin) {
             sessionStorage.setItem("id", res.data.data.id);
@@ -72,7 +73,7 @@ const Login = ({ ...props }) => {
             sessionStorage.setItem("image", res.data.data.image);
             sessionStorage.setItem("role", res.data.data.role);
             sessionStorage.setItem("email", res.data.data.email);
-            sessionStorage.setItem("isLoggedIn", res.data.data.isloggedin);
+            sessionStorage.setItem("isLoggedIn", res.data.isloggedin);
             sessionStorage.setItem("token", res.data.token);
 
             if (res.data.data.role === "employee") {
@@ -103,7 +104,7 @@ const Login = ({ ...props }) => {
     } else {
       try {
         const res = await axios.post(
-          "http://localhost:9000/send-verify-email",
+          "https://server.hirix.pk/send-verify-email",
           { email }
         );
         setLoader("Checking...");
@@ -118,7 +119,7 @@ const Login = ({ ...props }) => {
     if (email) {
       try {
         const res = await axios.get(
-          `http://localhost:9000/check-mail-status/${email}`
+          `https://server.hirix.pk/check-mail-status/${email}`
         );
         if (res.data.isVerified) {
           setLoader("");
@@ -183,7 +184,7 @@ const Login = ({ ...props }) => {
 
     try {
       const res = await axios.post(
-        "http://localhost:9000/employee-signup",
+        "https://server.hirix.pk/employee-signup",
         payload
       );
       alert(res.data.msg);
@@ -202,7 +203,7 @@ const Login = ({ ...props }) => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`http://localhost:9000/verify-email`, {
+      const response = await axios.post(`https://server.hirix.pk/verify-email`, {
         email: resetEmail,
       });
 
@@ -230,7 +231,7 @@ const Login = ({ ...props }) => {
 
     try {
       const response = await axios.put(
-        `http://localhost:9000/forget-password`,
+        `https://server.hirix.pk/forget-password`,
         payload,
         {
           headers: {
@@ -255,7 +256,7 @@ const Login = ({ ...props }) => {
   const handleGenerate = async () => {
     try {
       const response = await fetch(
-        `http://localhost:9000/GenerateAutoUserName?firstName=${FirstName}&lastName=${LastName}`
+        `https://server.hirix.pk/GenerateAutoUserName?firstName=${FirstName}&lastName=${LastName}`
       );
       const data = await response.json();
       setUserName(data.username);

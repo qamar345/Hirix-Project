@@ -11,6 +11,9 @@ import axios from "axios";
 const CanSettings = () => {
   const token = sessionStorage.getItem("token");
   const check = sessionStorage.getItem("isLoggedIn");
+  useEffect(() => {
+    if (!check) navigate("/");
+  });
   const id = sessionStorage.getItem("id");
   const [editPasswordData, setEditPasswordData] = useState({
     currentPass: "",
@@ -49,10 +52,6 @@ const CanSettings = () => {
   };
   const [uploadedImage, setUploadedImage] = useState(null);
 
-  useEffect(() => {
-    if (!check) navigate("/");
-  });
-
   const handleLogoUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -90,7 +89,7 @@ const CanSettings = () => {
     }
     try {
       const response = await axios.put(
-        `http://localhost:9000/Employer-password/${id}`,
+        `https://server.hirix.pk/Employer-password/${id}`,
         {
           editPasswordData,
         },

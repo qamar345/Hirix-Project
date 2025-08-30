@@ -25,7 +25,7 @@ const AdLogin = ({ ...props }) => {
     try {
       const payload = { email, password };
       const res = await axios.post(
-        "http://localhost:9000/admin-login",
+        "https://server.hirix.pk/admin-login",
         payload
       );
       if (res.data.loginStatus) {
@@ -56,7 +56,7 @@ const AdLogin = ({ ...props }) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:9000/verify-emailForAdmin",
+        "https://server.hirix.pk/verify-emailForAdmin",
         { email: resetEmail }
       );
 
@@ -88,7 +88,7 @@ const AdLogin = ({ ...props }) => {
 
     try {
       const response = await axios.put(
-        `http://localhost:9000/forget-passwordForAdmin`,
+        `https://server.hirix.pk/forget-passwordForAdmin`,
         payload,
         {
           headers: {

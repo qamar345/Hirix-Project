@@ -52,7 +52,7 @@ const AdHeader = () => {
           {check && (
             <div className="profileImg">
               <img
-                src={`http://localhost:9000${imageAdmin}`}
+                src={`https://server.hirix.pk${imageAdmin}`}
                 title="Admin"
                 alt="Admin"
                 className=""

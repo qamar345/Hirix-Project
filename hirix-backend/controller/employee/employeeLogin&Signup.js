@@ -1,6 +1,7 @@
 const { conn_sql } = require("../../config/connection");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 
 const upload = require("../../middleware/upload");
 
@@ -8,6 +9,7 @@ const {
   SendAccountCreatedEmail,
 } = require("../../mailer/AccountRegisteration");
 const { VerifyEmail } = require("../../mailer/mailer-controller");
+const path = require("path");
 
 //Employee registeration
 const employeesignup = (req, res) => {
@@ -80,12 +82,22 @@ const employeelogin = (req, res) => {
         if (result) {
           const secretKey = process.env.SECRETKEY;
           // If passwords match, return success
+
+          // const token = jwt.sign(
+          //   { id: user.id, email: user.email, role: user.role },
+          //   secretKey,
+          //   { expiresIn: "15m" }
+          // );
+
+          // Set HTTP-only cookie
+          // res.cookie("x-access-token", token, { httpOnly: true, secure: false });
+
           return res.json({
             token: jwt.sign({ email: user.email }, secretKey, {
-              expiresIn: 86400,
+              expiresIn: "20m",
             }),
             isloggedin: true,
-            msg: "Login successful!",
+            msg: "Login successfully!",
             data: user,
           });
         } else {

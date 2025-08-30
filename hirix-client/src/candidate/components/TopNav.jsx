@@ -28,7 +28,7 @@ const TopNav = () => {
             <span className="top-bar-icon">
               {/* <i className="fal fa-envelope" /> */}
               <FaRegEnvelope className="ml-4"/>
-              hello@uxper.co
+              support.hirix.pk
             </span>
           </div>
         </div>

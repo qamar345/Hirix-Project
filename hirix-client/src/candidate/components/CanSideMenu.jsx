@@ -99,10 +99,22 @@ const CanSideMenu = () => {
                   label: "Settings",
                   link: "/candidate/settings",
                 },
-                { src: logout, alt: "Logout", label: "Logout", link: "/" },
+                {
+                  src: logout,
+                  alt: "Logout",
+                  label: "Logout",
+                  link: "/",
+                  logOut: () => {
+                    sessionStorage.clear();
+                    alert("Logout Successfully");
+                    navigate("/");
+                  },
+                },
               ].map((item, index) => (
-                <li className="nav-item" key={index}
-                data-bs-dismiss="offcanvas"
+                <li
+                  className="nav-item"
+                  key={index}
+                  data-bs-dismiss="offcanvas"
                 >
                   <NavLink
                     className="canvas-item"
@@ -112,7 +124,13 @@ const CanSideMenu = () => {
                     <span className="canvas-image">
                       <img src={item.src} alt={item.alt} />
                     </span>
-                    <span>{item.label}</span>
+                    <span
+                      onClick={
+                        item.label === "Logout" ? () => item.logOut() : null
+                      }
+                    >
+                      {item.label}
+                    </span>
                   </NavLink>
                 </li>
               ))}

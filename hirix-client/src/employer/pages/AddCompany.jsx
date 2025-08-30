@@ -102,7 +102,7 @@ const AddCompany = () => {
 
     try {
       const res = await axios.post(
-        `http://localhost:9000/add-company/${id}`,
+        `https://server.hirix.pk/add-company/${id}`,
         formData,
         {
           headers: {

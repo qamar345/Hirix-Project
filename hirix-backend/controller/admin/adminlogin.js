@@ -62,7 +62,7 @@ const Adminlogin = (req, res) => {
 
     const secretKey = process.env.SECRETKEY;
     const token = jwt.sign({ email: admin.email }, secretKey, {
-      expiresIn: 86400,
+      expiresIn: "15m",
     });
 
     return res.json({
@@ -85,8 +85,7 @@ const AdminProfile = (req, res) => {
 
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
-  const sqladmin =
-    "UPDATE `admin` SET `image`= ? WHERE id=?";
+  const sqladmin = "UPDATE `admin` SET `image`= ? WHERE id=?";
   conn_sql.query(sqladmin, [name, email, imageUrl, id], (err, result) => {
     if (err) {
       console.log(err);

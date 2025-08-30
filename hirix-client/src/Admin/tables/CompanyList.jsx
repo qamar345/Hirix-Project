@@ -28,7 +28,7 @@ const CompanyList = () => {
   const getcompanies = async (page) => {
     // setLoading(true);
     try {
-      const res = await axios.get("http://localhost:9000/getcompanies", {
+      const res = await axios.get("https://server.hirix.pk/getcompanies", {
         params: {
           page: page,
         },
@@ -53,7 +53,7 @@ const CompanyList = () => {
   // useEffect(() => {
   //   const GetUsers = async () => {
   //     await axios
-  //       .get("http://localhost:9000/getcompanies")
+  //       .get("https://server.hirix.pk/getcompanies")
   //       .then((res) => {
   //         setcompanydata(res.data);
   //       })
@@ -65,7 +65,7 @@ const CompanyList = () => {
   // }, []);
   const ApprovedCompany = async (id) => {
     await axios
-      .put(`http://localhost:9000/approvedCompany/${id}`, null, {
+      .put(`https://server.hirix.pk/approvedCompany/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -78,7 +78,7 @@ const CompanyList = () => {
   };
   const RejectCompany = async (id) => {
     await axios
-      .put(`http://localhost:9000/rejectCompany/${id}`, null, {
+      .put(`https://server.hirix.pk/rejectCompany/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -145,7 +145,7 @@ const CompanyList = () => {
                         <div className="me-3">
                           {company.images ? (
                             <img
-                              src={`http://localhost:9000${company.images}`}
+                              src={`https://server.hirix.pk${company.images}`}
                               alt={company.name}
                               style={{
                                 width: "50px",
