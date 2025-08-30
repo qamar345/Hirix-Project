@@ -9,14 +9,14 @@ const bcrypt = require("bcryptjs");
 const { databaseconfig } = require("./config/connection");
 
 const { AdminSetup } = require("./controller/admin/adminlogin");
-const cookieParser = require("cookie-parser");
+// const cookieParser = require("cookie-parser");
 
 const dotenv = require("dotenv").config();
 
 const port = process.env.PORT;
 
 const app = express();
-app.use(cookieParser());
+// app.use(cookieParser());
 
 AdminSetup();
 
