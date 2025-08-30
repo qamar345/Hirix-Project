@@ -1,7 +1,7 @@
 const { conn_sql } = require("../../config/connection");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const cookieParser = require("cookie-parser");
+// const cookieParser = require("cookie-parser");
 
 const upload = require("../../middleware/upload");
 
