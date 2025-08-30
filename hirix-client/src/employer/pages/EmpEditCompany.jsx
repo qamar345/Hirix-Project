@@ -55,7 +55,7 @@
 //   useEffect(() => {
 //     if (editId && editId !== "new") {
 //       axios
-//         .get(`https://server.hirix.pk/getSpecificCompany/${editId}`)
+//         .get(`https://testserver.hirix.pk/getSpecificCompany/${editId}`)
 //         .then((res) => {
 //   // submit
 //   const submit = async (e) => {
@@ -80,7 +80,7 @@
 //     };
 
 //     try {
-//       const res = await axios.put(`https://server.hirix.pk/edit-company/${editId}`, payload);
+//       const res = await axios.put(`https://testserver.hirix.pk/edit-company/${editId}`, payload);
 //       alert(res.data.msg);
 //       navigate(`/employer/company`);
 //     } catch (error) {
@@ -450,7 +450,7 @@ const EmpEditCompany = () => {
   useEffect(() => {
     if (editId && editId !== "new") {
       axios
-        .get(`https://server.hirix.pk/getSpecificCompany/${editId}`)
+        .get(`https://testserver.hirix.pk/getSpecificCompany/${editId}`)
         .then((res) => {
           const data = res.data?.company;
           if (data) {
@@ -501,7 +501,7 @@ const EmpEditCompany = () => {
 
     try {
       const res = await axios.put(
-        `https://server.hirix.pk/edit-company/${editId}`,
+        `https://testserver.hirix.pk/edit-company/${editId}`,
         payload
       );
       alert(res.data.msg);

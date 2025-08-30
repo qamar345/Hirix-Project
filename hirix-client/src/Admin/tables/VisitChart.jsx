@@ -20,7 +20,7 @@ function VisitChart({ days }) {
   useEffect(() => {
     const fetchDataGraph = async () => {
       try {
-        const res = await axios.get(`https://server.hirix.pk/graph/${days}`, {
+        const res = await axios.get(`https://testserver.hirix.pk/graph/${days}`, {
           headers: {
             "x-access-token": token,
           },

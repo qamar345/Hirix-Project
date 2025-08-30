@@ -62,7 +62,7 @@ const Login = ({ ...props }) => {
       };
 
       await axios
-        .post("https://server.hirix.pk/employee-login", { payload })
+        .post("https://testserver.hirix.pk/employee-login", { payload })
         .then((res) => {
           console.log(res);
           alert(res.data.msg);
@@ -104,7 +104,7 @@ const Login = ({ ...props }) => {
     } else {
       try {
         const res = await axios.post(
-          "https://server.hirix.pk/send-verify-email",
+          "https://testserver.hirix.pk/send-verify-email",
           { email }
         );
         setLoader("Checking...");
@@ -119,7 +119,7 @@ const Login = ({ ...props }) => {
     if (email) {
       try {
         const res = await axios.get(
-          `https://server.hirix.pk/check-mail-status/${email}`
+          `https://testserver.hirix.pk/check-mail-status/${email}`
         );
         if (res.data.isVerified) {
           setLoader("");
@@ -184,7 +184,7 @@ const Login = ({ ...props }) => {
 
     try {
       const res = await axios.post(
-        "https://server.hirix.pk/employee-signup",
+        "https://testserver.hirix.pk/employee-signup",
         payload
       );
       alert(res.data.msg);
@@ -203,7 +203,7 @@ const Login = ({ ...props }) => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`https://server.hirix.pk/verify-email`, {
+      const response = await axios.post(`https://testserver.hirix.pk/verify-email`, {
         email: resetEmail,
       });
 
@@ -231,7 +231,7 @@ const Login = ({ ...props }) => {
 
     try {
       const response = await axios.put(
-        `https://server.hirix.pk/forget-password`,
+        `https://testserver.hirix.pk/forget-password`,
         payload,
         {
           headers: {
@@ -256,7 +256,7 @@ const Login = ({ ...props }) => {
   const handleGenerate = async () => {
     try {
       const response = await fetch(
-        `https://server.hirix.pk/GenerateAutoUserName?firstName=${FirstName}&lastName=${LastName}`
+        `https://testserver.hirix.pk/GenerateAutoUserName?firstName=${FirstName}&lastName=${LastName}`
       );
       const data = await response.json();
       setUserName(data.username);

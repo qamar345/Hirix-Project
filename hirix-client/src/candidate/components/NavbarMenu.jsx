@@ -33,7 +33,7 @@ const NavbarMenu = () => {
       const username = sessionStorage.getItem("first_name");
       const images = sessionStorage.getItem("image");
       const role = sessionStorage.getItem("role");
-      const baseURL = "https://server.hirix.pk";
+      const baseURL = "https://testserver.hirix.pk";
       const imageURL = images ? baseURL + images : null;
 
       if (username && images) {

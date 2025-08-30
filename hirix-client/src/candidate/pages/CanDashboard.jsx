@@ -34,7 +34,7 @@ const CanDashboard = () => {
       }
       try {
         const res = await axios.get(
-          `https://server.hirix.pk/DasboardJobseeker/${id}`,
+          `https://testserver.hirix.pk/DasboardJobseeker/${id}`,
 
           {
             withCredentials: true,
@@ -52,7 +52,7 @@ const CanDashboard = () => {
   //   const Data = async () => {
   //     try {
   //       const res = await axios.get(
-  //         `https://server.hirix.pk//${id}`
+  //         `https://testserver.hirix.pk//${id}`
   //       );
   //           //       setColData(res.data.data || []);
   //     } catch (err) {

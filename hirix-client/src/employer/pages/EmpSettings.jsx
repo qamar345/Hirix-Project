@@ -74,7 +74,7 @@ const EmpSettings = () => {
   useEffect(() => {
     const GetData = async () => {
       try {
-        const res = await axios.get(`https://server.hirix.pk/getEmployer/${id}`, {
+        const res = await axios.get(`https://testserver.hirix.pk/getEmployer/${id}`, {
           headers: {
             "x-access-token": token,
           },
@@ -114,7 +114,7 @@ const EmpSettings = () => {
 
     try {
       const res = await axios.put(
-        `https://server.hirix.pk/employee-profile-update/${id}`,
+        `https://testserver.hirix.pk/employee-profile-update/${id}`,
         formData,
         {
           headers: {
@@ -150,7 +150,7 @@ const EmpSettings = () => {
     }
     try {
       const response = await axios.put(
-        `https://server.hirix.pk/Employer-password/${id}`,
+        `https://testserver.hirix.pk/Employer-password/${id}`,
         {
           editPasswordData,
         },

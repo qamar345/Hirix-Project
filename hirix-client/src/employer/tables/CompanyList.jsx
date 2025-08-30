@@ -63,7 +63,7 @@ const CompanyList = () => {
     // setLoading(true);
     try {
       const res = await axios.get(
-        `https://server.hirix.pk/select-company/${id}`,
+        `https://testserver.hirix.pk/select-company/${id}`,
         {
           params: {
             page: page,
@@ -100,7 +100,7 @@ const CompanyList = () => {
 
     try {
       const res = await axios.delete(
-        `https://server.hirix.pk/deletecompany/${did}`,
+        `https://testserver.hirix.pk/deletecompany/${did}`,
         null,
         {
           headers: {

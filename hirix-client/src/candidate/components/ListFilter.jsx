@@ -57,7 +57,7 @@ const ListFilter = () => {
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
-        const res = await fetch("https://server.hirix.pk/filtersCountData", {
+        const res = await fetch("https://testserver.hirix.pk/filtersCountData", {
           headers: {
             "x-access-token": token,
           },

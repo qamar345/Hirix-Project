@@ -35,7 +35,7 @@ const EmpDashboard = () => {
   useEffect(() => {
     const GetUsers = async () => {
       try {
-        const res = await axios.get("https://server.hirix.pk/DashboardData", {
+        const res = await axios.get("https://testserver.hirix.pk/DashboardData", {
           headers: {
             "x-access-token": token,
           },

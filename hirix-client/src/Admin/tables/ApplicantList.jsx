@@ -39,7 +39,7 @@ const ApplicantList = () => {
   const GetApplicants = async (page, search = "") => {
     // setLoading(true);
     try {
-      const res = await axios.get("https://server.hirix.pk/getusers", {
+      const res = await axios.get("https://testserver.hirix.pk/getusers", {
         params: {
           page: page,
           search: search,
@@ -86,7 +86,7 @@ const ApplicantList = () => {
     const token = sessionStorage.getItem("token");
 
     await axios
-      .put(`https://server.hirix.pk/active-employee/${id}`, null, {
+      .put(`https://testserver.hirix.pk/active-employee/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -102,7 +102,7 @@ const ApplicantList = () => {
     const token = sessionStorage.getItem("token");
 
     await axios
-      .put(`https://server.hirix.pk/freezeusers/${id}`, null, {
+      .put(`https://testserver.hirix.pk/freezeusers/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -197,7 +197,7 @@ const ApplicantList = () => {
                         {/* <CiCamera /> */}
                         {applicant.image ? (
                           <img
-                            src={`https://server.hirix.pk${applicant.image}`}
+                            src={`https://testserver.hirix.pk${applicant.image}`}
                           />
                         ) : (
                           <CiCamera />

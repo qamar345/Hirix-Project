@@ -75,7 +75,7 @@ const AdSettings = () => {
     const GetUserData = async () => {
       try {
         const res = await axios.get(
-          `https://server.hirix.pk/GetAdmin/${sessionStorage.getItem("id")}`,
+          `https://testserver.hirix.pk/GetAdmin/${sessionStorage.getItem("id")}`,
           {
             headers: {
               "x-access-token": token,
@@ -117,7 +117,7 @@ const AdSettings = () => {
 
     try {
       const res = await axios.put(
-        `https://server.hirix.pk/admin-profile/${sessionStorage.getItem("id")}`,
+        `https://testserver.hirix.pk/admin-profile/${sessionStorage.getItem("id")}`,
         formData,
         {
           headers: {
@@ -153,7 +153,7 @@ const AdSettings = () => {
     }
     try {
       const response = await axios.put(
-        `https://server.hirix.pk/change-password/${sessionStorage.getItem("id")}`,
+        `https://testserver.hirix.pk/change-password/${sessionStorage.getItem("id")}`,
         {
           editPasswordData,
         },

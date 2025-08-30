@@ -50,7 +50,7 @@ const CanJobs = () => {
   };
   const fetchJobs = async (search, sortOrder, type) => {
     try {
-      const res = await axios.get(`https://server.hirix.pk/appliedTo/${id}`, {
+      const res = await axios.get(`https://testserver.hirix.pk/appliedTo/${id}`, {
         params: { search, sort: sortOrder, type },
         headers: {
           "x-access-token": token,
@@ -114,7 +114,7 @@ const CanJobs = () => {
 
   const StatusDelete = async (application_id) => {
     await axios
-      .put(`https://server.hirix.pk/Deleted/${application_id}`, null, {
+      .put(`https://testserver.hirix.pk/Deleted/${application_id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -128,7 +128,7 @@ const CanJobs = () => {
 
   const StatusApply = async (application_id) => {
     await axios
-      .put(`https://server.hirix.pk/apply/${application_id}`, null, {
+      .put(`https://testserver.hirix.pk/apply/${application_id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -147,7 +147,7 @@ const CanJobs = () => {
     if (confirm) {
       await axios
         .delete(
-          `https://server.hirix.pk/cancleApplication/${application_id}`,
+          `https://testserver.hirix.pk/cancleApplication/${application_id}`,
           null,
           {
             headers: {

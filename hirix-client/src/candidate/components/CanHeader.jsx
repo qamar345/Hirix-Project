@@ -49,7 +49,7 @@ const CanHeader = () => {
             {check && (
               <div className="profileImg">
                 <img
-                  src={`https://server.hirix.pk${imageUser}`}
+                  src={`https://testserver.hirix.pk${imageUser}`}
                   title="Candidate"
                   alt="Candidate"
                   className=""

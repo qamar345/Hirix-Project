@@ -75,7 +75,7 @@ const AddManager = () => {
 
     try {
       await axios
-        .post("https://server.hirix.pk/addManager", payload, {
+        .post("https://testserver.hirix.pk/addManager", payload, {
           headers: {
             "x-access-token": token,
           },
