@@ -147,7 +147,7 @@ const CanProfile = () => {
   // }, []);
   useEffect(() => {
     axios
-      .get(`https://testserver.hirix.pk/getProfile/${id}`, {
+      .get(`http://localhost:9000/getProfile/${id}`, {
         headers: {
           "x-access-token": token,
         },
@@ -208,7 +208,7 @@ const CanProfile = () => {
     }
     try {
       const res = await axios.post(
-        `https://testserver.hirix.pk/postProfile/${id}`,
+        `http://localhost:9000/postProfile/${id}`,
         formData,
         {
           headers: {
@@ -253,7 +253,7 @@ const CanProfile = () => {
 
     try {
       const res = await axios.post(
-        `https://testserver.hirix.pk/AddEducation/${id}`,
+        `http://localhost:9000/AddEducation/${id}`,
         formData,
         {
           headers: {
@@ -287,7 +287,7 @@ const CanProfile = () => {
 
     try {
       const res = await axios.post(
-        `https://testserver.hirix.pk/AddExperience/${id}`,
+        `http://localhost:9000/AddExperience/${id}`,
         payload,
         {
           headers: {
@@ -312,7 +312,7 @@ const CanProfile = () => {
 
     try {
       const res = await axios.post(
-        `https://testserver.hirix.pk/add-skillset/${id}`,
+        `http://localhost:9000/add-skillset/${id}`,
         payload,
         {
           headers: {
@@ -331,7 +331,7 @@ const CanProfile = () => {
   const RemoveSkills = async (id) => {
     try {
       const res = await axios.delete(
-        `https://testserver.hirix.pk/remove-skill/${id}`,
+        `http://localhost:9000/remove-skill/${id}`,
         null,
         {
           headers: {
@@ -357,7 +357,7 @@ const CanProfile = () => {
 
     try {
       const res = await axios.post(
-        `https://testserver.hirix.pk/AddProject/${id}`,
+        `http://localhost:9000/AddProject/${id}`,
         payload,
         {
           headers: {
@@ -387,7 +387,7 @@ const CanProfile = () => {
 
     try {
       const res = await axios.post(
-        `https://testserver.hirix.pk/AddAward/${id}`,
+        `http://localhost:9000/AddAward/${id}`,
         payload,
         {
           headers: {
@@ -405,7 +405,7 @@ const CanProfile = () => {
 
   // const DownloadCv = async (uid) => {
   //   try {
-  //     const res = await axios.get(`https://testserver.hirix.pk/download-cv/${uid}`);
+  //     const res = await axios.get(`http://localhost:9000/download-cv/${uid}`);
   //     console.log(res);
   //   } catch (error) {
   //     console.log(error);
@@ -416,7 +416,7 @@ const CanProfile = () => {
     const GetEducation = async () => {
       try {
         const res = await axios.get(
-          `https://testserver.hirix.pk/get-candidate-qualification/${id}`,
+          `http://localhost:9000/get-candidate-qualification/${id}`,
           {
             headers: {
               "x-access-token": token,
@@ -432,7 +432,7 @@ const CanProfile = () => {
     const GetExperience = async () => {
       try {
         const res = await axios.get(
-          `https://testserver.hirix.pk/get-candidate-exp/${id}`,
+          `http://localhost:9000/get-candidate-exp/${id}`,
           {
             headers: {
               "x-access-token": token,
@@ -447,7 +447,7 @@ const CanProfile = () => {
 
     const GetDBSkills = async () => {
       try {
-        const res = await axios.get("https://testserver.hirix.pk/get-skills", {
+        const res = await axios.get("http://localhost:9000/get-skills", {
           headers: {
             "x-access-token": token,
           },
@@ -461,7 +461,7 @@ const CanProfile = () => {
     const CandidateSkills = async () => {
       try {
         const res = await axios.get(
-          `https://testserver.hirix.pk/get-candidate-skills/${id}`,
+          `http://localhost:9000/get-candidate-skills/${id}`,
           {
             headers: {
               "x-access-token": token,
@@ -477,7 +477,7 @@ const CanProfile = () => {
     const GetCandidateProjects = async () => {
       try {
         const res = await axios.get(
-          `https://testserver.hirix.pk/get-candidate-projects/${id}`,
+          `http://localhost:9000/get-candidate-projects/${id}`,
           {
             headers: {
               "x-access-token": token,
@@ -501,7 +501,7 @@ const CanProfile = () => {
     const fetchProfileData = async () => {
       try {
         const res = await axios.get(
-          `https://testserver.hirix.pk/profile-status/${id}`,
+          `http://localhost:9000/profile-status/${id}`,
           {
             headers: {
               "x-access-token": token,
@@ -731,7 +731,7 @@ const CanProfile = () => {
                   }`}
                 >
                   <Link
-                    to={`https://testserver.hirix.pk/download-cv/${id}`}
+                    to={`http://localhost:9000/download-cv/${id}`}
                     target="_blank"
                   >
                     Download Profile as CV

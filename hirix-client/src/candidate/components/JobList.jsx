@@ -49,7 +49,7 @@ const JobList = ({ onSelectJob }) => {
       if (experiences) params.experiences = experiences;
       if (careerLevels) params.careerLevels = careerLevels;
 
-      const res = await axios.get("https://testserver.hirix.pk/get-posts", {
+      const res = await axios.get("http://localhost:9000/get-posts", {
         params,
         headers: {
           "x-access-token": token,

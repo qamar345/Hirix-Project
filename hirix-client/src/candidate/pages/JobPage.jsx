@@ -14,7 +14,7 @@ const JobPage = () => {
     const fetchJob = async () => {
       try {
         const res = await axios.get(
-          `https://testserver.hirix.pk/get-post-by-id/${id}`
+          `http://localhost:9000/get-post-by-id/${id}`
         );
         setJob(res.data);
       } catch (err) {}

@@ -18,6 +18,7 @@ const transporter = nodemailer.createTransport({
   host: process.env.MAILHOST, // replace with your SMTP host
   port: process.env.MAILPORT, // replace with your SMTP port
   secure: true, // true for 465, false for other ports
+  service: "SMTP",
   // service: "gmail",
   auth: {
     user: process.env.MAILERUSER,
@@ -71,13 +72,13 @@ async function sendNewsletter() {
           const htmlContent = `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;">
           <div style="background:#126ebb;padding:20px;text-align:center;">
-            <img src="https://yourdomain.com/hirixTextLogo.png" alt="Hirix Logo" style="max-width:180px;">
+            <img src="https://ezitech.org:2083/cpsess3445457478/viewer/home%2fezitech%2frepositories%2fHirix-Project-v1%2fhirix-client%2fdist/hirix%20logo.png" alt="Hirix Logo" style="max-width:180px;">
           </div>
           <div style="padding:20px;">
             <h2 style="color:#126ebb;">🚀 Jobs Posted in the Last 6 Hours</h2>
             ${jobHTML}
             <div style="margin-top:20px;text-align:center;">
-              <a href="https://yourdomain.com/jobs" 
+              <a href="https://jobs.hirix.pk" 
                  style="background:#126ebb;color:#fff;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:bold;">
                 View All Jobs
               </a>
@@ -94,7 +95,7 @@ async function sendNewsletter() {
           for (let sub of subscribers) {
             try {
               await transporter.sendMail({
-                from: '"Hirix Jobs" <qamargill427@gmail.com>',
+                from: '"Hirix Jobs" <no-reply@hirix.pk>',
                 to: sub.email,
                 subject: "🚀 New Jobs Posted in Last 6 Hours",
                 html: htmlContent,
@@ -114,8 +115,8 @@ async function sendNewsletter() {
 }
 
 // ✅ Schedule cron job (every 6 hours)
-cron.schedule("0 */6 * * *", sendNewsletter);
-// setTimeout(sendNewsletter, 5000);
+// cron.schedule("0 */6 * * *", sendNewsletter);
+setTimeout(sendNewsletter, 5000);
 
 module.exports = {
   Subscribe,

@@ -38,7 +38,7 @@ const ApplicantList = () => {
     // setLoading(true);
     try {
       const res = await axios.get(
-        `https://testserver.hirix.pk/get-applicants/${id}`,
+        `http://localhost:9000/get-applicants/${id}`,
         {
           params: {
             page: page,
@@ -90,7 +90,7 @@ const ApplicantList = () => {
 
   const Review = async (id) => {
     await axios
-      .put(`https://testserver.hirix.pk/status-review/${id}`, null, {
+      .put(`http://localhost:9000/status-review/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -103,7 +103,7 @@ const ApplicantList = () => {
   };
   const Selected = async (id) => {
     await axios
-      .put(`https://testserver.hirix.pk/statusselected/${id}`, null, {
+      .put(`http://localhost:9000/statusselected/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -117,7 +117,7 @@ const ApplicantList = () => {
 
   const Rejected = async (id) => {
     await axios
-      .put(`https://testserver.hirix.pk/statusrejected/${id}`, null, {
+      .put(`http://localhost:9000/statusrejected/${id}`, null, {
         headers: {
           "x-access-token": token,
         },

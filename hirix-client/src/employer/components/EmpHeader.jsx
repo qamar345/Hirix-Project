@@ -51,7 +51,7 @@ useEffect(() => {
             {check && (
               <div key={refreshKey} className="profileImg">
                 <img
-                  src={`https://testserver.hirix.pk${Img}`}
+                  src={`http://localhost:9000${Img}`}
                   title="Employer"
                   alt="Employer"
                   className=""

@@ -57,7 +57,7 @@ const PostJob = () => {
   // useEffect(() => {
   //   if (editId && editId !== "new") {
   //     axios
-  //       .get(`https://testserver.hirix.pk/getjobPost/${editId}`)
+  //       .get(`http://localhost:9000/getjobPost/${editId}`)
   //       .then((res) => {
   //         console.log("Full API Response:", res.data); // ✅ Check the structure
 
@@ -94,7 +94,7 @@ const PostJob = () => {
     const fetchCompany = async () => {
       try {
         const res = await axios.get(
-          `https://testserver.hirix.pk/GetCompanies/${id}`,
+          `http://localhost:9000/GetCompanies/${id}`,
           {
             headers: {
               "x-access-token": token,
@@ -145,7 +145,7 @@ const PostJob = () => {
 
     try {
       await axios
-        .post(`https://testserver.hirix.pk/postbyEmployee/${id}`, payload, {
+        .post(`http://localhost:9000/postbyEmployee/${id}`, payload, {
           headers: {
             "x-access-token": token,
           },
@@ -158,7 +158,7 @@ const PostJob = () => {
 
     // try {
     //         await axios
-    //     .post(`https://testserver.hirix.pk/postbyEmployee/${id}`, payload)
+    //     .post(`http://localhost:9000/postbyEmployee/${id}`, payload)
     //     .then((res) => {
     //       alert(res.data.msg);
     //       navigate(`/employer/jobs`);
@@ -200,7 +200,7 @@ const PostJob = () => {
 
     try {
       await axios
-        .post(`https://testserver.hirix.pk/saveAsDraft/${id}`, payload, {
+        .post(`http://localhost:9000/saveAsDraft/${id}`, payload, {
           headers: {
             "x-access-token": token,
           },
@@ -213,7 +213,7 @@ const PostJob = () => {
 
     // try {
     //   await axios
-    //     .post(`https://testserver.hirix.pk/saveAsDraft/${id}`, payload)
+    //     .post(`http://localhost:9000/saveAsDraft/${id}`, payload)
     //     .then((res) => {
     //       alert(res.data.msg);
     //       navigate(`/employer/jobs`);
@@ -354,7 +354,7 @@ const PostJob = () => {
   useEffect(() => {
     const GetJobCategory = async () => {
       try {
-        const res = await axios.get("https://testserver.hirix.pk/get-job-cat", {
+        const res = await axios.get("http://localhost:9000/get-job-cat", {
           headers: {
             "x-access-token": token,
           },
@@ -367,7 +367,7 @@ const PostJob = () => {
 
     const GetSkills = async () => {
       try {
-        const res = await axios.get("https://testserver.hirix.pk/get-skills", {
+        const res = await axios.get("http://localhost:9000/get-skills", {
           headers: {
             "x-access-token": token,
           },
@@ -397,7 +397,7 @@ const PostJob = () => {
   useEffect(() => {
     if (selectedCategory?.value) {
       axios
-        .get(`https://testserver.hirix.pk/subcategories/${selectedCategory.value}`, {
+        .get(`http://localhost:9000/subcategories/${selectedCategory.value}`, {
           headers: {
             "x-access-token": token,
           },

@@ -54,7 +54,7 @@ const JobCard = ({
       try {
         const userid = sessionStorage.getItem("id");
         const res = await axios.post(
-          `https://testserver.hirix.pk/addWishlist/${userid}`,
+          `http://localhost:9000/addWishlist/${userid}`,
           null,
           {
             params: { job_id: id },
@@ -105,7 +105,7 @@ const JobCard = ({
           <div className="jobs-header-left">
             <img
               className="logo-comnpany"
-              src={`https://testserver.hirix.pk${images}`}
+              src={`http://localhost:9000${images}`}
               alt=""
             />
             <div className="jobs-left-inner">

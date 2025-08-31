@@ -18,7 +18,7 @@ const Footer = () => {
   const SubmitNewsLetter = (e) => {
     e.preventDefault();
     axios
-      .post("https://testserver.hirix.pk/news-letter", { email })
+      .post("http://localhost:9000/news-letter", { email })
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();

@@ -31,7 +31,7 @@ const EmpDashboard = () => {
         return;
       }
       try {
-        const res = await axios.get(`https://testserver.hirix.pk/DashEmpData/${id}`, {
+        const res = await axios.get(`http://localhost:9000/DashEmpData/${id}`, {
           headers: {
             "x-access-token": token,
           },
@@ -47,7 +47,7 @@ const EmpDashboard = () => {
     const Data = async () => {
       try {
         const res = await axios.get(
-          `https://testserver.hirix.pk/dashDataEmployer/${id}`,
+          `http://localhost:9000/dashDataEmployer/${id}`,
           {
             headers: {
               "x-access-token": token,

@@ -6,6 +6,7 @@ const VerifyEmail = (email, token) => {
   const transporter = nodemailer.createTransport({
     host: process.env.MAILHOST, // replace with your SMTP host
     port: process.env.MAILPORT, // replace with your SMTP port
+    service: "SMTP",
     secure: true, // true for 465, false for other ports
     // service: "gmail", // or use 'smtp' for custom configuration
     auth: {

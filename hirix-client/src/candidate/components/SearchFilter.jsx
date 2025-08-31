@@ -33,7 +33,7 @@ const SearchFilter = () => {
   useEffect(() => {
     const fetchSkills = async () => {
       try {
-        const res = await axios.get(`https://testserver.hirix.pk/getSkills`);
+        const res = await axios.get(`http://localhost:9000/getSkills`);
         setSkillsList(res.data);
       } catch (err) {
         console.error("Error fetching skills:", err);

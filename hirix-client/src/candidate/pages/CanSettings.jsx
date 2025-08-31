@@ -89,7 +89,7 @@ const CanSettings = () => {
     }
     try {
       const response = await axios.put(
-        `https://testserver.hirix.pk/Employer-password/${id}`,
+        `http://localhost:9000/Employer-password/${id}`,
         {
           editPasswordData,
         },

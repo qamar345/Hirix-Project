@@ -29,7 +29,7 @@ const ManagersList = () => {
   const GetManagerData = async (page) => {
     // setLoading(true);
     try {
-      const res = await axios.get("https://testserver.hirix.pk/getManagers", {
+      const res = await axios.get("http://localhost:9000/getManagers", {
         params: {
           page: page,
         },
@@ -53,7 +53,7 @@ const ManagersList = () => {
   }, [currentPage]);
   const ActiveAccount = async (id) => {
     await axios
-      .put(`https://testserver.hirix.pk/activeManager/${id}`, null, {
+      .put(`http://localhost:9000/activeManager/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -67,7 +67,7 @@ const ManagersList = () => {
 
   const InActiveAccount = async (id) => {
     await axios
-      .put(`https://testserver.hirix.pk/freezeManager/${id}`, null, {
+      .put(`http://localhost:9000/freezeManager/${id}`, null, {
         headers: {
           "x-access-token": token,
         },

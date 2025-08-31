@@ -59,7 +59,7 @@ app.use((req, res, next) => {
 // app.use(cors());
 // app.use(cookieParser());
 
-AdminSetup();
+// AdminSetup();
 
 databaseconfig();
 app.use("/uploads", express.static("uploads"));

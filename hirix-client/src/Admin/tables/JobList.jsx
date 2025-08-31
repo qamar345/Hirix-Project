@@ -42,7 +42,7 @@ const JobList = () => {
   // ✅ Fetch all job posts
   const GetJobPosts = async (page = 1, search = "") => {
     try {
-      const res = await axios.get("https://testserver.hirix.pk/get-postsBYAdmin", {
+      const res = await axios.get("http://localhost:9000/get-postsBYAdmin", {
         params: { page, search },
         headers: { "x-access-token": token },
       });
@@ -65,7 +65,7 @@ const JobList = () => {
     if (clientId) {
       try {
         const res = await axios.get(
-          `https://testserver.hirix.pk/getPostSpecific/${clientId}`,
+          `http://localhost:9000/getPostSpecific/${clientId}`,
           { headers: { "x-access-token": token } }
         );
 
@@ -116,7 +116,7 @@ const JobList = () => {
   // ✅ Delete handler
   const Delete = async (id) => {
     try {
-      const res = await axios.delete(`https://testserver.hirix.pk/deleteJob/${id}`, {
+      const res = await axios.delete(`http://localhost:9000/deleteJob/${id}`, {
         headers: { "x-access-token": token },
       });
       alert(res.data.msg);

@@ -34,7 +34,7 @@ const CanDashboard = () => {
       }
       try {
         const res = await axios.get(
-          `https://testserver.hirix.pk/DasboardJobseeker/${id}`,
+          `http://localhost:9000/DasboardJobseeker/${id}`,
 
           {
             headers: {
@@ -54,7 +54,7 @@ const CanDashboard = () => {
   //   const Data = async () => {
   //     try {
   //       const res = await axios.get(
-  //         `https://testserver.hirix.pk//${id}`
+  //         `http://localhost:9000//${id}`
   //       );
   //           //       setColData(res.data.data || []);
   //     } catch (err) {

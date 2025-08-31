@@ -21,7 +21,7 @@ function VisitChart({ days }) {
     const fetchDataGraph = async () => {
       try {
         const res = await axios.get(
-          `https://testserver.hirix.pk/Candidategraph/${days}`,
+          `http://localhost:9000/Candidategraph/${days}`,
           {
             headers: {
               "x-access-token": token,

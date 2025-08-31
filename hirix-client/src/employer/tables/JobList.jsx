@@ -37,7 +37,7 @@ function JobList() {
   const sort = queryParams.get("sort") || "newest";
   const fetchJobs = async (page, search, statusFilter, sortOrder) => {
     try {
-      const res = await axios.get(`https://testserver.hirix.pk/get-his-posts/${id}`, {
+      const res = await axios.get(`http://localhost:9000/get-his-posts/${id}`, {
         params: { page, search, status: statusFilter, sort: sortOrder },
         headers: {
           "x-access-token": token,
@@ -73,7 +73,7 @@ function JobList() {
 
   const StatusClosed = async (id) => {
     await axios
-      .put(`https://testserver.hirix.pk/del-job-posts/${id}`, {
+      .put(`http://localhost:9000/del-job-posts/${id}`, {
         headers: {
           "x-access-token": token,
         },
@@ -87,7 +87,7 @@ function JobList() {
 
   const DeleteJob = async (id) => {
     await axios
-      .delete(`https://testserver.hirix.pk/deleteJob/${id}`, null, {
+      .delete(`http://localhost:9000/deleteJob/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -106,7 +106,7 @@ function JobList() {
 
   const StatusOpen = async (id) => {
     await axios
-      .put(`https://testserver.hirix.pk/update-status-opening/${id}`, null, {
+      .put(`http://localhost:9000/update-status-opening/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -120,7 +120,7 @@ function JobList() {
 
   const StatusPause = async (id) => {
     await axios
-      .put(`https://testserver.hirix.pk/status_Pause/${id}`, null, {
+      .put(`http://localhost:9000/status_Pause/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
