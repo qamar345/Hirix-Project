@@ -2,13 +2,21 @@ const sql = require("mysql");
 
 const dotenv = require("dotenv").config();
 
-const host = "localhost" || process.env.HOST;
+// const host = "localhost" || process.env.HOST;
 
-const user = "root" || process.env.USER;
+// const user = "root" || process.env.USER;
 
-const password = "" || process.env.PASSWORD;
+// const password = "" || process.env.PASSWORD;
 
-const database = "hirix" || process.env.DATABASE;
+// const database = "hirix" || process.env.DATABASE;
+
+const host = process.env.HOST;
+
+const user = process.env.USER;
+
+const password = process.env.PASSWORD;
+
+const database = process.env.DATABASE;
 
 const conn_sql = sql.createConnection({
   host: host,
