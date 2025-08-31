@@ -18,18 +18,42 @@ const port = process.env.PORT;
 const app = express();
 app.use(express.json());
 
-const allowedOrigins = {
-  origin: [
-    "https://jobs.hirix.pk",
-    "https://jobs.hirix.pk/admin",
-    "https://jobs.hirix.pk/admin-login",
-    "https://jobs.hirix.pk/candidate",
-    "https://jobs.hirix.pk/employer",
-  ],
-  methods: ["GET", "POST", "PUT", "DELETE"], // Optional: Allowed methods
-};
+// Manual CORS middleware
+app.use((req, res, next) => {
+  // Allow requests from a specific origin
+  res.setHeader("Access-Control-Allow-Origin", "https://jobs.hirix.pk"); // replace with your frontend
 
-app.use(cors());
+  // Allowed methods
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  // Allowed headers
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Requested-With"
+  );
+
+  // Handle preflight requests
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
+
+// const allowedOrigins = {
+//   origin: [
+//     "https://jobs.hirix.pk",
+//     "https://jobs.hirix.pk/admin",
+//     "https://jobs.hirix.pk/admin-login",
+//     "https://jobs.hirix.pk/candidate",
+//     "https://jobs.hirix.pk/employer",
+//   ],
+//   methods: ["GET", "POST", "PUT", "DELETE"], // Optional: Allowed methods
+// };
+
+// app.use(cors());
 // app.use(cookieParser());
 
 AdminSetup();
