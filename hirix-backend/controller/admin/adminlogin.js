@@ -75,7 +75,6 @@ const Adminlogin = (req, res) => {
 };
 
 // Middleware to verify token
-const secretKey = process.env.SECRETKEY;
 
 // Admin Update Profile
 const AdminProfile = (req, res) => {

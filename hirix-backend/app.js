@@ -22,9 +22,28 @@ AdminSetup();
 
 app.use(express.json());
 
+const allowedOrigins = [
+  "https://jobs.hirix.pk",
+  "https://jobs.hirix.pk/admin",
+  "https://jobs.hirix.pk/admin-login",
+  "https://jobs.hirix.pk/candidate",
+  "https://jobs.hirix.pk/employer",
+];
+
 app.use(
   cors({
-    origin: "https://jobs.hirix.pk", // frontend URL
+    origin: function (origin, callback) {
+      // allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        // origin allowed
+        callback(null, true);
+      } else {
+        // origin not allowed
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
