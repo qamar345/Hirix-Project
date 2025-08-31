@@ -29,7 +29,7 @@ const allowedOrigins = {
   methods: ["GET", "POST", "PUT", "DELETE"], // Optional: Allowed methods
 };
 
-app.use(cors(allowedOrigins));
+app.use(cors());
 // app.use(cookieParser());
 
 AdminSetup();
