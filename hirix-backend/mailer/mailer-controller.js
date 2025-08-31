@@ -4,7 +4,7 @@ require("dotenv").config();
 const VerifyEmail = (email, token) => {
   const link = `${process.env.URL}/${token}`;
   const transporter = nodemailer.createTransport({
-    service: "gmail", // or use 'smtp' for custom configuration
+    // service: "gmail", // or use 'smtp' for custom configuration
     auth: {
       user: process.env.MAILERUSER,
       pass: process.env.MAILERPASS,

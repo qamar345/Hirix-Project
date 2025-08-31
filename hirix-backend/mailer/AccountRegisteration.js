@@ -3,7 +3,7 @@ require("dotenv").config();
 
 const SendAccountCreatedEmail = (email) => {
   const transporter = nodemailer.createTransport({
-    service: "gmail",
+    // service: "gmail",
     auth: {
       user: process.env.MAILERUSER,
       pass: process.env.MAILERPASS,
