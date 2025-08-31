@@ -23,7 +23,7 @@ app.use((req, res, next) => {
   // Allow requests from a specific origin
   res.setHeader(
     "Access-Control-Allow-Origin",
-    "http://localhost:5173"
+    "https://jobs.hirix.pk"
   ); // replace with your frontend
 
   // Allowed methods
@@ -59,7 +59,7 @@ app.use((req, res, next) => {
 // app.use(cors());
 // app.use(cookieParser());
 
-// AdminSetup();
+AdminSetup();
 
 databaseconfig();
 app.use("/uploads", express.static("uploads"));
