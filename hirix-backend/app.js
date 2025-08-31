@@ -21,7 +21,10 @@ app.use(express.json());
 // Manual CORS middleware
 app.use((req, res, next) => {
   // Allow requests from a specific origin
-  res.setHeader("Access-Control-Allow-Origin", "https://jobs.hirix.pk"); // replace with your frontend
+  res.setHeader(
+    "Access-Control-Allow-Origin",
+    "https://jobs.hirix.pk, http://localhost:5173"
+  ); // replace with your frontend
 
   // Allowed methods
   res.setHeader(
