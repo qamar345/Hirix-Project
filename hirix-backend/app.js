@@ -24,7 +24,7 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: "https:jobs.hirix.pk", // frontend URL
+    origin: "https://jobs.hirix.pk", // frontend URL
     credentials: true,
   })
 );
