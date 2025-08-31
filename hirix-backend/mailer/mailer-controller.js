@@ -4,6 +4,9 @@ require("dotenv").config();
 const VerifyEmail = (email, token) => {
   const link = `${process.env.URL}/${token}`;
   const transporter = nodemailer.createTransport({
+    host: process.env.MAILHOST, // replace with your SMTP host
+    port: process.env.MAILPORT, // replace with your SMTP port
+    secure: true, // true for 465, false for other ports
     // service: "gmail", // or use 'smtp' for custom configuration
     auth: {
       user: process.env.MAILERUSER,

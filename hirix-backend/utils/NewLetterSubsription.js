@@ -15,7 +15,10 @@ const Subscribe = (req, res) => {
 };
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: process.env.MAILHOST, // replace with your SMTP host
+  port: process.env.MAILPORT, // replace with your SMTP port
+  secure: true, // true for 465, false for other ports
+  // service: "gmail",
   auth: {
     user: process.env.MAILERUSER,
     pass: process.env.MAILERPASS,
