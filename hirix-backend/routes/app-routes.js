@@ -151,6 +151,7 @@ const {
 } = require("../controller/combined/getSkills");
 
 const { Subscribe } = require("../utils/NewLetterSubsription");
+const { Test } = require("../controller/test/test.controller");
 
 //....................................Admin.......................................
 const router = express.Router();
@@ -387,5 +388,7 @@ router.get("/GenerateAutoUserName", GenerateUserName);
 router.delete("/remove-skill/:id", verifyToken, RemoveCandidateSkills);
 
 router.get("/download-cv/:id", verifyToken, GenerateCv);
+
+router.get("/test", Test);
 
 module.exports = router;
