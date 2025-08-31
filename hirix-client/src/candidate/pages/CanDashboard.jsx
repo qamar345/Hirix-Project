@@ -37,7 +37,9 @@ const CanDashboard = () => {
           `https://testserver.hirix.pk/DasboardJobseeker/${id}`,
 
           {
-            withCredentials: true,
+            headers: {
+              "x-access-token": token,
+            },
           }
         );
         setData(res.data.data);
