@@ -33,7 +33,7 @@ const swaggerSpec = {
               schema: {
                 type: "object",
                 properties: {
-                  email: { type: "string", example: "admin@hirix.pk" },
+                  email: { type: "string", example: "admin@hirix.com.pk" },
                   password: { type: "string", example: "adminpassword" },
                 },
               },
@@ -57,7 +57,7 @@ const swaggerSpec = {
               schema: {
                 type: "object",
                 properties: {
-                  email: { type: "string", example: "employer@hirix.pk" },
+                  email: { type: "string", example: "employer@hirix.com.pk" },
                   password: { type: "string", example: "password123" },
                 },
               },

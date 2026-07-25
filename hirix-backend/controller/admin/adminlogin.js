@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS admin (
     conn_sql.query(
       "INSERT IGNORE INTO admin (email, password, role, image) VALUES (?, ?, 'admin', ?)",
       [
-        "admin@hirix.pk",
+        "admin@hirix.com.pk",
         hashedPassword,
         "/uploads/1748974785956-slidepic4.png",
       ],
