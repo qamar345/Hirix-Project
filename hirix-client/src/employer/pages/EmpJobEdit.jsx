@@ -71,7 +71,7 @@ const EmpJobEdit = () => {
 
   useEffect(async () => {
     if (editId && editId !== "new") {
-      axios
+      API
         .get(`/getjobPost/${editId}`, {
           headers: {
             "x-access-token": token,

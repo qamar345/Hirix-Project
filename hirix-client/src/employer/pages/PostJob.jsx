@@ -171,7 +171,7 @@ const PostJob = () => {
     };
 
     try {
-      await axios
+      await API
         .post(`/postbyEmployee/${id}`, payload, {
           headers: {
             "x-access-token": token,
@@ -226,7 +226,7 @@ const PostJob = () => {
     };
 
     try {
-      await axios
+      await API
         .post(`/saveAsDraft/${id}`, payload, {
           headers: {
             "x-access-token": token,
@@ -423,7 +423,7 @@ const PostJob = () => {
   // Fetch subcategories based on selectedCategory.value
   useEffect(() => {
     if (selectedCategory?.value) {
-      axios
+      API
         .get(`/subcategories/${selectedCategory.value}`, {
           headers: {
             "x-access-token": token,
