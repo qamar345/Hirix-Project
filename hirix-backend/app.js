@@ -74,7 +74,12 @@ AdminSetup();
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swaggerSpec");
 
+const { migrateSchema } = require("./migrate-db");
+
 databaseconfig();
+migrateSchema().catch(err => {
+  console.error("Auto-migration on startup failed:", err);
+});
 app.use("/uploads", express.static("uploads"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(router);
