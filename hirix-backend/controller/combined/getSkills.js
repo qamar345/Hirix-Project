@@ -6,8 +6,8 @@ const GetSkills = (req, res) => {
     if (err) throw err;
     if (data.length > 0) {
       const formatedData = data.map((res) => ({
-        value: res.name.toLowerCase().replace(/\s+/g, "_"),
-        label: res.name,
+        value: res.skills.toLowerCase().replace(/\s+/g, "_"),
+        label: res.skills,
         id: res.id,
       }));
 
@@ -37,7 +37,7 @@ const GetCandidateSkills = (req, res) => {
   const { id } = req.params;
 
   const sql =
-    "SELECT jobseeker_skills.id as candidateSkillId, skillset.name as candidateSkillName FROM `jobseeker_skills` JOIN skillset ON jobseeker_skills.skillset_id = skillset.id WHERE jobseeker_skills.job_seeker_id = ?";
+    "SELECT jobseeker_skills.id as candidateSkillId, skillset.skills as candidateSkillName FROM `jobseeker_skills` JOIN skillset ON jobseeker_skills.skillset_id = skillset.id WHERE jobseeker_skills.job_seeker_id = ?";
   conn_sql.query(sql, [id], (err, result) => {
     if (err) return res.json(err);
     return res.json(result);

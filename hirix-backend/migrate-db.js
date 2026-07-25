@@ -140,6 +140,69 @@ async function migrateSchema() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
   `);
 
+  // 7. Migrate Job Categories Table
+  await queryPromise(`
+    CREATE TABLE IF NOT EXISTS \`job_categories\` (
+      \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+      \`name\` VARCHAR(100) NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  // 8. Migrate Job Subcategories Table
+  await queryPromise(`
+    CREATE TABLE IF NOT EXISTS \`job_subcategories\` (
+      \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+      \`category_id\` INT NOT NULL,
+      \`name\` VARCHAR(100) NOT NULL,
+      FOREIGN KEY (\`category_id\`) REFERENCES \`job_categories\` (\`id\`) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  // Seed Categories & Subcategories
+  const catCount = await queryPromise("SELECT COUNT(*) as count FROM `job_categories`");
+  if (catCount[0].count === 0) {
+    console.log("Seeding default job categories and subcategories...");
+    await queryPromise("INSERT INTO `job_categories` (`id`, `name`) VALUES (1, 'Information Technology & Software'), (2, 'Sales & Marketing'), (3, 'Finance & Accounting'), (4, 'Human Resources (HR)'), (5, 'Creative Arts & Design')");
+    
+    const subCategories = [
+      [1, 'Frontend Web Development'],
+      [1, 'Backend Web Development'],
+      [1, 'Mobile App Development'],
+      [1, 'DevOps & Cloud Computing'],
+      [1, 'Data Science & AI'],
+      [2, 'Social Media Marketing'],
+      [2, 'Search Engine Optimization (SEO)'],
+      [2, 'Business Development & Sales'],
+      [3, 'Corporate Accounting'],
+      [3, 'Financial Analysis'],
+      [3, 'Audit & Compliance'],
+      [4, 'Talent Acquisition & Recruiting'],
+      [4, 'HR Operations & Generalist'],
+      [5, 'UI/UX Design'],
+      [5, 'Graphic Design & Branding'],
+      [5, 'Video Editing & Animation']
+    ];
+    
+    for (const [catId, name] of subCategories) {
+      await queryPromise("INSERT INTO `job_subcategories` (`category_id`, `name`) VALUES (?, ?)", [catId, name]);
+    }
+  }
+
+  // Seed default skills
+  const skillsCount = await queryPromise("SELECT COUNT(*) as count FROM `skillset`");
+  if (skillsCount[0].count <= 4) {
+    console.log("Seeding default skills in skillset table...");
+    const defaultSkills = [
+      'HTML5', 'CSS3', 'JavaScript', 'PHP', 'React.js', 'Node.js', 
+      'Python', 'Django', 'Flutter', 'React Native', 'AWS', 'Docker', 
+      'Kubernetes', 'SQL', 'MongoDB', 'UI/UX Design', 'Figma', 
+      'Graphic Design', 'Search Engine Optimization (SEO)', 'Content Writing'
+    ];
+    for (const skill of defaultSkills) {
+      await queryPromise("INSERT INTO `skillset` (`skills`) VALUES (?) ON DUPLICATE KEY UPDATE `skills` = `skills`", [skill]);
+    }
+  }
+
   console.log("Migration complete!");
 }
 
