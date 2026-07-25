@@ -1,5 +1,5 @@
 const { conn_sql } = require("../../config/connection");
-const { VerifyEmail } = require("../../mailer/mailer-controller");
+const { VerifyEmail, SendForgotPasswordEmail } = require("../../mailer/mailer-controller");
 const bcrypt = require("bcryptjs");
 
 // get All job posts
@@ -319,7 +319,7 @@ const SendCode = (req, res) => {
         if (err) {
           return res.status(500).json({ message: "Database token storage error", err });
         } else {
-          VerifyEmail(email, Token);
+          SendForgotPasswordEmail(email, Token);
           return res.json({ msg: "Verification token sent successfully!", result });
         }
       });
@@ -346,7 +346,7 @@ const SendCodeForAdmin = (req, res) => {
         if (err) {
           return res.status(500).json({ message: "Database token storage error", err });
         } else {
-          VerifyEmail(email, Token);
+          SendForgotPasswordEmail(email, Token);
           return res.json({ msg: "Verification token sent successfully!", result });
         }
       });

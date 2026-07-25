@@ -80,7 +80,7 @@ const EmployeeList = () => {
   }, [filter, datauser, sort]);
 
   const ActiveAccount = async (id) => {
-    await axios
+    await API
       .put(`/active-employee/${id}`, null, {
         headers: {
           "x-access-token": token,
@@ -94,7 +94,7 @@ const EmployeeList = () => {
   };
 
   const FreezeAccount = async (id) => {
-    await axios
+    await API
       .put(`/freezeusers/${id}`, null, {
         headers: {
           "x-access-token": token,

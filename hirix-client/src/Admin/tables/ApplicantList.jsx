@@ -85,7 +85,7 @@ const ApplicantList = () => {
   const ActiveAccount = async (id) => {
     const token = sessionStorage.getItem("token");
 
-    await axios
+    await API
       .put(`/active-employee/${id}`, null, {
         headers: {
           "x-access-token": token,
@@ -101,7 +101,7 @@ const ApplicantList = () => {
   const FreezeAccount = async (id) => {
     const token = sessionStorage.getItem("token");
 
-    await axios
+    await API
       .put(`/freezeusers/${id}`, null, {
         headers: {
           "x-access-token": token,

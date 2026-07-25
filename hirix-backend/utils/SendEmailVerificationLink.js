@@ -6,8 +6,8 @@ const SendVerificationLink = (req, res) => {
   const { email } = req.body;
   const token = uuidv4();
 
-  const sql = "INSERT INTO `verifyemail`(`email`, `token`) VALUES (?, ?)";
-  conn_sql.query(sql, [email, token], (err, data) => {
+  const sql = "INSERT INTO `verifyemail`(`email`, `token`, `isVerified`) VALUES (?, ?, 0) ON DUPLICATE KEY UPDATE `token` = ?, `isVerified` = 0";
+  conn_sql.query(sql, [email, token, token], (err, data) => {
     if (err) return res.json(err);
     VerifyEmail(email, token);
     return res.json({ msg: "Email verification link send to your email" });

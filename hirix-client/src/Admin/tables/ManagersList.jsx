@@ -52,7 +52,7 @@ const ManagersList = () => {
     GetManagerData(currentPage);
   }, [currentPage]);
   const ActiveAccount = async (id) => {
-    await axios
+    await API
       .put(`/activeManager/${id}`, null, {
         headers: {
           "x-access-token": token,
@@ -66,7 +66,7 @@ const ManagersList = () => {
   };
 
   const InActiveAccount = async (id) => {
-    await axios
+    await API
       .put(`/freezeManager/${id}`, null, {
         headers: {
           "x-access-token": token,

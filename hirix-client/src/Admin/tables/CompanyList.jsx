@@ -64,7 +64,7 @@ const CompanyList = () => {
   //   GetUsers();
   // }, []);
   const ApprovedCompany = async (id) => {
-    await axios
+    await API
       .put(`/approvedCompany/${id}`, null, {
         headers: {
           "x-access-token": token,
@@ -77,7 +77,7 @@ const CompanyList = () => {
       .catch((err) => {});
   };
   const RejectCompany = async (id) => {
-    await axios
+    await API
       .put(`/rejectCompany/${id}`, null, {
         headers: {
           "x-access-token": token,

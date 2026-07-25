@@ -4,12 +4,14 @@ require("dotenv").config();
 const SendAccountCreatedEmail = (email) => {
   const transporter = nodemailer.createTransport({
     host: process.env.MAILHOST,
-    port: process.env.MAILPORT,
+    port: parseInt(process.env.MAILPORT),
     secure: true,
-    service: "SMTP",
     auth: {
       user: process.env.MAILERUSER,
       pass: process.env.MAILERPASS,
+    },
+    tls: {
+      rejectUnauthorized: false,
     },
   });
 
