@@ -17,7 +17,7 @@ const VerifyEmail = (email, token) => {
 
   // Define the email options
   const mailOptions = {
-    from: "Hirix <Hirix Pakistan>",
+    from: `"Hirix" <${process.env.MAILERUSER}>`,
     to: email,
     subject: "Verification",
     html: `
