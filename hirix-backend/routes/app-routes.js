@@ -264,7 +264,7 @@ router.get("/DashEmpData/:id", verifyToken, Dashboard);
 
 router.get("/dashDataEmployer/:id", verifyToken, dashData);
 
-router.post("/employee-signup", verifyToken, employeesignup);
+router.post("/employee-signup", employeesignup);
 
 router.get("/getEmployer/:id", verifyToken, GetEmployee);
 
