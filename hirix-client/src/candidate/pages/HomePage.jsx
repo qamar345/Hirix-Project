@@ -13,7 +13,7 @@ import {
 } from "../index.js";
 import Select from "react-select";
 import { coinTracker } from "../assets/icons/index.js";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 import {
   useLocation,
   useNavigate,
@@ -38,7 +38,7 @@ const HomePage = () => {
   useEffect(() => {
     const getJobCount = async () => {
       try {
-        const res = await axios.get("http://localhost:9000/getTotal_jobs");
+        const res = await API.get("/getTotal_jobs");
         setTotalJobs(res.data.TotalJobs);
       } catch (error) {}
     };
@@ -57,7 +57,7 @@ const HomePage = () => {
         return;
       }
       try {
-        const res = await axios.get("http://localhost:9000/jobs", {
+        const res = await API.get("/jobs", {
           params: { search, city, category },
         });
         setJobs(res.data);

@@ -9,7 +9,7 @@ import "react-quill/dist/quill.snow.css";
 import { EmpFooter } from "../index.js";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 
 const EmpJobEdit = () => {
   const token = sessionStorage.getItem("token");
@@ -50,8 +50,8 @@ const EmpJobEdit = () => {
   useEffect(() => {
     const fetchCompany = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:9000/GetCompanies/${id}`,
+        const res = await API.get(
+          `/GetCompanies/${id}`,
           {
             headers: {
               "x-access-token": token,
@@ -72,7 +72,7 @@ const EmpJobEdit = () => {
   useEffect(async () => {
     if (editId && editId !== "new") {
       axios
-        .get(`http://localhost:9000/getjobPost/${editId}`, {
+        .get(`/getjobPost/${editId}`, {
           headers: {
             "x-access-token": token,
           },
@@ -112,8 +112,8 @@ const EmpJobEdit = () => {
     };
 
     try {
-      const res = await axios.put(
-        `http://localhost:9000/edit-posts/${editId}`,
+      const res = await API.put(
+        `/edit-posts/${editId}`,
         payload,
         {
           headers: {

@@ -12,7 +12,7 @@ import {
 } from "recharts";
 
 import { format } from "date-fns";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 
 function VisitChart({ days }) {
   const token = sessionStorage.getItem("token");
@@ -22,8 +22,8 @@ function VisitChart({ days }) {
   useEffect(() => {
     const fetchDataGraph = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:9000/UserGraph/${id}/${days}`,
+        const res = await API.get(
+          `/UserGraph/${id}/${days}`,
           {
             headers: {
               "x-access-token": token,

@@ -3,7 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { lock, urgent } from "../assets/icons/index.js";
 import { FaEllipsisH } from "react-icons/fa";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 import { Pagination } from "../components/Pagination";
 import { Dropdown } from "react-bootstrap";
 
@@ -42,7 +42,7 @@ const JobList = () => {
   // ✅ Fetch all job posts
   const GetJobPosts = async (page = 1, search = "") => {
     try {
-      const res = await axios.get("http://localhost:9000/get-postsBYAdmin", {
+      const res = await API.get("/get-postsBYAdmin", {
         params: { page, search },
         headers: { "x-access-token": token },
       });
@@ -64,8 +64,8 @@ const JobList = () => {
   const GetAppliedJobs = async () => {
     if (clientId) {
       try {
-        const res = await axios.get(
-          `http://localhost:9000/getPostSpecific/${clientId}`,
+        const res = await API.get(
+          `/getPostSpecific/${clientId}`,
           { headers: { "x-access-token": token } }
         );
 
@@ -116,7 +116,7 @@ const JobList = () => {
   // ✅ Delete handler
   const Delete = async (id) => {
     try {
-      const res = await axios.delete(`http://localhost:9000/deleteJob/${id}`, {
+      const res = await API.delete(`/deleteJob/${id}`, {
         headers: { "x-access-token": token },
       });
       alert(res.data.msg);

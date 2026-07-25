@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import API, { BASE_URL } from "../../api";
 import { candidateImg } from "../assets/images/index.js";
 import { FaBars } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -49,7 +50,7 @@ const CanHeader = () => {
             {check && (
               <div className="profileImg">
                 <img
-                  src={`http://localhost:9000${imageUser}`}
+                  src={`${BASE_URL}${imageUser}`}
                   title="Candidate"
                   alt="Candidate"
                   className=""

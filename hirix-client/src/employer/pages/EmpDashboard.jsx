@@ -4,7 +4,7 @@ import { CiCamera } from "react-icons/ci";
 import { NavLink, useNavigate } from "react-router-dom";
 import Select from "react-select";
 import { EmpFooter, VisitChart } from "../index.js";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 const EmpDashboard = () => {
   const [selectedDays, setSelectedDays] = useState(7);
   const token = sessionStorage.getItem("token");
@@ -31,7 +31,7 @@ const EmpDashboard = () => {
         return;
       }
       try {
-        const res = await axios.get(`http://localhost:9000/DashEmpData/${id}`, {
+        const res = await API.get(`/DashEmpData/${id}`, {
           headers: {
             "x-access-token": token,
           },
@@ -46,8 +46,8 @@ const EmpDashboard = () => {
   useEffect(() => {
     const Data = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:9000/dashDataEmployer/${id}`,
+        const res = await API.get(
+          `/dashDataEmployer/${id}`,
           {
             headers: {
               "x-access-token": token,

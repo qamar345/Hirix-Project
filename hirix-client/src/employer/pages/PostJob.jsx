@@ -8,7 +8,7 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { EmpFooter } from "../index.js";
 import PhoneInput from "react-phone-number-input";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 import { use } from "react";
 
 const PostJob = () => {
@@ -57,7 +57,7 @@ const PostJob = () => {
   // useEffect(() => {
   //   if (editId && editId !== "new") {
   //     axios
-  //       .get(`http://localhost:9000/getjobPost/${editId}`)
+  //       .get(`/getjobPost/${editId}`)
   //       .then((res) => {
   //         console.log("Full API Response:", res.data); // ✅ Check the structure
 
@@ -93,8 +93,8 @@ const PostJob = () => {
   useEffect(() => {
     const fetchCompany = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:9000/GetCompanies/${id}`,
+        const res = await API.get(
+          `/GetCompanies/${id}`,
           {
             headers: {
               "x-access-token": token,
@@ -145,7 +145,7 @@ const PostJob = () => {
 
     try {
       await axios
-        .post(`http://localhost:9000/postbyEmployee/${id}`, payload, {
+        .post(`/postbyEmployee/${id}`, payload, {
           headers: {
             "x-access-token": token,
           },
@@ -158,7 +158,7 @@ const PostJob = () => {
 
     // try {
     //         await axios
-    //     .post(`http://localhost:9000/postbyEmployee/${id}`, payload)
+    //     .post(`/postbyEmployee/${id}`, payload)
     //     .then((res) => {
     //       alert(res.data.msg);
     //       navigate(`/employer/jobs`);
@@ -200,7 +200,7 @@ const PostJob = () => {
 
     try {
       await axios
-        .post(`http://localhost:9000/saveAsDraft/${id}`, payload, {
+        .post(`/saveAsDraft/${id}`, payload, {
           headers: {
             "x-access-token": token,
           },
@@ -213,7 +213,7 @@ const PostJob = () => {
 
     // try {
     //   await axios
-    //     .post(`http://localhost:9000/saveAsDraft/${id}`, payload)
+    //     .post(`/saveAsDraft/${id}`, payload)
     //     .then((res) => {
     //       alert(res.data.msg);
     //       navigate(`/employer/jobs`);
@@ -354,7 +354,7 @@ const PostJob = () => {
   useEffect(() => {
     const GetJobCategory = async () => {
       try {
-        const res = await axios.get("http://localhost:9000/get-job-cat", {
+        const res = await API.get("/get-job-cat", {
           headers: {
             "x-access-token": token,
           },
@@ -367,7 +367,7 @@ const PostJob = () => {
 
     const GetSkills = async () => {
       try {
-        const res = await axios.get("http://localhost:9000/get-skills", {
+        const res = await API.get("/get-skills", {
           headers: {
             "x-access-token": token,
           },
@@ -397,7 +397,7 @@ const PostJob = () => {
   useEffect(() => {
     if (selectedCategory?.value) {
       axios
-        .get(`http://localhost:9000/subcategories/${selectedCategory.value}`, {
+        .get(`/subcategories/${selectedCategory.value}`, {
           headers: {
             "x-access-token": token,
           },

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import API, { BASE_URL } from "../../api";
 import { IoChevronDown } from "react-icons/io5";
 import { FaArrowsSpin } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
@@ -57,7 +58,7 @@ const ListFilter = () => {
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
-        const res = await fetch("http://localhost:9000/filtersCountData", {
+        const res = await fetch("/filtersCountData", {
           headers: {
             "x-access-token": token,
           },

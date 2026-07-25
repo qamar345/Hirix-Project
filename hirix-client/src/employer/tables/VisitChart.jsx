@@ -1,4 +1,4 @@
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 import React, { useEffect, useState } from "react";
 import {
   LineChart,
@@ -30,8 +30,8 @@ function VisitChart({ days }) {
   useEffect(() => {
     const fetchDataGraph = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:9000/EmployerGraph/${id}/${days}`,
+        const res = await API.get(
+          `/EmployerGraph/${id}/${days}`,
           {
             headers: {
               "x-access-token": token,

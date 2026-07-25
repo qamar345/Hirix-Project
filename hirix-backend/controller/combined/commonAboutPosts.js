@@ -304,24 +304,23 @@ const SendCode = (req, res) => {
   const { email } = req.body;
   console.log(email);
   if (!email) {
-    return res.json({ msg: "Enter your email address" });
+    return res.status(400).json({ msg: "Enter your email address" });
   }
   const sql_verify = "SELECT email FROM `user_accounts` WHERE email = ?";
   conn_sql.query(sql_verify, [email], (err, result) => {
+    if (err) return res.status(500).json({ message: "Database error", err });
     if (result.length === 0) {
-      return res.json({ message: "Invalid Email" });
+      return res.status(404).json({ message: "Invalid Email" });
     } else {
       const Token = Math.floor(1000 + Math.random() * 9000);
       const sql_store_token =
-        "INSERT INTO `verifyemail` (`email`,`token`) VALUES (?, ?)";
-      conn_sql.query(sql_store_token, [email, Token], (err, result) => {
+        "INSERT INTO `verifyemail` (`email`,`token`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `token` = ?";
+      conn_sql.query(sql_store_token, [email, Token, Token], (err, result) => {
         if (err) {
-          if (err.code === "ER_DUP_ENTRY") {
-            return res.json({ msg: "Verification Code Already Send!!!" });
-          }
+          return res.status(500).json({ message: "Database token storage error", err });
         } else {
           VerifyEmail(email, Token);
-          return res.json(result);
+          return res.json({ msg: "Verification token sent successfully!", result });
         }
       });
     }
@@ -332,24 +331,23 @@ const SendCode = (req, res) => {
 const SendCodeForAdmin = (req, res) => {
   const { email } = req.body;
   if (!email) {
-    return res.json({ msg: "Enter your email address" });
+    return res.status(400).json({ msg: "Enter your email address" });
   }
-  const sql_verify = "SELECT email FROM `admin-account` WHERE email = ?";
+  const sql_verify = "SELECT email FROM `admin` WHERE email = ?";
   conn_sql.query(sql_verify, [email], (err, result) => {
+    if (err) return res.status(500).json({ message: "Database error", err });
     if (result.length === 0) {
-      return res.json({ message: "Invalid Email" });
+      return res.status(404).json({ message: "Invalid Email" });
     } else {
       const Token = Math.floor(1000 + Math.random() * 9000);
       const sql_store_token =
-        "INSERT INTO `verifyemail` (`email`,`token`) VALUES (?, ?)";
-      conn_sql.query(sql_store_token, [email, Token], (err, result) => {
+        "INSERT INTO `verifyemail` (`email`,`token`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `token` = ?";
+      conn_sql.query(sql_store_token, [email, Token, Token], (err, result) => {
         if (err) {
-          if (err.code === "ER_DUP_ENTRY") {
-            return res.json({ msg: "Verification Code Already Send!!!" });
-          }
+          return res.status(500).json({ message: "Database token storage error", err });
         } else {
           VerifyEmail(email, Token);
-          return res.json(result);
+          return res.json({ msg: "Verification token sent successfully!", result });
         }
       });
     }
@@ -358,37 +356,44 @@ const SendCodeForAdmin = (req, res) => {
 //Forget Password (For Admin)
 const forgetPasswordForAdmin = (req, res) => {
   const { email, token, password } = req.body;
-  const sql_user = "SELECT * FROM `admin-account` WHERE email = ?";
+  const sql_user = "SELECT * FROM `admin` WHERE email = ?";
   conn_sql.query(sql_user, [email], (err, result) => {
     if (err) {
-      return res.status(500).json({ message: "Internal server error" });
+      return res.status(500).json({ message: "Internal server error", err });
     }
 
     if (result.length === 0) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "Admin not found" });
     }
 
     const sql_token =
       "SELECT token FROM `verifyemail` WHERE email = ? AND token = ?";
-    conn_sql.query(sql_token, [email, token], (err, result) => {
+    conn_sql.query(sql_token, [email, token], (err, tokenResult) => {
       if (err) {
-        return res.status(500).json({ message: "Internal server error" });
+        return res.status(500).json({ message: "Internal server error", err });
       }
 
-      if (result.length === 0) {
+      if (tokenResult.length === 0) {
         return res.status(400).json({ message: "Invalid token" });
       }
 
-      const sql_update_password =
-        "UPDATE `admin-account` SET password = ? WHERE email = ?";
-      conn_sql.query(sql_update_password, [password, email], (err, result) => {
-        if (err) {
-          return res.status(500).json({ message: "Error updating password" });
+      // Hash the new password before updating
+      bcrypt.hash(password, 10, (hashErr, hashedPassword) => {
+        if (hashErr) {
+          return res.status(500).json({ message: "Error hashing password", hashErr });
         }
 
-        return res
-          .status(200)
-          .json({ message: "Password updated successfully!" });
+        const sql_update_password =
+          "UPDATE `admin` SET password = ? WHERE email = ?";
+        conn_sql.query(sql_update_password, [hashedPassword, email], (updateErr, updateResult) => {
+          if (updateErr) {
+            return res.status(500).json({ message: "Error updating password", updateErr });
+          }
+
+          return res
+            .status(200)
+            .json({ message: "Password updated successfully!" });
+        });
       });
     });
   });
@@ -461,6 +466,49 @@ const GetTotalJobs = (req, res) => {
   });
 };
 
+// Get latest jobs for Next.js landing page
+const GetLatestJobs = (req, res) => {
+  const limit = parseInt(req.query.limit) || 10;
+  
+  const sql = `
+    SELECT 
+      jobs.id, 
+      jobs.title, 
+      jobs.job_type, 
+      jobs.workplace_type, 
+      jobs.city, 
+      jobs.province, 
+      jobs.minimum_currency, 
+      jobs.maximum_currency, 
+      jobs.currency, 
+      jobs.Rate, 
+      jobs.Experience, 
+      jobs.expiry_date,
+      jobs.required_skills,
+      companies.name AS company_name, 
+      companies.images AS company_logo
+    FROM jobs 
+    LEFT JOIN companies ON jobs.company_name = companies.id
+    WHERE jobs.status = 'Open' AND (jobs.expiry_date >= CURDATE() OR jobs.expiry_date IS NULL)
+    ORDER BY jobs.id DESC 
+    LIMIT ?
+  `;
+
+  conn_sql.query(sql, [limit], (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: "Failed to fetch latest jobs", details: err });
+    }
+    
+    const portalBaseUrl = process.env.PORTAL_URL || "https://jobs.hirix.pk";
+    const jobsWithLinks = results.map(job => ({
+      ...job,
+      portal_apply_url: `${portalBaseUrl}/JobPage/${job.id}`
+    }));
+
+    return res.json(jobsWithLinks);
+  });
+};
+
 module.exports = {
   GetpostsByAdmin,
   Getposts,
@@ -473,4 +521,5 @@ module.exports = {
   forgetPasswordForAdmin,
   GetSpecificPost,
   GetTotalJobs,
+  GetLatestJobs,
 };

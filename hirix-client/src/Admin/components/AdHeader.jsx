@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import API, { BASE_URL } from "../../api";
 import { FaBars } from "react-icons/fa";
 import { AdSideMenu } from "../index.js";
 import { employerImg } from "../assets/images/index.js";
@@ -52,7 +53,7 @@ const AdHeader = () => {
           {check && (
             <div className="profileImg">
               <img
-                src={`http://localhost:9000${imageAdmin}`}
+                src={`${BASE_URL}${imageAdmin}`}
                 title="Admin"
                 alt="Admin"
                 className=""

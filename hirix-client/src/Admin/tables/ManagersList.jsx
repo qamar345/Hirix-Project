@@ -3,7 +3,7 @@ import Table from "react-bootstrap/Table";
 import { Link } from "react-router-dom";
 import { CiCamera } from "react-icons/ci";
 import { FaExternalLinkAlt, FaDownload, FaEllipsisH } from "react-icons/fa";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 import { Pagination } from "../components/Pagination";
 import { Dropdown } from "react-bootstrap";
 
@@ -29,7 +29,7 @@ const ManagersList = () => {
   const GetManagerData = async (page) => {
     // setLoading(true);
     try {
-      const res = await axios.get("http://localhost:9000/getManagers", {
+      const res = await API.get("/getManagers", {
         params: {
           page: page,
         },
@@ -53,7 +53,7 @@ const ManagersList = () => {
   }, [currentPage]);
   const ActiveAccount = async (id) => {
     await axios
-      .put(`http://localhost:9000/activeManager/${id}`, null, {
+      .put(`/activeManager/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -67,7 +67,7 @@ const ManagersList = () => {
 
   const InActiveAccount = async (id) => {
     await axios
-      .put(`http://localhost:9000/freezeManager/${id}`, null, {
+      .put(`/freezeManager/${id}`, null, {
         headers: {
           "x-access-token": token,
         },

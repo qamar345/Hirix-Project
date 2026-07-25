@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 import { format } from "date-fns";
 const ApplicantDetail = () => {
   const { id } = useParams();
@@ -20,8 +20,8 @@ const ApplicantDetail = () => {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:9000/GetAllProfileData/${id}`,
+        const res = await API.get(
+          `/GetAllProfileData/${id}`,
           {
             headers: {
               "x-access-token": token,

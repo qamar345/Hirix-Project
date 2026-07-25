@@ -3,7 +3,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { lock, urgent } from "../assets/icons/index.js";
 import { FaEllipsisH } from "react-icons/fa";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 import { Pagination } from "../components/Pagination";
 import Dropdown from "react-bootstrap/Dropdown";
 
@@ -37,7 +37,7 @@ function JobList() {
   const sort = queryParams.get("sort") || "newest";
   const fetchJobs = async (page, search, statusFilter, sortOrder) => {
     try {
-      const res = await axios.get(`http://localhost:9000/get-his-posts/${id}`, {
+      const res = await API.get(`/get-his-posts/${id}`, {
         params: { page, search, status: statusFilter, sort: sortOrder },
         headers: {
           "x-access-token": token,
@@ -73,7 +73,7 @@ function JobList() {
 
   const StatusClosed = async (id) => {
     await axios
-      .put(`http://localhost:9000/del-job-posts/${id}`, {
+      .put(`/del-job-posts/${id}`, {
         headers: {
           "x-access-token": token,
         },
@@ -87,7 +87,7 @@ function JobList() {
 
   const DeleteJob = async (id) => {
     await axios
-      .delete(`http://localhost:9000/deleteJob/${id}`, null, {
+      .delete(`/deleteJob/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -106,7 +106,7 @@ function JobList() {
 
   const StatusOpen = async (id) => {
     await axios
-      .put(`http://localhost:9000/update-status-opening/${id}`, null, {
+      .put(`/update-status-opening/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -120,7 +120,7 @@ function JobList() {
 
   const StatusPause = async (id) => {
     await axios
-      .put(`http://localhost:9000/status_Pause/${id}`, null, {
+      .put(`/status_Pause/${id}`, null, {
         headers: {
           "x-access-token": token,
         },

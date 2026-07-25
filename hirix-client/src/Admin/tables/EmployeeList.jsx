@@ -3,7 +3,7 @@ import Table from "react-bootstrap/Table";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { CiCamera } from "react-icons/ci";
 import { FaExternalLinkAlt, FaDownload, FaEllipsisH } from "react-icons/fa";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 import { Pagination } from "../components/Pagination";
 import { Dropdown } from "react-bootstrap";
 // Custom Toggle Component
@@ -36,7 +36,7 @@ const EmployeeList = () => {
   const GetEmployee = async (page, search = "") => {
     // setLoading(true);
     try {
-      const res = await axios.get("http://localhost:9000/get-data", {
+      const res = await API.get("/get-data", {
         params: {
           page: page,
           search: search,
@@ -81,7 +81,7 @@ const EmployeeList = () => {
 
   const ActiveAccount = async (id) => {
     await axios
-      .put(`http://localhost:9000/active-employee/${id}`, null, {
+      .put(`/active-employee/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -95,7 +95,7 @@ const EmployeeList = () => {
 
   const FreezeAccount = async (id) => {
     await axios
-      .put(`http://localhost:9000/freezeusers/${id}`, null, {
+      .put(`/freezeusers/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -186,7 +186,7 @@ const EmployeeList = () => {
                       <div className="image-applicants">
                         {applicant.image ? (
                           <img
-                            src={`http://localhost:9000${applicant.image}`}
+                            src={`${BASE_URL}${applicant.image}`}
                           />
                         ) : (
                           <CiCamera />

@@ -8,36 +8,36 @@ const JS_Dashboard = (req, res) => {
 
   const sql_get = `SELECT 'Applied jobs' AS label, COUNT(*) AS num
 FROM applicants
-WHERE job_seeker_id = '19' AND applicants.status != 'Wishlist'
+WHERE job_seeker_id = ? AND applicants.status != 'Wishlist'
 
 UNION
 
 SELECT 'Expired jobs' AS label, COUNT(*) AS num
 FROM applicants
 JOIN jobs ON applicants.job_id = jobs.id
-WHERE applicants.job_seeker_id = '19' AND jobs.expiry_date < NOW()
+WHERE applicants.job_seeker_id = ? AND jobs.expiry_date < NOW()
 
 UNION
 
 SELECT 'reviews' AS label, COUNT(*) AS num
 FROM applicants
 JOIN jobs ON applicants.job_id = jobs.id
-WHERE applicants.job_seeker_id = '19' AND applicants.status != 'Wishlist'
+WHERE applicants.job_seeker_id = ? AND applicants.status != 'Wishlist'
 
 UNION
 
 SELECT 'Selected/Hired' AS label, COUNT(*) AS num
 FROM applicants
-WHERE job_seeker_id = '19' AND applicants.status = 'Selected';
+WHERE job_seeker_id = ? AND applicants.status = 'Selected';
 `;
 
   conn_sql.query(sql_get, [id, id, id, id], (err, result) => {
     if (err) {
       console.log("Database Error:", err);
-      return res.json({
+      return res.status(500).json({
         success: false,
         message: "Database error",
-        error: err,
+        error: err.message,
       });
     } else {
       return res.json({ success: true, data: result });
@@ -49,8 +49,10 @@ WHERE job_seeker_id = '19' AND applicants.status = 'Selected';
 const Skills_select = (req, res) => {
   const query_select = `SELECT id, name FROM skillset`;
   conn_sql.query(query_select, (err, result) => {
-    if (err) throw err;
-    else {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Database error" });
+    } else {
       return res.json(result);
     }
   });

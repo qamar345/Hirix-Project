@@ -2,42 +2,51 @@ const { conn_sql } = require("../../config/connection");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-//job seeker login
+//job seeker login (works for both jobseeker and employee via single form)
 const userlogin = (req, res) => {
-  const { email, password, role } = req.body;
-  const sqluserlogin =
-    "SELECT * FROM `user_accounts` WHERE `email`= ? AND `password`= ? AND `role`=?";
-  conn_sql.query(sqluserlogin, [email, role], (err, result) => {
-    if (err) throw err;
-    if (result.length > 0) {
-      let user = result[0];
-      bcrypt.compare(password, user.password, function (err, result) {
-        if (result) {
-          const secretKey = process.env.SECRETKEY;
-          const token = jwt.sign(
-            { id: user.id, email: user.email, role: user.role },
-            secretKey,
-            { expiresIn: "15m" }
-          );
+  const { email, password } = req.body;
 
-          // Set HTTP-only cookie
-          res.cookie("x-access-token", token, {
-            httpOnly: true,
-            secure: false, // true in production
-            maxAge: 15 * 60 * 1000, // 15 minutes
-          });
+  if (!email || !password) {
+    return res.status(400).json({ msg: "Email and password are required." });
+  }
 
-          return res.json({
-            msg: "Login Successfully !...",
-            result,
-          });
-        } else {
-          return res.json({ msg: "Invalid User" });
-        }
-      });
-    } else {
+  const sqluserlogin = "SELECT * FROM `user_accounts` WHERE `email` = ?";
+  conn_sql.query(sqluserlogin, [email], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    if (result.length === 0) {
       return res.json({ msg: "User not exist!!!" });
     }
+
+    const user = result[0];
+
+    // Check if account is frozen
+    if (user.account_status === 0) {
+      return res.json({ msg: "Your account is frozen. Please contact support." });
+    }
+
+    bcrypt.compare(password, user.password, function (compareErr, isMatch) {
+      if (compareErr) {
+        return res.status(500).json({ msg: "Error comparing passwords." });
+      }
+      if (isMatch) {
+        const secretKey = process.env.SECRETKEY;
+        const token = jwt.sign(
+          { id: user.id, email: user.email, role: user.role },
+          secretKey,
+          { expiresIn: "20m" }
+        );
+
+        return res.json({
+          isloggedin: true,
+          msg: "Login Successfully!",
+          data: user,
+          token,
+        });
+      } else {
+        return res.json({ isloggedin: false, msg: "Invalid email or password." });
+      }
+    });
   });
 };
 

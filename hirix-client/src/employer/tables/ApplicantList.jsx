@@ -5,7 +5,7 @@ import { CiCamera } from "react-icons/ci";
 import { FaExternalLinkAlt, FaDownload, FaEllipsisH } from "react-icons/fa";
 import { RiVideoAddFill } from "react-icons/ri";
 import { Pagination } from "../components/Pagination";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 import { Dropdown } from "react-bootstrap";
 const CustomToggle = React.forwardRef(({ onClick }, ref) => (
   <span
@@ -37,8 +37,8 @@ const ApplicantList = () => {
   const GetApplicants = async (page, search) => {
     // setLoading(true);
     try {
-      const res = await axios.get(
-        `http://localhost:9000/get-applicants/${id}`,
+      const res = await API.get(
+        `/get-applicants/${id}`,
         {
           params: {
             page: page,
@@ -90,7 +90,7 @@ const ApplicantList = () => {
 
   const Review = async (id) => {
     await axios
-      .put(`http://localhost:9000/status-review/${id}`, null, {
+      .put(`/status-review/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -103,7 +103,7 @@ const ApplicantList = () => {
   };
   const Selected = async (id) => {
     await axios
-      .put(`http://localhost:9000/statusselected/${id}`, null, {
+      .put(`/statusselected/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -117,7 +117,7 @@ const ApplicantList = () => {
 
   const Rejected = async (id) => {
     await axios
-      .put(`http://localhost:9000/statusrejected/${id}`, null, {
+      .put(`/statusrejected/${id}`, null, {
         headers: {
           "x-access-token": token,
         },

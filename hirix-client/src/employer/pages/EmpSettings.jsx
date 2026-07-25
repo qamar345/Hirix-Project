@@ -6,7 +6,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
 import { EmpFooter } from "../index.js";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 
 const EmpSettings = () => {
   const token = sessionStorage.getItem("token");
@@ -74,7 +74,7 @@ const EmpSettings = () => {
   useEffect(() => {
     const GetData = async () => {
       try {
-        const res = await axios.get(`http://localhost:9000/getEmployer/${id}`, {
+        const res = await API.get(`/getEmployer/${id}`, {
           headers: {
             "x-access-token": token,
           },
@@ -113,8 +113,8 @@ const EmpSettings = () => {
     }
 
     try {
-      const res = await axios.put(
-        `http://localhost:9000/employee-profile-update/${id}`,
+      const res = await API.put(
+        `/employee-profile-update/${id}`,
         formData,
         {
           headers: {
@@ -149,8 +149,8 @@ const EmpSettings = () => {
       return;
     }
     try {
-      const response = await axios.put(
-        `http://localhost:9000/Employer-password/${id}`,
+      const response = await API.put(
+        `/Employer-password/${id}`,
         {
           editPasswordData,
         },

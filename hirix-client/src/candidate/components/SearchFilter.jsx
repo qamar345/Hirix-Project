@@ -6,7 +6,7 @@ import { ImSpinner } from "react-icons/im";
 import { searchFilterImg } from "../assets/images/index.js";
 import { job } from "../assets/icons/index.js";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 
 const SearchFilter = () => {
   const [job, setjob] = useState("");
@@ -33,7 +33,7 @@ const SearchFilter = () => {
   useEffect(() => {
     const fetchSkills = async () => {
       try {
-        const res = await axios.get(`http://localhost:9000/getSkills`);
+        const res = await API.get(`/getSkills`);
         setSkillsList(res.data);
       } catch (err) {
         console.error("Error fetching skills:", err);

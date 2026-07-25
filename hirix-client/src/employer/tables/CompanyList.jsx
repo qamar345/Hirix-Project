@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Table from "react-bootstrap/Table";
 import Dropdown from "react-bootstrap/Dropdown";
 import { FaEllipsisH } from "react-icons/fa";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 import { Pagination } from "../components/Pagination";
 import { Link, useNavigate } from "react-router-dom";
 import { Nav } from "react-bootstrap";
@@ -62,8 +62,8 @@ const CompanyList = () => {
   const getcompanies = async (page) => {
     // setLoading(true);
     try {
-      const res = await axios.get(
-        `http://localhost:9000/select-company/${id}`,
+      const res = await API.get(
+        `/select-company/${id}`,
         {
           params: {
             page: page,
@@ -99,8 +99,8 @@ const CompanyList = () => {
     if (!confirmDelete) return;
 
     try {
-      const res = await axios.delete(
-        `http://localhost:9000/deletecompany/${did}`,
+      const res = await API.delete(
+        `/deletecompany/${did}`,
         null,
         {
           headers: {
@@ -168,7 +168,23 @@ const CompanyList = () => {
                           </div>
                           <div>
                             <Link to={`/CompanyDetails/${company.id}`}>
-                              <h6>{company.name}</h6>
+                              <h6 className="d-flex align-items-center gap-1">
+                                {company.name}
+                                {company.is_linkedin_verified === 1 && (
+                                  <span 
+                                    style={{ 
+                                      backgroundColor: "#0077b5", 
+                                      color: "white", 
+                                      fontSize: "10px", 
+                                      padding: "1px 5px", 
+                                      borderRadius: "3px",
+                                      fontWeight: "normal"
+                                    }}
+                                  >
+                                    LinkedIN Verified
+                                  </span>
+                                )}
+                              </h6>
                             </Link>
                             <small>{company.E_mail}</small>
                           </div>
@@ -222,6 +238,50 @@ const CompanyList = () => {
                                 Delete
                               </button>
                             </Dropdown.Item>
+                            {!company.is_linkedin_verified && (
+                              <Dropdown.Item>
+                                <button
+                                  className="btn btn-info text-white"
+                                  onClick={async () => {
+                                    try {
+                                      const res = await API.get(`/auth/linkedin?company_id=${company.id}`, {
+                                        headers: { "x-access-token": token }
+                                      });
+                                      if (res.data.url) {
+                                        const width = 600, height = 600;
+                                        const left = window.screen.width / 2 - width / 2;
+                                        const top = window.screen.height / 2 - height / 2;
+                                        const popup = window.open(
+                                          res.data.url,
+                                          "linkedin_verify",
+                                          `width=${width},height=${height},left=${left},top=${top}`
+                                        );
+
+                                        // Listen for success message from popup callback window
+                                        const messageListener = (event) => {
+                                          if (event.data.type === "LINKEDIN_VERIFICATION_SUCCESS") {
+                                            alert("Company successfully verified with LinkedIn!");
+                                            getcompanies(currentPage); // reload list
+                                            window.removeEventListener("message", messageListener);
+                                          }
+                                        };
+                                        window.addEventListener("message", messageListener);
+                                      }
+                                    } catch (err) {
+                                      alert("Failed to initiate verification.");
+                                    }
+                                  }}
+                                  style={{
+                                    display: "block",
+                                    width: "100%",
+                                    fontSize: "1.5rem",
+                                    backgroundColor: "#0077b5"
+                                  }}
+                                >
+                                  Verify LinkedIn
+                                </button>
+                              </Dropdown.Item>
+                            )}
                           </Dropdown.Menu>
                         </Dropdown>
                       </td>
@@ -231,7 +291,7 @@ const CompanyList = () => {
               })
             ) : (
               <tr>
-                <td colSpan="4" className="text-gray-500 text-center">
+                <td colSpan="5" className="text-gray-500 text-center">
                   No data yet.
                 </td>
               </tr>

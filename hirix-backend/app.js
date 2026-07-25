@@ -18,24 +18,34 @@ const port = process.env.PORT;
 const app = express();
 app.use(express.json());
 
-// Manual CORS middleware
+// Dynamic CORS middleware
 app.use((req, res, next) => {
-  // Allow requests from a specific origin
-  res.setHeader(
-    "Access-Control-Allow-Origin",
-    "https://jobs.hirix.pk"
-  ); // replace with your frontend
+  const allowedOrigins = [
+    "https://jobs.hirix.pk",
+    "http://localhost:5173",
+    "http://localhost:5174"
+  ];
+  const origin = req.headers.origin;
+  
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  } else {
+    // Fallback for development if origin is missing or mismatch
+    res.setHeader("Access-Control-Allow-Origin", "*");
+  }
 
   // Allowed methods
   res.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, PUT, DELETE, OPTIONS"
   );
-  // Allowed headers
+  // Allowed headers (must include x-access-token for auth token verification)
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, X-Requested-With"
+    "Content-Type, Authorization, X-Requested-With, x-access-token"
   );
+  
+  res.setHeader("Access-Control-Allow-Credentials", "true");
 
   // Handle preflight requests
   if (req.method === "OPTIONS") {
@@ -61,8 +71,12 @@ app.use((req, res, next) => {
 
 AdminSetup();
 
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./config/swaggerSpec");
+
 databaseconfig();
 app.use("/uploads", express.static("uploads"));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(router);
 
 app.listen(port, () => {

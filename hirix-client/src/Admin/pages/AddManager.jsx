@@ -5,7 +5,7 @@ import Select from "react-select";
 import "react-quill/dist/quill.snow.css";
 import PhoneInput from "react-phone-number-input";
 import { AdFooter } from "../index.js";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 
 const AddManager = () => {
   const check = sessionStorage.getItem("isLoggedIn");
@@ -75,7 +75,7 @@ const AddManager = () => {
 
     try {
       await axios
-        .post("http://localhost:9000/addManager", payload, {
+        .post("/addManager", payload, {
           headers: {
             "x-access-token": token,
           },

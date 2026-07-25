@@ -6,7 +6,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
 import { AdFooter } from "../index.js";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 
 const AdSettings = () => {
   const check = sessionStorage.getItem("isLoggedIn");
@@ -74,8 +74,8 @@ const AdSettings = () => {
   useEffect(() => {
     const GetUserData = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:9000/GetAdmin/${sessionStorage.getItem("id")}`,
+        const res = await API.get(
+          `/GetAdmin/${sessionStorage.getItem("id")}`,
           {
             headers: {
               "x-access-token": token,
@@ -116,8 +116,8 @@ const AdSettings = () => {
     }
 
     try {
-      const res = await axios.put(
-        `http://localhost:9000/admin-profile/${sessionStorage.getItem("id")}`,
+      const res = await API.put(
+        `/admin-profile/${sessionStorage.getItem("id")}`,
         formData,
         {
           headers: {
@@ -152,8 +152,8 @@ const AdSettings = () => {
       return;
     }
     try {
-      const response = await axios.put(
-        `http://localhost:9000/change-password/${sessionStorage.getItem("id")}`,
+      const response = await API.put(
+        `/change-password/${sessionStorage.getItem("id")}`,
         {
           editPasswordData,
         },

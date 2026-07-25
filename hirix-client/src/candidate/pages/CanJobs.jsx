@@ -10,7 +10,7 @@ import {
 } from "react-icons/fa";
 import { CanFooter } from "../index.js";
 import Select from "react-select";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 import { Dropdown } from "react-bootstrap";
 
 const CustomToggle = React.forwardRef(({ onClick }, ref) => (
@@ -50,7 +50,7 @@ const CanJobs = () => {
   };
   const fetchJobs = async (search, sortOrder, type) => {
     try {
-      const res = await axios.get(`http://localhost:9000/appliedTo/${id}`, {
+      const res = await API.get(`/appliedTo/${id}`, {
         params: { search, sort: sortOrder, type },
         headers: {
           "x-access-token": token,
@@ -114,7 +114,7 @@ const CanJobs = () => {
 
   const StatusDelete = async (application_id) => {
     await axios
-      .put(`http://localhost:9000/Deleted/${application_id}`, null, {
+      .put(`/Deleted/${application_id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -128,7 +128,7 @@ const CanJobs = () => {
 
   const StatusApply = async (application_id) => {
     await axios
-      .put(`http://localhost:9000/apply/${application_id}`, null, {
+      .put(`/apply/${application_id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -147,7 +147,7 @@ const CanJobs = () => {
     if (confirm) {
       await axios
         .delete(
-          `http://localhost:9000/cancleApplication/${application_id}`,
+          `/cancleApplication/${application_id}`,
           null,
           {
             headers: {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 
 const MyJobDetail = () => {
   const token = sessionStorage.getItem("token");
@@ -10,8 +10,8 @@ const MyJobDetail = () => {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:9000/get-post-by-id/${id}`,
+        const res = await API.get(
+          `/get-post-by-id/${id}`,
           {
             headers: {
               "x-access-token": token,

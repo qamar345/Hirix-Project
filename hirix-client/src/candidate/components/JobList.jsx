@@ -7,7 +7,7 @@ import {
   nightFall,
 } from "../assets/icons/index.js";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 
 const JobList = ({ onSelectJob }) => {
   const token = sessionStorage.getItem("token");
@@ -49,7 +49,7 @@ const JobList = ({ onSelectJob }) => {
       if (experiences) params.experiences = experiences;
       if (careerLevels) params.careerLevels = careerLevels;
 
-      const res = await axios.get("http://localhost:9000/get-posts", {
+      const res = await API.get("/get-posts", {
         params,
         headers: {
           "x-access-token": token,

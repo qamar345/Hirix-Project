@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import API, { BASE_URL } from "../../api";
 import { FaBars } from "react-icons/fa";
 import { EmpSideMenu } from "../index.js";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -51,7 +52,7 @@ useEffect(() => {
             {check && (
               <div key={refreshKey} className="profileImg">
                 <img
-                  src={`http://localhost:9000${Img}`}
+                  src={`${BASE_URL}${Img}`}
                   title="Employer"
                   alt="Employer"
                   className=""

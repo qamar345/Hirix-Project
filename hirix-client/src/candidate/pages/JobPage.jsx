@@ -1,7 +1,7 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { TopNav, NavbarMenu, Footer } from "../index.js";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 import JobPost from "../components/JobPost";
 
 const JobPage = () => {
@@ -13,8 +13,8 @@ const JobPage = () => {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:9000/get-post-by-id/${id}`
+        const res = await API.get(
+          `/get-post-by-id/${id}`
         );
         setJob(res.data);
       } catch (err) {}

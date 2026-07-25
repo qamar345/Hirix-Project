@@ -10,7 +10,7 @@ import { FaExternalLinkAlt } from "react-icons/fa";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import Select from "react-select";
 import { CanFooter, VisitChart } from "../index.js";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 
 const CanDashboard = () => {
   const token = sessionStorage.getItem("token");
@@ -33,8 +33,8 @@ const CanDashboard = () => {
         return;
       }
       try {
-        const res = await axios.get(
-          `http://localhost:9000/DasboardJobseeker/${id}`,
+        const res = await API.get(
+          `/DasboardJobseeker/${id}`,
 
           {
             headers: {
@@ -53,8 +53,8 @@ const CanDashboard = () => {
   // useEffect(() => {
   //   const Data = async () => {
   //     try {
-  //       const res = await axios.get(
-  //         `http://localhost:9000//${id}`
+  //       const res = await API.get(
+  //         `//${id}`
   //       );
   //           //       setColData(res.data.data || []);
   //     } catch (err) {

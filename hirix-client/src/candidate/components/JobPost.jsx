@@ -6,7 +6,7 @@ import { FaRegHeart, FaHeart } from "react-icons/fa";
 import { GoShareAndroid } from "react-icons/go";
 import { MdOutlineLocationOn } from "react-icons/md";
 import { differenceInDays } from "date-fns";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 
 const JobPost = ({ job, fromShare }) => {
   const token = sessionStorage.getItem("token");
@@ -73,8 +73,8 @@ const JobPost = ({ job, fromShare }) => {
     const fetchWishlist = async () => {
       try {
         const userId = sessionStorage.getItem("id");
-        const res = await axios.get(
-          `http://localhost:9000/getWishlists/${userId}`,
+        const res = await API.get(
+          `/getWishlists/${userId}`,
           {
             headers: {
               "x-access-token": token,
@@ -96,8 +96,8 @@ const JobPost = ({ job, fromShare }) => {
     } else {
       try {
         const userid = sessionStorage.getItem("id");
-        const res = await axios.post(
-          `http://localhost:9000/apply-for-job/${userid}`,
+        const res = await API.post(
+          `/apply-for-job/${userid}`,
           null,
           {
             params: { job_id: id },
@@ -125,8 +125,8 @@ const JobPost = ({ job, fromShare }) => {
 
     try {
       const userId = sessionStorage.getItem("id");
-      const res = await axios.post(
-        `http://localhost:9000/addWishlist/${userId}`,
+      const res = await API.post(
+        `/addWishlist/${userId}`,
         null,
         {
           params: { job_id: id },

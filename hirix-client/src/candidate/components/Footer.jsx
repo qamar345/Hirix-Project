@@ -9,7 +9,7 @@ import {
 } from "react-icons/fa";
 import { letterBox } from "../assets/icons/index.js";
 import { NavLink } from "react-router-dom";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -18,7 +18,7 @@ const Footer = () => {
   const SubmitNewsLetter = (e) => {
     e.preventDefault();
     axios
-      .post("http://localhost:9000/news-letter", { email })
+      .post("/news-letter", { email })
       .then((res) => {
         alert(res.data.msg);
         window.location.reload();

@@ -3,7 +3,7 @@ const { conn_sql } = require("../../config/connection");
 // Tracking (this is for job seeker who wants to see his/her jobs where he/she applied to)
 const appliedTo = (req, res) => {
   const { id } = req.params;
-  const { type, search } = req.query || "";
+  const { type, search } = req.query || {};
 
   let statusCondition = "";
   let countCondition = "";
@@ -17,36 +17,44 @@ const appliedTo = (req, res) => {
     countCondition = "AND status = 'Wishlist'";
   }
 
+  let searchCondition = "";
+  const queryParams = [id];
+
+  if (search && search.trim() !== "") {
+    searchCondition = "AND (jobs.title LIKE ? OR jobs.city LIKE ?)";
+    queryParams.push(`%${search}%`, `%${search}%`);
+  }
+
   const sql_applied = `
   SELECT jobs.*, applicants.id, applicants.status, applicants.created_at
   FROM jobs
   JOIN applicants ON jobs.id = applicants.job_id
   WHERE applicants.job_seeker_id = ?
     ${statusCondition}
+    ${searchCondition}
 `;
 
   conn_sql.query(
     sql_applied,
-    [id, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`],
+    queryParams,
     (err, result) => {
       if (err) {
-        return res.json({ error: err });
+        return res.status(500).json({ error: err.message });
       }
 
       const totalCountQuery = `
       SELECT COUNT(*) AS total_applications
       FROM applicants 
       WHERE job_seeker_id = ? 
-        
          ${countCondition}
     `;
 
       conn_sql.query(totalCountQuery, [id], (err, countResult) => {
         if (err) {
-          return res.json({ error: err });
+          return res.status(500).json({ error: err.message });
         }
 
-        const totalApplications = countResult[0].total_applications;
+        const totalApplications = countResult[0] ? countResult[0].total_applications : 0;
 
         return res.json({
           jobs: result,
@@ -65,12 +73,12 @@ const Apply = (req, res) => {
 
   conn_sql.query(sql_delete, [id], (err, result) => {
     if (err) {
-      return res.json(err);
+      return res.status(500).json({ error: err.message });
     } else {
-      if (result.length > 0) {
-        return res.json(result);
+      if (result && result.affectedRows > 0) {
+        return res.json({ msg: "Applied successfully", result });
       } else {
-        return res.json({ msg: "Applied" });
+        return res.status(404).json({ msg: "Application not found or no change made" });
       }
     }
   });
@@ -84,12 +92,12 @@ const DeleteFromTable = (req, res) => {
 
   conn_sql.query(sql_delete, [id], (err, result) => {
     if (err) {
-      return res.json(err);
+      return res.status(500).json({ error: err.message });
     } else {
-      if (result.length > 0) {
-        return res.json(result);
+      if (result && result.affectedRows > 0) {
+        return res.json({ msg: "Deleted successfully", result });
       } else {
-        return res.json({ msg: "Deleted" });
+        return res.status(404).json({ msg: "Record not found or no change made" });
       }
     }
   });

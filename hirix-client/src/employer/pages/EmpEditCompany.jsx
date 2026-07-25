@@ -9,7 +9,7 @@
 // import ReactQuill from "react-quill";
 // import "react-quill/dist/quill.snow.css";
 // import { EmpFooter } from "../index.js";
-// import axios from "axios";
+// import API, { BASE_URL } from "../../api";
 
 // const EmpEditCompany = () => {
 //   const navigate = useNavigate();
@@ -55,7 +55,7 @@
 //   useEffect(() => {
 //     if (editId && editId !== "new") {
 //       axios
-//         .get(`http://localhost:9000/getSpecificCompany/${editId}`)
+//         .get(`/getSpecificCompany/${editId}`)
 //         .then((res) => {
 //   // submit
 //   const submit = async (e) => {
@@ -80,7 +80,7 @@
 //     };
 
 //     try {
-//       const res = await axios.put(`http://localhost:9000/edit-company/${editId}`, payload);
+//       const res = await API.put(`/edit-company/${editId}`, payload);
 //       alert(res.data.msg);
 //       navigate(`/employer/company`);
 //     } catch (error) {
@@ -406,7 +406,7 @@ import { IoCloseSharp } from "react-icons/io5";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { EmpFooter } from "../index.js";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 
 const EmpEditCompany = () => {
   const navigate = useNavigate();
@@ -450,7 +450,7 @@ const EmpEditCompany = () => {
   useEffect(() => {
     if (editId && editId !== "new") {
       axios
-        .get(`http://localhost:9000/getSpecificCompany/${editId}`)
+        .get(`/getSpecificCompany/${editId}`)
         .then((res) => {
           const data = res.data?.company;
           if (data) {
@@ -500,8 +500,8 @@ const EmpEditCompany = () => {
     };
 
     try {
-      const res = await axios.put(
-        `http://localhost:9000/edit-company/${editId}`,
+      const res = await API.put(
+        `/edit-company/${editId}`,
         payload
       );
       alert(res.data.msg);

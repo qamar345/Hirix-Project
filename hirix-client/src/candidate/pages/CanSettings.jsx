@@ -6,7 +6,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
 import { CanFooter } from "../index.js";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 
 const CanSettings = () => {
   const token = sessionStorage.getItem("token");
@@ -88,8 +88,8 @@ const CanSettings = () => {
       return;
     }
     try {
-      const response = await axios.put(
-        `http://localhost:9000/Employer-password/${id}`,
+      const response = await API.put(
+        `/Employer-password/${id}`,
         {
           editPasswordData,
         },

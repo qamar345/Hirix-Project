@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Table from "react-bootstrap/Table";
 import Dropdown from "react-bootstrap/Dropdown";
 import { FaEllipsisH } from "react-icons/fa";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 import { Pagination } from "../components/Pagination";
 import { Link } from "react-router-dom";
 
@@ -28,7 +28,7 @@ const CompanyList = () => {
   const getcompanies = async (page) => {
     // setLoading(true);
     try {
-      const res = await axios.get("http://localhost:9000/getcompanies", {
+      const res = await API.get("/getcompanies", {
         params: {
           page: page,
         },
@@ -53,7 +53,7 @@ const CompanyList = () => {
   // useEffect(() => {
   //   const GetUsers = async () => {
   //     await axios
-  //       .get("http://localhost:9000/getcompanies")
+  //       .get("/getcompanies")
   //       .then((res) => {
   //         setcompanydata(res.data);
   //       })
@@ -65,7 +65,7 @@ const CompanyList = () => {
   // }, []);
   const ApprovedCompany = async (id) => {
     await axios
-      .put(`http://localhost:9000/approvedCompany/${id}`, null, {
+      .put(`/approvedCompany/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -78,7 +78,7 @@ const CompanyList = () => {
   };
   const RejectCompany = async (id) => {
     await axios
-      .put(`http://localhost:9000/rejectCompany/${id}`, null, {
+      .put(`/rejectCompany/${id}`, null, {
         headers: {
           "x-access-token": token,
         },
@@ -145,7 +145,7 @@ const CompanyList = () => {
                         <div className="me-3">
                           {company.images ? (
                             <img
-                              src={`http://localhost:9000${company.images}`}
+                              src={`${BASE_URL}${company.images}`}
                               alt={company.name}
                               style={{
                                 width: "50px",

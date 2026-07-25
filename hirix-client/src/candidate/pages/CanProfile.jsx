@@ -21,7 +21,7 @@ import { CircularProgressbarWithChildren } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import "react-tooltip/dist/react-tooltip.css";
 import { Tooltip } from "react-tooltip";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 
 const CanProfile = () => {
   const token = sessionStorage.getItem("token");
@@ -147,7 +147,7 @@ const CanProfile = () => {
   // }, []);
   useEffect(() => {
     axios
-      .get(`http://localhost:9000/getProfile/${id}`, {
+      .get(`/getProfile/${id}`, {
         headers: {
           "x-access-token": token,
         },
@@ -207,8 +207,8 @@ const CanProfile = () => {
       formData.append("image", selectedFile);
     }
     try {
-      const res = await axios.post(
-        `http://localhost:9000/postProfile/${id}`,
+      const res = await API.post(
+        `/postProfile/${id}`,
         formData,
         {
           headers: {
@@ -252,8 +252,8 @@ const CanProfile = () => {
     }
 
     try {
-      const res = await axios.post(
-        `http://localhost:9000/AddEducation/${id}`,
+      const res = await API.post(
+        `/AddEducation/${id}`,
         formData,
         {
           headers: {
@@ -286,8 +286,8 @@ const CanProfile = () => {
     };
 
     try {
-      const res = await axios.post(
-        `http://localhost:9000/AddExperience/${id}`,
+      const res = await API.post(
+        `/AddExperience/${id}`,
         payload,
         {
           headers: {
@@ -311,8 +311,8 @@ const CanProfile = () => {
     };
 
     try {
-      const res = await axios.post(
-        `http://localhost:9000/add-skillset/${id}`,
+      const res = await API.post(
+        `/add-skillset/${id}`,
         payload,
         {
           headers: {
@@ -330,8 +330,8 @@ const CanProfile = () => {
 
   const RemoveSkills = async (id) => {
     try {
-      const res = await axios.delete(
-        `http://localhost:9000/remove-skill/${id}`,
+      const res = await API.delete(
+        `/remove-skill/${id}`,
         null,
         {
           headers: {
@@ -356,8 +356,8 @@ const CanProfile = () => {
     };
 
     try {
-      const res = await axios.post(
-        `http://localhost:9000/AddProject/${id}`,
+      const res = await API.post(
+        `/AddProject/${id}`,
         payload,
         {
           headers: {
@@ -386,8 +386,8 @@ const CanProfile = () => {
     console.log(payload);
 
     try {
-      const res = await axios.post(
-        `http://localhost:9000/AddAward/${id}`,
+      const res = await API.post(
+        `/AddAward/${id}`,
         payload,
         {
           headers: {
@@ -405,7 +405,7 @@ const CanProfile = () => {
 
   // const DownloadCv = async (uid) => {
   //   try {
-  //     const res = await axios.get(`http://localhost:9000/download-cv/${uid}`);
+  //     const res = await API.get(`/download-cv/${uid}`);
   //     console.log(res);
   //   } catch (error) {
   //     console.log(error);
@@ -415,8 +415,8 @@ const CanProfile = () => {
   useEffect(() => {
     const GetEducation = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:9000/get-candidate-qualification/${id}`,
+        const res = await API.get(
+          `/get-candidate-qualification/${id}`,
           {
             headers: {
               "x-access-token": token,
@@ -431,8 +431,8 @@ const CanProfile = () => {
 
     const GetExperience = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:9000/get-candidate-exp/${id}`,
+        const res = await API.get(
+          `/get-candidate-exp/${id}`,
           {
             headers: {
               "x-access-token": token,
@@ -447,7 +447,7 @@ const CanProfile = () => {
 
     const GetDBSkills = async () => {
       try {
-        const res = await axios.get("http://localhost:9000/get-skills", {
+        const res = await API.get("/get-skills", {
           headers: {
             "x-access-token": token,
           },
@@ -460,8 +460,8 @@ const CanProfile = () => {
 
     const CandidateSkills = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:9000/get-candidate-skills/${id}`,
+        const res = await API.get(
+          `/get-candidate-skills/${id}`,
           {
             headers: {
               "x-access-token": token,
@@ -476,8 +476,8 @@ const CanProfile = () => {
 
     const GetCandidateProjects = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:9000/get-candidate-projects/${id}`,
+        const res = await API.get(
+          `/get-candidate-projects/${id}`,
           {
             headers: {
               "x-access-token": token,
@@ -500,8 +500,8 @@ const CanProfile = () => {
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:9000/profile-status/${id}`,
+        const res = await API.get(
+          `/profile-status/${id}`,
           {
             headers: {
               "x-access-token": token,
@@ -731,7 +731,7 @@ const CanProfile = () => {
                   }`}
                 >
                   <Link
-                    to={`http://localhost:9000/download-cv/${id}`}
+                    to={`/download-cv/${id}`}
                     target="_blank"
                   >
                     Download Profile as CV

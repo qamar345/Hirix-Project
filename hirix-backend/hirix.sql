@@ -179,6 +179,17 @@ CREATE TABLE `jobs` (
   `status` varchar(100) NOT NULL DEFAULT 'Pending',
   `required_skills` varchar(100) NOT NULL,
   `location` varchar(100) NOT NULL,
+  `job_category` varchar(255) DEFAULT NULL,
+  `job_subcategory` varchar(255) DEFAULT NULL,
+  `workplace_type` varchar(100) DEFAULT NULL,
+  `Rate` varchar(100) DEFAULT NULL,
+  `Email` varchar(255) DEFAULT NULL,
+  `Url` varchar(255) DEFAULT NULL,
+  `Phone` varchar(100) DEFAULT NULL,
+  `expiry_date` date DEFAULT NULL,
+  `ApplyType` varchar(100) DEFAULT NULL,
+  `province` varchar(255) DEFAULT NULL,
+  `city` varchar(255) DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

@@ -9,7 +9,7 @@ import Select from "react-select";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { EmpFooter } from "../index.js";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import DatePicker from "react-datepicker";
@@ -101,8 +101,8 @@ const AddCompany = () => {
     }
 
     try {
-      const res = await axios.post(
-        `http://localhost:9000/add-company/${id}`,
+      const res = await API.post(
+        `/add-company/${id}`,
         formData,
         {
           headers: {

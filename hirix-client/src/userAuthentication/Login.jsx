@@ -12,7 +12,7 @@ import {
   FaRegUser,
   FaBriefcase,
 } from "react-icons/fa";
-import axios from "axios";
+import API, { BASE_URL } from "../api";
 import { useNavigate } from "react-router-dom";
 
 // import { useSignUp } from "@clerk/clerk-react";
@@ -56,41 +56,36 @@ const Login = ({ ...props }) => {
     setError("");
 
     try {
-      const payload = {
-        email: email,
-        password: password,
-      };
+      // Single unified login endpoint - backend determines role from DB
+      const res = await API.post("/user-login", { email, password });
 
-      await axios
-        .post("http://localhost:9000/employee-login", { payload })
-        .then((res) => {
-          console.log(res);
-          alert(res.data.msg);
-          if (res.data.isloggedin) {
-            sessionStorage.setItem("id", res.data.data.id);
-            sessionStorage.setItem("name", res.data.data.username);
-            sessionStorage.setItem("first_name", res.data.data.first_name);
-            sessionStorage.setItem("image", res.data.data.image);
-            sessionStorage.setItem("role", res.data.data.role);
-            sessionStorage.setItem("email", res.data.data.email);
-            sessionStorage.setItem("isLoggedIn", res.data.isloggedin);
-            sessionStorage.setItem("token", res.data.token);
+      console.log(res);
 
-            if (res.data.data.role === "employee") {
-              navigate("employer/dashboard");
-            } else if (res.data.data.role === "jobseeker") {
-              navigate("/");
-              window.location.reload();
-            } else {
-              alert("Unknown role");
-            }
-          } else {
-            alert("Login failed.");
-          }
-        })
-        .catch((err) => {});
+      const { isloggedin, msg, data, token } = res.data;
+
+      if (isloggedin && data) {
+        sessionStorage.setItem("id", data.id);
+        sessionStorage.setItem("name", data.username || "");
+        sessionStorage.setItem("first_name", data.first_name || "");
+        sessionStorage.setItem("image", data.image || "");
+        sessionStorage.setItem("role", data.role);
+        sessionStorage.setItem("email", data.email);
+        sessionStorage.setItem("isLoggedIn", "true");
+        sessionStorage.setItem("token", token);
+
+        if (data.role === "employee") {
+          navigate("/employer/dashboard");
+        } else if (data.role === "jobseeker") {
+          navigate("/candidate/dashboard");
+        } else {
+          alert("Unknown role: " + data.role);
+        }
+      } else {
+        alert(msg || "Login failed.");
+      }
     } catch (error) {
       setError(error.message);
+      alert("Login error: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -103,8 +98,8 @@ const Login = ({ ...props }) => {
       alert("Please enter email first!!!");
     } else {
       try {
-        const res = await axios.post(
-          "http://localhost:9000/send-verify-email",
+        const res = await API.post(
+          "/send-verify-email",
           { email }
         );
         setLoader("Checking...");
@@ -118,8 +113,8 @@ const Login = ({ ...props }) => {
   const CheckMailStatus = async () => {
     if (email) {
       try {
-        const res = await axios.get(
-          `http://localhost:9000/check-mail-status/${email}`
+        const res = await API.get(
+          `/check-mail-status/${email}`
         );
         if (res.data.isVerified) {
           setLoader("");
@@ -183,8 +178,8 @@ const Login = ({ ...props }) => {
     console.log(payload);
 
     try {
-      const res = await axios.post(
-        "http://localhost:9000/employee-signup",
+      const res = await API.post(
+        "/employee-signup",
         payload
       );
       alert(res.data.msg);
@@ -203,7 +198,7 @@ const Login = ({ ...props }) => {
     setLoading(true);
 
     try {
-      const response = await axios.post(`http://localhost:9000/verify-email`, {
+      const response = await API.post(`/verify-email`, {
         email: resetEmail,
       });
 
@@ -230,8 +225,8 @@ const Login = ({ ...props }) => {
     };
 
     try {
-      const response = await axios.put(
-        `http://localhost:9000/forget-password`,
+      const response = await API.put(
+        `/forget-password`,
         payload,
         {
           headers: {
@@ -253,16 +248,12 @@ const Login = ({ ...props }) => {
     }
   };
 
-  const handleGenerate = async () => {
-    try {
-      const response = await fetch(
-        `http://localhost:9000/GenerateAutoUserName?firstName=${FirstName}&lastName=${LastName}`
-      );
-      const data = await response.json();
-      setUserName(data.username);
-    } catch (error) {
-      alert("Error generating username");
-    }
+  const handleGenerate = () => {
+    if (!FirstName && !LastName) return;
+    // Generate username locally: firstName + lastName + random 3-digit number
+    const base = `${FirstName || ""}${LastName || ""}`.toLowerCase().replace(/\s+/g, "");
+    const rand = Math.floor(100 + Math.random() * 900); // 100–999
+    setUserName(`${base}${rand}`);
   };
 
   useEffect(() => {

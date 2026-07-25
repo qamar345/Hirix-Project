@@ -5,7 +5,7 @@ import { CiCamera } from "react-icons/ci";
 import { NavLink, useNavigate } from "react-router-dom";
 import Select from "react-select";
 import { AdFooter, VisitChart, CandidateVisitChart } from "../index.js";
-import axios from "axios";
+import API, { BASE_URL } from "../../api";
 
 const EmpDashboard = () => {
   const check = sessionStorage.getItem("isLoggedIn");
@@ -35,7 +35,7 @@ const EmpDashboard = () => {
   useEffect(() => {
     const GetUsers = async () => {
       try {
-        const res = await axios.get("http://localhost:9000/DashboardData", {
+        const res = await API.get("/DashboardData", {
           headers: {
             "x-access-token": token,
           },

@@ -41,6 +41,7 @@ const {
   SendCodeForAdmin,
   forgetPasswordForAdmin,
   filtersCount,
+  GetLatestJobs,
 } = require("../controller/combined/commonAboutPosts");
 
 //...............................Employee.....................................
@@ -215,6 +216,7 @@ router.get("/get-job-cat", GetJobCategory);
 router.get("/subcategories/:id", GetSubCategory);
 
 router.get("/get-posts", Getposts);
+router.get("/get-latest-jobs", GetLatestJobs);
 
 router.get("/get-postsBYAdmin", GetpostsByAdmin);
 
@@ -241,7 +243,7 @@ router.post("/send-verify-email", SendVerificationLink);
 router.get("/verify-mail-link/:token", VerifyEmailLink);
 
 router.get("/check-mail-status/:email", CheckMailStatus);
-verifyToken, router.post("/news-letter", Subscribe);
+router.post("/news-letter", verifyToken, Subscribe);
 
 //........................................Employee........................................
 
@@ -307,6 +309,11 @@ router.delete("/deletecompany/:id", verifyToken, DeleteCompany);
 
 router.get("/getSpecificCompany/:id", verifyToken, GetCompanySpecific);
 
+// LinkedIn Company Verification Routes
+const { getLinkedInAuthURL, handleLinkedInCallback } = require("../controller/employee/linkedinVerification");
+router.get("/auth/linkedin", verifyToken, getLinkedInAuthURL);
+router.get("/auth/linkedin/callback", handleLinkedInCallback);
+
 router.get("/get-applicants/:id", verifyToken, Getapplicants);
 
 router.post("/send-message/:id", verifyToken, send_message);
@@ -327,7 +334,7 @@ router.get("/get-his-posts/:id", verifyToken, Gethisposts);
 
 //...................................Job Seeker.....................................
 
-router.post("/user-login", verifyToken, userlogin);
+router.post("/user-login", userlogin);
 
 router.get("/DasboardJobseeker/:id", verifyToken, JS_Dashboard);
 

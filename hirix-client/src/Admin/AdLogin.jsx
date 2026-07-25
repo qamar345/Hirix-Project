@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import Modal from "react-bootstrap/Modal";
 import { FaTimes, FaRegEye } from "react-icons/fa";
-import axios from "axios";
-import { id } from "date-fns/locale";
+import API, { BASE_URL } from "../api";
 const AdLogin = ({ ...props }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,8 +23,8 @@ const AdLogin = ({ ...props }) => {
 
     try {
       const payload = { email, password };
-      const res = await axios.post(
-        "http://localhost:9000/admin-login",
+      const res = await API.post(
+        "/admin-login",
         payload
       );
       if (res.data.loginStatus) {
@@ -55,8 +54,8 @@ const AdLogin = ({ ...props }) => {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        "http://localhost:9000/verify-emailForAdmin",
+      const response = await API.post(
+        "/verify-emailForAdmin",
         { email: resetEmail }
       );
 
@@ -87,8 +86,8 @@ const AdLogin = ({ ...props }) => {
     };
 
     try {
-      const response = await axios.put(
-        `http://localhost:9000/forget-passwordForAdmin`,
+      const response = await API.put(
+        `/forget-passwordForAdmin`,
         payload,
         {
           headers: {

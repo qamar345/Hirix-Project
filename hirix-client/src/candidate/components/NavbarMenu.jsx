@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import API, { BASE_URL } from "../../api";
 import { GoSearch } from "react-icons/go";
 import { FaBars } from "react-icons/fa";
 import { MobileNavBar } from "../index.js";
@@ -33,7 +34,7 @@ const NavbarMenu = () => {
       const username = sessionStorage.getItem("first_name");
       const images = sessionStorage.getItem("image");
       const role = sessionStorage.getItem("role");
-      const baseURL = "http://localhost:9000";
+      const baseURL = BASE_URL;
       const imageURL = images ? baseURL + images : null;
 
       if (username && images) {

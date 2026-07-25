@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import API, { BASE_URL } from "../../api";
 import { NavLink, useNavigate } from "react-router-dom";
 import { MdOutlineLocationOn } from "react-icons/md";
 import { FaRegHeart } from "react-icons/fa";
@@ -53,8 +54,8 @@ const JobCard = ({
     } else {
       try {
         const userid = sessionStorage.getItem("id");
-        const res = await axios.post(
-          `http://localhost:9000/addWishlist/${userid}`,
+        const res = await API.post(
+          `/addWishlist/${userid}`,
           null,
           {
             params: { job_id: id },
@@ -105,7 +106,7 @@ const JobCard = ({
           <div className="jobs-header-left">
             <img
               className="logo-comnpany"
-              src={`http://localhost:9000${images}`}
+              src={`${BASE_URL}${images}`}
               alt=""
             />
             <div className="jobs-left-inner">
