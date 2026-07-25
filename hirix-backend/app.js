@@ -21,7 +21,7 @@ app.use(express.json());
 // Dynamic CORS middleware
 app.use((req, res, next) => {
   const allowedOrigins = [
-    "https://jobs.hirix.pk",
+    "https://jobs.hirix.com.pk",
     "http://localhost:5173",
     "http://localhost:5174"
   ];
