@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:9000";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://api.hirix.com.pk";
 
 // Central Axios instance - saare API calls yahan se jayenge
 const API = axios.create({
