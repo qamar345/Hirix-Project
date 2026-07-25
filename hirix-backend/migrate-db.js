@@ -24,7 +24,8 @@ const companyColumnsToAdd = [
   { name: "province", definition: "VARCHAR(255) DEFAULT NULL" },
   { name: "city", definition: "VARCHAR(255) DEFAULT NULL" },
   { name: "Ntn", definition: "VARCHAR(100) DEFAULT NULL" },
-  { name: "founded_in", definition: "VARCHAR(100) DEFAULT NULL" }
+  { name: "founded_in", definition: "VARCHAR(100) DEFAULT NULL" },
+  { name: "status", definition: "VARCHAR(100) DEFAULT 'Pending'" }
 ];
 
 async function queryPromise(sql, params = []) {

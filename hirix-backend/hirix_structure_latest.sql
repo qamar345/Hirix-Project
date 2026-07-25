@@ -79,6 +79,7 @@ CREATE TABLE `companies` (
   `city` varchar(255) DEFAULT NULL,
   `Ntn` varchar(100) DEFAULT NULL,
   `founded_in` varchar(100) DEFAULT NULL,
+  `status` varchar(100) NOT NULL DEFAULT 'Pending',
   PRIMARY KEY (`id`),
   KEY `fk_useraccounts_id` (`user_account_id`),
   CONSTRAINT `fk_useraccounts_id` FOREIGN KEY (`user_account_id`) REFERENCES `user_accounts` (`id`)
