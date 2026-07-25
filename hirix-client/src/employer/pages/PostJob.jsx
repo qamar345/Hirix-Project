@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaSpinner, FaRegMoneyBillAlt } from "react-icons/fa";
 import { PiMapPin } from "react-icons/pi";
@@ -9,7 +9,7 @@ import "react-quill/dist/quill.snow.css";
 import { EmpFooter } from "../index.js";
 import PhoneInput from "react-phone-number-input";
 import API, { BASE_URL } from "../../api";
-import { use } from "react";
+import { useGetCompaniesForEmpQuery } from "../../store/employerApi";
 
 const PostJob = () => {
   const token = sessionStorage.getItem("token");
@@ -48,7 +48,14 @@ const PostJob = () => {
   const [Company, setCompany] = useState("");
   const [Province, setProvince] = useState("");
   const [City, setCity] = useState("");
-  const [CompanyData, setCompanyData] = useState([]);
+  const [errors, setErrors] = useState({});
+  const { data: companiesList, refetch: refetchCompanies } = useGetCompaniesForEmpQuery(id);
+  const CompanyData = useMemo(() => {
+    return (companiesList || []).map((company) => ({
+      label: company.name,
+      value: company.id,
+    }));
+  }, [companiesList]);
   const [dbSubcategories, setDBSubcategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null); // Store full object
@@ -90,30 +97,50 @@ const PostJob = () => {
   //       })
   //       .catch((err) =>   //   }
   // }, [editId]);
-  useEffect(() => {
-    const fetchCompany = async () => {
-      try {
-        const res = await API.get(
-          `/GetCompanies/${id}`,
-          {
-            headers: {
-              "x-access-token": token,
-            },
-          }
-        );
-        const formattedCompanies = res.data.map((company) => ({
-          label: company.name,
-          value: company.id,
-        }));
-        setCompanyData(formattedCompanies);
-      } catch (err) {}
-    };
-
-    fetchCompany();
-  }, []);
+  // Company fetching is now managed reactively via useGetCompaniesForEmpQuery hook.
 
   const submit = async (e) => {
     e.preventDefault();
+
+    // Frontend Validations
+    const newErrors = {};
+    if (!title?.trim()) {
+      newErrors.title = "Job Title is required";
+    }
+    if (!email?.trim()) {
+      newErrors.email = "Official Email is required";
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        newErrors.email = "Please enter a valid email address";
+      }
+    }
+    if (!category) {
+      newErrors.category = "Please select a Category";
+    }
+    if (!jobtype) {
+      newErrors.jobtype = "Please select a Job Type";
+    }
+    if (!des || des.trim() === "" || des.trim() === "<p></p>") {
+      newErrors.des = "Job description is required";
+    }
+    if (!skills || skills.length === 0) {
+      newErrors.skills = "Please add at least one required skill";
+    }
+    if (!experiences) {
+      newErrors.experiences = "Please select target Experience";
+    }
+    if (!Company) {
+      newErrors.company = "Please select a Company";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      window.scrollTo({ top: 100, behavior: "smooth" });
+      return;
+    }
+
+    setErrors({});
 
     const payload = {
       title: title?.trim(),
@@ -456,7 +483,9 @@ const PostJob = () => {
                           value={title}
                           placeholder="Job Title"
                           onChange={(e) => setTitle(e.target.value)}
+                          style={errors.title ? { borderColor: '#ff4d4f' } : {}}
                         />
+                        {errors.title && <span style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.title}</span>}
                       </div>
 
                       <div className="entryGroup col-lg-4">
@@ -476,6 +505,7 @@ const PostJob = () => {
                             setSelectedSubCategory(null); // reset subcategory
                           }}
                         />
+                        {errors.category && <span style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.category}</span>}
                       </div>
 
                       <div className="entryGroup col-lg-4">
@@ -515,6 +545,7 @@ const PostJob = () => {
                             )
                           }
                         />
+                        {errors.jobtype && <span style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.jobtype}</span>}
                       </div>
 
                       <div className="entryGroup col-lg-6">
@@ -554,6 +585,7 @@ const PostJob = () => {
                           className="border p-1 rounded-2"
                           styles={customStyles}
                         />
+                        {errors.skills && <span style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.skills}</span>}
                       </div>
 
                       <div className="entryGroup col-md-12">
@@ -566,6 +598,7 @@ const PostJob = () => {
                           onChange={(value) => setDes(value)}
                           placeholder="Enter Job Details..."
                         />
+                        {errors.des && <span style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.des}</span>}
                       </div>
 
                       <div className="entryGroup col-lg-6">
@@ -606,6 +639,7 @@ const PostJob = () => {
                             )
                           }
                         />
+                        {errors.experiences && <span style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.experiences}</span>}
                       </div>
 
                       <div className="entryGroup col-lg-6">
@@ -886,7 +920,9 @@ const PostJob = () => {
                             placeholder="Enter email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
+                            style={errors.email ? { borderColor: '#ff4d4f' } : {}}
                           />
+                          {errors.email && <span style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.email}</span>}
                         </div>
                       )}
                       {appliedType === "external" && (
@@ -944,12 +980,21 @@ const PostJob = () => {
                             )
                           }
                         />
+                        {errors.company && <span style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.company}</span>}
                       </div>
 
-                      <div className="entryGroup col-md-12 d-flex justify-content-start">
-                        <Link to="/employer/add-company" className="btn-text">
-                          Create new company
+                      <div className="entryGroup col-md-12 d-flex justify-content-between align-items-center mt-3 pt-2" style={{ borderTop: "1px solid #f1f5f9" }}>
+                        <Link to="/employer/add-company" className="text-primary font-medium" target="_blank" rel="noopener noreferrer" style={{ fontSize: "0.9rem", textDecoration: "none", fontWeight: "600" }}>
+                          + Create new company
                         </Link>
+                        <button
+                          type="button"
+                          className="d-flex align-items-center gap-1 text-success"
+                          onClick={refetchCompanies}
+                          style={{ border: "none", backgroundColor: "transparent", cursor: "pointer", fontSize: "0.9rem", fontWeight: "600", color: "#138808" }}
+                        >
+                          <span>🔄</span> Refresh List
+                        </button>
                       </div>
                     </div>
                   </div>

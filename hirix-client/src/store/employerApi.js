@@ -1,19 +1,28 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:9000";
+const BASE_URL = import.meta.env.VITE_API_URL || "https://api.hirix.com.pk";
 const getToken = () => sessionStorage.getItem("token");
 
 // ─── Employer API Slice ───────────────────────────────────────────────────────
 export const employerApi = createApi({
   reducerPath: "employerApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-    prepareHeaders: (headers) => {
-      const token = getToken();
-      if (token) headers.set("x-access-token", token);
-      return headers;
-    },
-  }),
+  baseQuery: async (args, api, extraOptions) => {
+    const rawBaseQuery = fetchBaseQuery({
+      baseUrl: BASE_URL,
+      prepareHeaders: (headers) => {
+        const token = getToken();
+        if (token) headers.set("x-access-token", token);
+        return headers;
+      },
+    });
+    const result = await rawBaseQuery(args, api, extraOptions);
+    if (result.error && (result.error.status === 401 || result.error.status === 403)) {
+      console.warn("Session expired or unauthorized. Logging out...");
+      sessionStorage.clear();
+      window.location.href = "/";
+    }
+    return result;
+  },
   tagTypes: ["EmpProfile", "EmpJobs", "EmpCompanies", "EmpApplicants", "EmpDashboard", "Messages"],
   endpoints: (builder) => ({
     // Dashboard
@@ -105,7 +114,11 @@ export const employerApi = createApi({
       providesTags: ["EmpCompanies"],
     }),
     selectCompany: builder.query({
-      query: (id) => `/select-company/${id}`,
+      query: ({ id, page }) => ({
+        url: `/select-company/${id}`,
+        params: { page },
+      }),
+      providesTags: ["EmpCompanies"],
     }),
     addCompany: builder.mutation({
       query: ({ id, formData }) => ({

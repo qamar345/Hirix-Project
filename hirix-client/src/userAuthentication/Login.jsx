@@ -42,6 +42,7 @@ const Login = ({ ...props }) => {
   const [code, setCode] = useState("");
   const [isVerified, setIsVerified] = useState(false);
   const [loader, setLoader] = useState("");
+  const [isPolling, setIsPolling] = useState(false);
 
   const navigate = useNavigate();
 
@@ -104,32 +105,37 @@ const Login = ({ ...props }) => {
         );
         setLoader("Checking...");
         alert(res.data.msg);
+        setIsPolling(true); // Start polling
       } catch (error) {
         console.log(error);
       }
     }
   };
 
-  const CheckMailStatus = async () => {
-    if (email) {
-      try {
-        const res = await API.get(
-          `/check-mail-status/${email}`
-        );
-        if (res.data.isVerified) {
-          setLoader("");
-          setIsVerified(res.data.isVerified);
-          clearInterval(intervalId);
-        } else {
-          CheckMailStatus();
+  useEffect(() => {
+    let intervalId;
+    if (isPolling && email) {
+      const poll = async () => {
+        try {
+          const res = await API.get(`/check-mail-status/${email}`);
+          if (res.data.isVerified) {
+            setLoader("");
+            setIsVerified(true);
+            setIsPolling(false);
+          }
+        } catch (error) {
+          console.error("Verification check error:", error);
         }
-      } catch (error) {
-        // console.log(error);
-      }
-    }
-  };
+      };
 
-  const intervalId = setInterval(CheckMailStatus, 5000);
+      poll(); // Run immediately
+      intervalId = setInterval(poll, 5000);
+    }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [isPolling, email]);
   const submit = async (e) => {
     //   e.preventDefault();
     //   if (role !== null) {
@@ -296,11 +302,12 @@ const Login = ({ ...props }) => {
               </div>
             </div>
 
-            <div
-              id="loginLink"
-              className={`logIn ${activeTab === "loginLink" ? "active" : ""}`}
-            >
-              {!resetLink ? (
+            {activeTab === "loginLink" ? (
+              <div
+                id="loginLink"
+                className="logIn active"
+              >
+                {!resetLink ? (
                 <form onSubmit={handleSubmit} className="form-account ">
                   <div className="form-group">
                     <label htmlFor="ip_email" className="label-field">
@@ -480,15 +487,13 @@ const Login = ({ ...props }) => {
                   </li>
                 </ul>
               </div> */}
-            </div>
-
-            <form
-              onSubmit={verifyAndRegister}
-              id="signUpLink"
-              className={`form-account signUp  ${
-                activeTab === "signUpLink" ? "active" : ""
-              }`}
-            >
+              </div>
+            ) : (
+              <form
+                onSubmit={verifyAndRegister}
+                id="signUpLink"
+                className="form-account signUp active"
+              >
               <div className="form-group">
                 <div className="row">
                   <div className="col-6">
@@ -580,29 +585,44 @@ const Login = ({ ...props }) => {
               </div>
               <div className="form-group">
                 <label htmlFor="ip_reg_email" className="label-field">
-                  Email
+                  Email Address
                 </label>
-                <input
-                  type="email"
-                  id="ip_reg_email"
-                  className="form-control input-field"
-                  name="reg_email"
-                  placeholder="Enter Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-
-                {isVerified ? (
-                  <button className="btn btn-success">Verified</button>
-                ) : loader ? (
-                  <p>{loader}</p>
-                ) : (
-                  <button
-                    className="btn btn-primary"
-                    onClick={SendMailVerifcationLink}
-                  >
-                    Click to Verify
-                  </button>
+                <div className="d-flex gap-2 align-items-center">
+                  <input
+                    type="email"
+                    id="ip_reg_email"
+                    className="form-control input-field m-0"
+                    name="reg_email"
+                    placeholder="Enter Email"
+                    value={email}
+                    disabled={isVerified || isPolling}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={{ flex: 1 }}
+                  />
+                  {isVerified ? (
+                    <span className="btn btn-success d-flex align-items-center justify-content-center" style={{ pointerEvents: 'none', minWidth: '110px', height: '48px', margin: 0 }}>
+                      Verified ✓
+                    </span>
+                  ) : isPolling ? (
+                    <button className="btn btn-warning d-flex align-items-center justify-content-center" type="button" disabled style={{ minWidth: '110px', height: '48px', margin: 0 }}>
+                      <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                      Pending
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn btn-primary d-flex align-items-center justify-content-center"
+                      onClick={SendMailVerifcationLink}
+                      style={{ minWidth: '110px', height: '48px', margin: 0, backgroundColor: '#00C4A5', borderColor: '#00C4A5' }}
+                    >
+                      Verify
+                    </button>
+                  )}
+                </div>
+                {isPolling && (
+                  <small className="form-text mt-1 d-block" style={{ color: '#ffc107', fontSize: '12px' }}>
+                    Please check your inbox and click the verification link. Waiting for verification...
+                  </small>
                 )}
               </div>
               <div className="form-group">
@@ -706,6 +726,7 @@ const Login = ({ ...props }) => {
                 )} */}
               </div>
             </form>
+          )}
           </div>
         </div>
       </Modal.Body>

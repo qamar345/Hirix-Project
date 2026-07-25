@@ -2,16 +2,95 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { RiUploadLine } from "react-icons/ri";
 import { IoCloseSharp } from "react-icons/io5";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaTrash } from "react-icons/fa";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
 import { AdFooter } from "../index.js";
 import API, { BASE_URL } from "../../api";
 
+const SOCIAL_PLATFORMS = [
+  "Facebook", "LinkedIn", "Twitter / X", "Instagram", "YouTube",
+  "TikTok", "Pinterest", "Snapchat", "WhatsApp", "Telegram", "Other"
+];
+
 const AdSettings = () => {
   const check = sessionStorage.getItem("isLoggedIn");
   const token = sessionStorage.getItem("token");
   const [editUserData, setEditUserData] = useState({});
+
+  // Basic configs
+  const [siteConfigs, setSiteConfigs] = useState({
+    site_email: "",
+    site_phone: "",
+    footer_address: "",
+    site_title: "",
+    site_meta_description: "",
+    gtm_id: "",
+    pixel_id: "",
+    gsc_verification: ""
+  });
+
+  // Dynamic social links: [{platform: "Facebook", url: "https://..."}]
+  const [socialLinks, setSocialLinks] = useState([
+    { platform: "Facebook", url: "" },
+    { platform: "LinkedIn", url: "" },
+  ]);
+
+  useEffect(() => {
+    const FetchConfigs = async () => {
+      try {
+        const res = await API.get("/site-settings");
+        if (res.data) {
+          const { social_links, ...rest } = res.data;
+          setSiteConfigs(prev => ({ ...prev, ...rest }));
+          if (social_links) {
+            try {
+              const parsed = JSON.parse(social_links);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                setSocialLinks(parsed);
+              }
+            } catch {}
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching site settings:", err);
+      }
+    };
+    FetchConfigs();
+  }, []);
+
+  const handleSaveConfigs = async (e) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        ...siteConfigs,
+        social_links: JSON.stringify(socialLinks.filter(s => s.url.trim() !== ""))
+      };
+      const res = await API.put("/site-settings", { settings: payload }, {
+        headers: { "x-access-token": token }
+      });
+      alert(res.data.msg || "Configurations updated successfully!");
+    } catch (err) {
+      console.error("Error saving configurations:", err);
+      alert("Failed to save site configurations.");
+    }
+  };
+
+  // Social links handlers
+  const handleSocialChange = (index, field, value) => {
+    const updated = [...socialLinks];
+    updated[index][field] = value;
+    setSocialLinks(updated);
+  };
+
+  const handleAddSocial = () => {
+    setSocialLinks(prev => [...prev, { platform: "Other", url: "" }]);
+  };
+
+  const handleRemoveSocial = (index) => {
+    setSocialLinks(prev => prev.filter((_, i) => i !== index));
+  };
+
   const [editPasswordData, setEditPasswordData] = useState({
     currentPass: "",
     newPass: "",
@@ -27,6 +106,7 @@ const AdSettings = () => {
     bank: false,
   });
   const navigate = useNavigate();
+
   const handlePayGroup = (tab) => {
     setPayGroup((prevState) => ({
       ...prevState,
@@ -50,6 +130,7 @@ const AdSettings = () => {
   const handleActive = (tab) => {
     setIsActive(tab);
   };
+
   const [uploadedImage, setUploadedImage] = useState(null);
 
   const handleLogoUpload = (event) => {
@@ -67,6 +148,7 @@ const AdSettings = () => {
   const handleCancelUpload = () => {
     setUploadedImage(null);
   };
+
   useEffect(() => {
     if (!check) navigate("/admin-login");
   });
@@ -82,21 +164,12 @@ const AdSettings = () => {
             },
           }
         );
-
         setUserData(res.data);
         setEditUserData(res.data);
       } catch (error) {}
     };
     GetUserData();
   }, []);
-
-  // const handleChange = (e) => {
-  //   const { name, value } = e.target;
-  //   setEditUserData((prevData) => ({
-  //     ...prevData,
-  //     [name]: value,
-  //   }));
-  // };
 
   const handlePasswordChange = (e) => {
     setEditPasswordData({
@@ -107,14 +180,10 @@ const AdSettings = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const formData = new FormData();
-
-    // Image ko sirf tab append karein jab user ne naya image select kiya ho
     if (selectedFile) {
       formData.append("image", selectedFile);
     }
-
     try {
       const res = await API.put(
         `/admin-profile/${sessionStorage.getItem("id")}`,
@@ -137,7 +206,6 @@ const AdSettings = () => {
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
-
     if (
       !editPasswordData.currentPass ||
       !editPasswordData.newPass ||
@@ -146,7 +214,6 @@ const AdSettings = () => {
       alert("All fields are required.");
       return;
     }
-
     if (editPasswordData.newPass !== editPasswordData.confirmPass) {
       alert("New password and confirm password do not match.");
       return;
@@ -154,16 +221,13 @@ const AdSettings = () => {
     try {
       const response = await API.put(
         `/change-password/${sessionStorage.getItem("id")}`,
-        {
-          editPasswordData,
-        },
+        { editPasswordData },
         {
           headers: {
             "x-access-token": token,
           },
         }
       );
-
       alert(response.data.msg);
       setEditPasswordData({ currentPass: "", newPass: "", confirmPass: "" });
     } catch (error) {
@@ -179,9 +243,7 @@ const AdSettings = () => {
         </div>
         <div className="tab-list">
           <Link
-            className={`tab-item ${
-              isActive === "personalInfo" ? "active" : ""
-            }`}
+            className={`tab-item ${isActive === "personalInfo" ? "active" : ""}`}
             onClick={() => handleActive("personalInfo")}
           >
             Personal info
@@ -193,15 +255,22 @@ const AdSettings = () => {
           >
             Payout
           </Link>
+          <Link
+            className={`tab-item ${isActive === "siteSettings" ? "active" : ""}`}
+            style={{ marginLeft: "32px" }}
+            onClick={() => handleActive("siteSettings")}
+          >
+            Site Configs
+          </Link>
         </div>
 
         <div className="row">
           <div className="col-lg-8 col-md-7">
+
+            {/* ===== Personal Info Tab ===== */}
             <div
               id="personalInfo"
-              className={`tab-detail  ${
-                isActive === "personalInfo" ? "active" : ""
-              }`}
+              className={`tab-detail ${isActive === "personalInfo" ? "active" : ""}`}
             >
               <div className="row block-from">
                 <form onSubmit={handleSubmit}>
@@ -240,8 +309,7 @@ const AdSettings = () => {
                       </div>
                       <div className="user-desc">
                         Update your photo manually, if the photo is not set the
-                        default Avatar will be the same as your login email
-                        account.
+                        default Avatar will be the same as your login email account.
                       </div>
                     </div>
                   </div>
@@ -254,20 +322,16 @@ const AdSettings = () => {
               </div>
               <div className="row block-from mt12">
                 <form onSubmit={handlePasswordSubmit}>
-                  <div className="entryGroup col-md-12 ">
+                  <div className="entryGroup col-md-12">
                     <h6 className="block-heading">Change password</h6>
                   </div>
-
                   <div className="passwordFields">
-                    {/* Current Password */}
                     <div className="entryGroup col-md-12">
                       <label htmlFor="currentPass">Current password</label>
                       <div className="inputGrout">
                         <input
                           className="inputControl"
-                          type={
-                            passwordVisibility.current ? "text" : "password"
-                          }
+                          type={passwordVisibility.current ? "text" : "password"}
                           id="currentPass"
                           name="currentPass"
                           placeholder="Enter current password"
@@ -286,8 +350,6 @@ const AdSettings = () => {
                         </span>
                       </div>
                     </div>
-
-                    {/* New Password */}
                     <div className="entryGroup col-md-12">
                       <label htmlFor="newPass">New password</label>
                       <div className="inputGrout">
@@ -312,16 +374,12 @@ const AdSettings = () => {
                         </span>
                       </div>
                     </div>
-
-                    {/* Confirm Password */}
                     <div className="entryGroup col-md-12">
                       <label htmlFor="confirmPass">Confirm password</label>
                       <div className="inputGrout">
                         <input
                           className="inputControl"
-                          type={
-                            passwordVisibility.confirm ? "text" : "password"
-                          }
+                          type={passwordVisibility.confirm ? "text" : "password"}
                           id="confirmPass"
                           name="confirmPass"
                           placeholder="Confirm your password"
@@ -341,7 +399,6 @@ const AdSettings = () => {
                       </div>
                     </div>
                   </div>
-
                   <div className="entryGroup col-md-12">
                     <button type="submit" className="civi-button">
                       Save changes
@@ -351,9 +408,10 @@ const AdSettings = () => {
               </div>
             </div>
 
+            {/* ===== Payout Tab ===== */}
             <div
               id="payout"
-              className={`tab-detail  ${isActive === "payout" ? "active" : ""}`}
+              className={`tab-detail ${isActive === "payout" ? "active" : ""}`}
             >
               <div className="row">
                 <ul>
@@ -364,9 +422,7 @@ const AdSettings = () => {
                     >
                       Paypal
                     </h5>
-                    <div
-                      className={`content ${payGroup.payPal ? "active" : ""}`}
-                    >
+                    <div className={`content ${payGroup.payPal ? "active" : ""}`}>
                       <label>Paypal email</label>
                       <input
                         type="email"
@@ -384,10 +440,7 @@ const AdSettings = () => {
                     >
                       Stripe
                     </h5>
-
-                    <div
-                      className={`content ${payGroup.stripe ? "active" : ""}`}
-                    >
+                    <div className={`content ${payGroup.stripe ? "active" : ""}`}>
                       <label>Stripe account</label>
                       <input
                         type="text"
@@ -439,12 +492,192 @@ const AdSettings = () => {
                     </div>
                   </li>
                 </ul>
-
                 <div className="entryGroup col-md-12">
                   <Link className="civi-button">Save</Link>
                 </div>
               </div>
             </div>
+
+            {/* ===== Site Configs Tab ===== */}
+            <div
+              id="siteSettings"
+              className={`tab-detail ${isActive === "siteSettings" ? "active" : ""}`}
+            >
+              <form onSubmit={handleSaveConfigs}>
+                <div className="row block-from">
+
+                  {/* Contact Info */}
+                  <div className="entryGroup col-md-12 mt12">
+                    <h6 className="block-heading">Contact Information</h6>
+                  </div>
+                  <div className="entryGroup col-md-6">
+                    <label className="label-field">Site Email</label>
+                    <input
+                      type="email"
+                      className="form-control input-field"
+                      placeholder="info@hirix.pk"
+                      value={siteConfigs.site_email}
+                      onChange={(e) => setSiteConfigs(p => ({ ...p, site_email: e.target.value }))}
+                    />
+                  </div>
+                  <div className="entryGroup col-md-6">
+                    <label className="label-field">Site Phone</label>
+                    <input
+                      type="text"
+                      className="form-control input-field"
+                      placeholder="+92 300 1234567"
+                      value={siteConfigs.site_phone}
+                      onChange={(e) => setSiteConfigs(p => ({ ...p, site_phone: e.target.value }))}
+                    />
+                  </div>
+                  <div className="entryGroup col-md-12">
+                    <label className="label-field">Footer Address</label>
+                    <input
+                      type="text"
+                      className="form-control input-field"
+                      placeholder="Office 12, Ground Floor, Ezitech Solutions, Pakistan"
+                      value={siteConfigs.footer_address}
+                      onChange={(e) => setSiteConfigs(p => ({ ...p, footer_address: e.target.value }))}
+                    />
+                  </div>
+
+                  {/* Dynamic Social Media Links */}
+                  <div className="entryGroup col-md-12 mt12" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <h6 className="block-heading" style={{ margin: 0 }}>Social Media Links</h6>
+                    <button
+                      type="button"
+                      className="civi-button"
+                      style={{ padding: "6px 16px", fontSize: "13px" }}
+                      onClick={handleAddSocial}
+                    >
+                      + Add More
+                    </button>
+                  </div>
+
+                  {socialLinks.map((link, index) => (
+                    <div key={index} className="entryGroup col-md-12" style={{ display: "flex", gap: "10px", alignItems: "flex-end" }}>
+                      <div style={{ flex: "0 0 180px" }}>
+                        <label className="label-field">Platform</label>
+                        <select
+                          className="form-control input-field"
+                          value={link.platform}
+                          onChange={(e) => handleSocialChange(index, "platform", e.target.value)}
+                        >
+                          {SOCIAL_PLATFORMS.map(p => (
+                            <option key={p} value={p}>{p}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label className="label-field">URL</label>
+                        <input
+                          type="url"
+                          className="form-control input-field"
+                          placeholder={`https://${link.platform.toLowerCase().replace(" / x", "").replace(" ", "")}.com/hirix`}
+                          value={link.url}
+                          onChange={(e) => handleSocialChange(index, "url", e.target.value)}
+                        />
+                      </div>
+                      {socialLinks.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSocial(index)}
+                          style={{
+                            background: "#fee2e2",
+                            border: "none",
+                            borderRadius: "6px",
+                            padding: "8px 12px",
+                            cursor: "pointer",
+                            color: "#dc2626",
+                            marginBottom: "2px"
+                          }}
+                          title="Remove"
+                        >
+                          <FaTrash />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Site SEO */}
+                  <div className="entryGroup col-md-12 mt12">
+                    <h6 className="block-heading">Site SEO</h6>
+                  </div>
+                  <div className="entryGroup col-md-12">
+                    <label className="label-field">Site Title (Default)</label>
+                    <input
+                      type="text"
+                      className="form-control input-field"
+                      placeholder="Hirix Pakistan – Find Jobs & Hire Talent"
+                      value={siteConfigs.site_title}
+                      onChange={(e) => setSiteConfigs(p => ({ ...p, site_title: e.target.value }))}
+                    />
+                    <small style={{ color: "#64748b", fontSize: "12px", marginTop: "4px", display: "block" }}>
+                      Used as the default &lt;title&gt; tag on your Next.js landing page.
+                    </small>
+                  </div>
+                  <div className="entryGroup col-md-12">
+                    <label className="label-field">Site Meta Description (Default)</label>
+                    <textarea
+                      className="form-control input-field"
+                      rows={3}
+                      placeholder="Hirix is Pakistan's leading job portal. Search thousands of jobs or post a vacancy and hire top talent today."
+                      value={siteConfigs.site_meta_description}
+                      onChange={(e) => setSiteConfigs(p => ({ ...p, site_meta_description: e.target.value }))}
+                      style={{ resize: "vertical" }}
+                    />
+                    <small style={{ color: "#64748b", fontSize: "12px", marginTop: "4px", display: "block" }}>
+                      Keep under 160 characters for best SEO results. ({(siteConfigs.site_meta_description || "").length}/160)
+                    </small>
+                  </div>
+
+                  {/* SEO & Analytics */}
+                  <div className="entryGroup col-md-12 mt12">
+                    <h6 className="block-heading">SEO &amp; Analytics</h6>
+                  </div>
+                  <div className="entryGroup col-md-6">
+                    <label className="label-field">Google Tag Manager ID</label>
+                    <input
+                      type="text"
+                      className="form-control input-field"
+                      placeholder="GTM-XXXXXXX"
+                      value={siteConfigs.gtm_id}
+                      onChange={(e) => setSiteConfigs(p => ({ ...p, gtm_id: e.target.value }))}
+                    />
+                  </div>
+                  <div className="entryGroup col-md-6">
+                    <label className="label-field">Meta Pixel ID</label>
+                    <input
+                      type="text"
+                      className="form-control input-field"
+                      placeholder="1234567890"
+                      value={siteConfigs.pixel_id}
+                      onChange={(e) => setSiteConfigs(p => ({ ...p, pixel_id: e.target.value }))}
+                    />
+                  </div>
+                  <div className="entryGroup col-md-12">
+                    <label className="label-field">Google Search Console Verification Code</label>
+                    <input
+                      type="text"
+                      className="form-control input-field"
+                      placeholder="Paste your Google Site Verification meta content value here"
+                      value={siteConfigs.gsc_verification}
+                      onChange={(e) => setSiteConfigs(p => ({ ...p, gsc_verification: e.target.value }))}
+                    />
+                    <small style={{ color: "#64748b", fontSize: "12px", marginTop: "4px", display: "block" }}>
+                      Only paste the <code>content="..."</code> value from the verification meta tag, not the full tag.
+                    </small>
+                  </div>
+
+                  <div className="entryGroup col-md-12 mt-3">
+                    <button className="civi-button" type="submit">
+                      Save Site Configurations
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+
           </div>
         </div>
       </div>

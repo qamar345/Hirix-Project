@@ -1,10 +1,8 @@
 const { conn_sql } = require("../../config/connection");
-
 const crypto = require("crypto");
-
 const upload = require("../../middleware/upload");
-
-// const nodemailer = require ('nodemailer');
+const { v4: uuidv4 } = require("uuid");
+const { SendCompanyVerificationEmail } = require("../../mailer/mailer-controller");
 
 //  Add Companies
 const Addcompany = (req, res) => {
@@ -21,14 +19,17 @@ const Addcompany = (req, res) => {
     province,
     city,
     Ntn,
+    location,
     twitter,
     facebook,
     instagram,
     linkedIn,
   } = bodyData;
-  const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
+  
+  const token = uuidv4();
+  const imageUrl = req.file ? `/uploads/${req.file.filename}` : "";
   const sql_addcompany =
-    "INSERT INTO `companies` (`user_account_id`,`name`, `categories`,`About`,`website_link`,`Contact`, `E_mail`,`total_members`,`images` ,`province`,`city`,`Ntn`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    "INSERT INTO `companies` (`user_account_id`,`name`, `categories`,`About`,`website_link`,`Contact`, `E_mail`,`total_members`,`images` ,`province`,`city`,`Ntn`,`location`, `email_verification_token`, `is_email_verified`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
   conn_sql.query(
     sql_addcompany,
     [
@@ -44,6 +45,8 @@ const Addcompany = (req, res) => {
       province,
       city,
       Ntn,
+      location || "",
+      token
     ],
     (err, result) => {
       if (err) {
@@ -51,6 +54,12 @@ const Addcompany = (req, res) => {
         return res.json({ msg: "Error...", err });
       } else {
         const companyId = result.insertId;
+        
+        // Send Verification Email
+        if (E_mail) {
+          SendCompanyVerificationEmail(E_mail, token, name);
+        }
+
         const sql_company =
           "INSERT INTO `companies_social_networks` (`companies_id`,`twitter`, `facebook`, `instagram`,`linkedIn`) VALUES (?, ?, ?, ?, ?)";
         conn_sql.query(
@@ -217,10 +226,35 @@ const GetCompanySpecific = (req, res) => {
   });
 };
 
+const ResendCompanyVerification = (req, res) => {
+  const { id } = req.params;
+  const sql_get = "SELECT name, E_mail, email_verification_token, is_email_verified FROM `companies` WHERE id = ?";
+  conn_sql.query(sql_get, [id], (err, result) => {
+    if (err || result.length === 0) {
+      return res.status(404).json({ msg: "Company not found" });
+    }
+    const company = result[0];
+    if (company.is_email_verified === 1) {
+      return res.json({ msg: "Company is already verified!" });
+    }
+    
+    let token = company.email_verification_token;
+    if (!token) {
+      token = uuidv4();
+      const sql_update = "UPDATE `companies` SET `email_verification_token` = ? WHERE id = ?";
+      conn_sql.query(sql_update, [token, id]);
+    }
+    
+    SendCompanyVerificationEmail(company.E_mail, token, company.name);
+    return res.json({ msg: "Verification link resent successfully to " + company.E_mail });
+  });
+};
+
 module.exports = {
   Addcompany,
   Editcompany,
   Selectcompany,
   DeleteCompany,
   GetCompanySpecific,
+  ResendCompanyVerification,
 };

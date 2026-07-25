@@ -62,7 +62,7 @@ const Adminlogin = (req, res) => {
 
     const secretKey = process.env.SECRETKEY;
     const token = jwt.sign({ email: admin.email }, secretKey, {
-      expiresIn: "15m",
+      expiresIn: "7d",
     });
 
     return res.json({

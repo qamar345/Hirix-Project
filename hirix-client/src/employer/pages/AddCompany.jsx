@@ -10,6 +10,7 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { EmpFooter } from "../index.js";
 import API, { BASE_URL } from "../../api";
+import { useAddCompanyMutation } from "../../store/employerApi";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import DatePicker from "react-datepicker";
@@ -19,6 +20,7 @@ const AddCompany = () => {
   const navigate = useNavigate();
   const id = sessionStorage.getItem("id");
   const check = sessionStorage.getItem("isLoggedIn");
+  const [addCompanyMutation] = useAddCompanyMutation();
   useEffect(() => {
     if (!check) navigate("/");
   });
@@ -40,7 +42,18 @@ const AddCompany = () => {
   const [Province, setProvince] = useState("");
   const [City, setCity] = useState("");
   const [Ntn, setNtn] = useState("");
+  const [errors, setErrors] = useState({});
+  const [mapUrl, setMapUrl] = useState("");
   const today = new Date();
+
+  const getEmbedUrl = (input) => {
+    if (!input) return "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d13292.266508363678!2d73.0264386!3d33.6035757!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38df946f24e9fa83%3A0x5c0a503ad0bd55b4!2sEziline%20Software%20House%20Pvt%20Ltd!5e0!3m2!1sen!2s!4v1731045209730!5m2!1sen!2s";
+    const match = input.match(/src=["']([^"']+)["']/);
+    if (match && match[1]) {
+      return match[1];
+    }
+    return input;
+  };
   const handleLogoUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -76,6 +89,43 @@ const AddCompany = () => {
   const submit = async (e) => {
     e.preventDefault();
 
+    // Frontend Validations
+    const newErrors = {};
+    if (!Name?.trim()) {
+      newErrors.name = "Company Name is required";
+    }
+    if (!email?.trim()) {
+      newErrors.email = "Official Email is required";
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        newErrors.email = "Please enter a valid email address";
+      }
+    }
+    if (!category) {
+      newErrors.category = "Please select a category";
+    }
+    if (!des || des.trim() === "" || des.trim() === "<p></p>") {
+      newErrors.des = "About description is required";
+    }
+    if (!phone) {
+      newErrors.phone = "Contact number is required";
+    }
+    if (!City) {
+      newErrors.city = "Please select a City";
+    }
+    if (!Province) {
+      newErrors.province = "Please select a Province";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      window.scrollTo({ top: 100, behavior: "smooth" });
+      return;
+    }
+
+    setErrors({});
+
     const formData = new FormData();
 
     // Append text fields
@@ -94,6 +144,7 @@ const AddCompany = () => {
     formData.append("city", City?.trim());
     formData.append("province", Province?.trim());
     formData.append("Ntn", Ntn?.trim());
+    formData.append("location", mapUrl?.trim());
 
     // Append image if selected
     if (selectedFile) {
@@ -101,19 +152,17 @@ const AddCompany = () => {
     }
 
     try {
-      const res = await API.post(
-        `/add-company/${id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            "x-access-token": token,
-          },
-        }
-      );
-      alert(res.data.msg);
-      navigate(`/employer/company`);
-    } catch (error) {}
+      const res = await addCompanyMutation({ id, formData }).unwrap();
+      if (res.msg && res.msg.includes("INSERTED")) {
+        alert("Company added successfully! Verification email has been sent to the official email.");
+        navigate(`/employer/company`);
+      } else {
+        alert(res.msg || "Failed to add company. Please verify information.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("An error occurred during company creation.");
+    }
   };
 
   const cats = [
@@ -195,7 +244,9 @@ const AddCompany = () => {
                           value={Name}
                           onChange={(e) => setName(e.target.value)}
                           placeholder="Name"
+                          style={errors.name ? { borderColor: '#ff4d4f' } : {}}
                         />
+                        {errors.name && <span style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.name}</span>}
                       </div>
 
                       <div className="entryGroup col-md-6">
@@ -214,6 +265,7 @@ const AddCompany = () => {
                             setCategory(selectedOption.value)
                           }
                         />
+                        {errors.category && <span style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.category}</span>}
                       </div>
 
                       {/* <div className="entryGroup col-md-12">
@@ -244,6 +296,7 @@ const AddCompany = () => {
                           onChange={setDes}
                           placeholder="Define Your Company..."
                         />
+                        {errors.des && <span style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.des}</span>}
                       </div>
 
                       <div className="entryGroup col-md-6">
@@ -258,13 +311,8 @@ const AddCompany = () => {
                       </div>
 
                       <div className="entryGroup col-md-6">
-                        <label>Phone Number</label>
-                        <div className=" d-flex">
-                          {/* <Select
-                            options={nums}
-                            styles={customStyles}
-                            className="border p-1 rounded-2"
-                          /> */}
+                        <label>Phone Number <sup>*</sup></label>
+                        <div className=" d-flex flex-column">
                           <PhoneInput
                             className="mt-1"
                             value={phone?.toString() || ""}
@@ -272,6 +320,7 @@ const AddCompany = () => {
                             defaultCountry="PK"
                           />
                         </div>
+                        {errors.phone && <span style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.phone}</span>}
                       </div>
 
                       <div className="entryGroup col-md-6">
@@ -284,7 +333,9 @@ const AddCompany = () => {
                           placeholder="hello@domain.com"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
+                          style={errors.email ? { borderColor: '#ff4d4f' } : {}}
                         />
+                        {errors.email && <span style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.email}</span>}
                       </div>
 
                       <div className="entryGroup col-md-6">
@@ -443,7 +494,7 @@ const AddCompany = () => {
                     <h6 className="block-heading">Location</h6>
                     <div className="row">
                       <div className="entryGroup col-lg-6">
-                        <label>Province</label>
+                        <label>Province <sup>*</sup></label>
                         <Select
                           name="province"
                           options={province}
@@ -456,10 +507,11 @@ const AddCompany = () => {
                             setProvince(selectedOption.value)
                           }
                         />
+                        {errors.province && <span style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.province}</span>}
                       </div>
 
                       <div className="entryGroup col-lg-6">
-                        <label>City</label>
+                        <label>City <sup>*</sup></label>
                         <Select
                           options={city}
                           styles={customStyles}
@@ -470,6 +522,7 @@ const AddCompany = () => {
                             setCity(selectedOption.value)
                           }
                         />
+                        {errors.city && <span style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.city}</span>}
                       </div>
 
                       <div className="entryGroup col-lg-6">
@@ -482,20 +535,22 @@ const AddCompany = () => {
                         />
                       </div>
 
-                      {/* <div className="entryGroup col-lg-6">
-                        <label htmlFor="search-location">Share Location</label>
+                       <div className="entryGroup col-lg-12">
+                        <label htmlFor="search-location">Share Google Map Embed Link (Iframe src or Share URL)</label>
                         <div className="input-area">
                           <input
                             type="text"
-                            placeholder="Share Google Map Location"
+                            placeholder="Paste Google Maps iframe HTML or URL here"
+                            value={mapUrl}
+                            onChange={(e) => setMapUrl(e.target.value)}
                           />
                         </div>
-                      </div> */}
+                      </div>
                       <div className="entryGroup col-md-12 company-fields-map">
                         <div className="company-fields company-map">
                           <div id="mapbox_map" className="civi-map-warpper">
                             <iframe
-                              src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d13292.266508363678!2d73.0264386!3d33.6035757!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x38df946f24e9fa83%3A0x5c0a503ad0bd55b4!2sEziline%20Software%20House%20Pvt%20Ltd!5e0!3m2!1sen!2s!4v1731045209730!5m2!1sen!2s"
+                              src={getEmbedUrl(mapUrl)}
                               height={300}
                               className="w-100"
                               allowFullScreen=""

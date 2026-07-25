@@ -23,7 +23,9 @@ app.use((req, res, next) => {
   const allowedOrigins = [
     "https://jobs.hirix.com.pk",
     "http://localhost:5173",
-    "http://localhost:5174"
+    "http://localhost:5174",
+    "http://localhost:3000"
+
   ];
   const origin = req.headers.origin;
   

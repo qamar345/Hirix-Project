@@ -5,6 +5,7 @@ import { FaEllipsisH } from "react-icons/fa";
 import API, { BASE_URL } from "../../api";
 import { Pagination } from "../components/Pagination";
 import { Link, useNavigate } from "react-router-dom";
+import { useSelectCompanyQuery, useDeleteCompanyMutation } from "../../store/employerApi";
 import { Nav } from "react-bootstrap";
 
 // Custom Toggle Component
@@ -55,43 +56,23 @@ const CompanyList = () => {
   //     deleteMessage: 'This is a "Demo" account so you not cant delete it',
   //   },
   // ];
-  const [companydata, setcompanydata] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const id = sessionStorage.getItem("id");
-  const getcompanies = async (page) => {
-    // setLoading(true);
-    try {
-      const res = await API.get(
-        `/select-company/${id}`,
-        {
-          params: {
-            page: page,
-          },
-          headers: {
-            "x-access-token": token,
-          },
-        }
-      );
-      setcompanydata(res.data.data);
-      setCurrentPage(res.data.meta.page);
-      setTotalPages(res.data.meta.totalPages);
-      // setLoading(false);
-    } catch (error) {}
-  };
+  const { data: responseData, isLoading } = useSelectCompanyQuery({ id, page: currentPage });
+  const [deleteCompanyMutation] = useDeleteCompanyMutation();
+
+  const companydata = responseData?.data || [];
+  const totalPages = responseData?.meta?.totalPages || 1;
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  useEffect(() => {
-    getcompanies(currentPage);
-  }, [currentPage]);
-
   const EditCompany = async (id) => {
     sessionStorage.setItem("editCompanyData", JSON.stringify(id));
     navigate("/employer/Edit_Company");
   };
+
   const DeleteCompany = async (did) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this company?"
@@ -99,18 +80,8 @@ const CompanyList = () => {
     if (!confirmDelete) return;
 
     try {
-      const res = await API.delete(
-        `/deletecompany/${did}`,
-        null,
-        {
-          headers: {
-            "x-access-token": token,
-          },
-        }
-      );
-      alert(res.data.msg);
-      // Instead of reloading, remove the deleted item from the state if using React
-      // Example: setCompanies(companies.filter(company => company.id !== did));
+      const res = await deleteCompanyMutation(did).unwrap();
+      alert(res.msg || "Company deleted successfully!");
     } catch (err) {
       alert("Failed to delete company. Please try again.");
     }
@@ -170,20 +141,47 @@ const CompanyList = () => {
                             <Link to={`/CompanyDetails/${company.id}`}>
                               <h6 className="d-flex align-items-center gap-1">
                                 {company.name}
-                                {company.is_linkedin_verified === 1 && (
-                                  <span 
-                                    style={{ 
-                                      backgroundColor: "#0077b5", 
-                                      color: "white", 
-                                      fontSize: "10px", 
-                                      padding: "1px 5px", 
-                                      borderRadius: "3px",
-                                      fontWeight: "normal"
-                                    }}
-                                  >
-                                    LinkedIN Verified
-                                  </span>
-                                )}
+                                 {company.is_linkedin_verified === 1 && (
+                                   <span 
+                                     style={{ 
+                                       backgroundColor: "#0077b5", 
+                                       color: "white", 
+                                       fontSize: "10px", 
+                                       padding: "1px 5px", 
+                                       borderRadius: "3px",
+                                       fontWeight: "normal"
+                                     }}
+                                   >
+                                     LinkedIN Verified
+                                   </span>
+                                 )}
+                                 {company.is_email_verified === 1 ? (
+                                   <span 
+                                     style={{ 
+                                       backgroundColor: "#2ec4b6", 
+                                       color: "white", 
+                                       fontSize: "10px", 
+                                       padding: "1px 5px", 
+                                       borderRadius: "3px",
+                                       fontWeight: "normal"
+                                     }}
+                                   >
+                                     Email Verified
+                                   </span>
+                                 ) : (
+                                   <span 
+                                     style={{ 
+                                       backgroundColor: "#ff9f1c", 
+                                       color: "white", 
+                                       fontSize: "10px", 
+                                       padding: "1px 5px", 
+                                       borderRadius: "3px",
+                                       fontWeight: "normal"
+                                     }}
+                                   >
+                                     Email Unverified
+                                   </span>
+                                 )}
                               </h6>
                             </Link>
                             <small>{company.E_mail}</small>
@@ -279,6 +277,29 @@ const CompanyList = () => {
                                   }}
                                 >
                                   Verify LinkedIn
+                                </button>
+                              </Dropdown.Item>
+                            )}
+                            {company.is_email_verified === 0 && (
+                              <Dropdown.Item>
+                                <button
+                                  className="btn btn-warning text-white"
+                                  onClick={async () => {
+                                    try {
+                                      const res = await API.post(`/resend-company-verification/${company.id}`);
+                                      alert(res.data.msg);
+                                    } catch (err) {
+                                      alert("Failed to resend verification email.");
+                                    }
+                                  }}
+                                  style={{
+                                    display: "block",
+                                    width: "100%",
+                                    fontSize: "1.5rem",
+                                    backgroundColor: "#ff9f1c"
+                                  }}
+                                >
+                                  Resend Verification Email
                                 </button>
                               </Dropdown.Item>
                             )}

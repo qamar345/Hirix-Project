@@ -55,6 +55,8 @@ import {
   JobList,
   ApplicantList,
   EmployeeList,
+  AdBlogs,
+  AdBlogEditor,
 } from "./Admin/index.js";
 
 import {
@@ -132,6 +134,9 @@ const router = createBrowserRouter(
       <Route path="/admin/employees/list" element={<EmployeeList />} />
       <Route path="/employeeDetails/:id" element={<EmployeeDetail />} />
       <Route path="/admin/user-management" element={<AdManagement />} />
+      <Route path="/admin/blogs" element={<AdBlogs />} />
+      <Route path="/admin/blogs/new" element={<AdBlogEditor />} />
+      <Route path="/admin/blogs/edit/:id" element={<AdBlogEditor />} />
     </>
   )
 );

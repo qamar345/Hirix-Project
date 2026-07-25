@@ -1,7 +1,14 @@
-import React from 'react'
+import React from "react";
 import { FaRegEnvelope } from "react-icons/fa";
 import { MdOutlinePhoneEnabled } from "react-icons/md";
+import useSiteSettings from "../../useSiteSettings";
+
 const TopNav = () => {
+  const { settings } = useSiteSettings();
+
+  const phone = settings.site_phone || "(00) 658 54332";
+  const email = settings.site_email || "support@hirix.pk";
+
   return (
     <div className="civi-top-bar">
       <div className="container">
@@ -21,20 +28,22 @@ const TopNav = () => {
           </div>
           <div className="col-lg-5 right-top-bar">
             <span className="top-bar-icon">
-              {/* <i className="fal fa-phone" /> */}
-              <MdOutlinePhoneEnabled  className="ml-4"/>
-              (00) 658 54332
+              <MdOutlinePhoneEnabled className="ml-4" />
+              <a href={`tel:${phone}`} style={{ color: "inherit", textDecoration: "none" }}>
+                {phone}
+              </a>
             </span>
             <span className="top-bar-icon">
-              {/* <i className="fal fa-envelope" /> */}
-              <FaRegEnvelope className="ml-4"/>
-              support.hirix.pk
+              <FaRegEnvelope className="ml-4" />
+              <a href={`mailto:${email}`} style={{ color: "inherit", textDecoration: "none" }}>
+                {email}
+              </a>
             </span>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default TopNav
+export default TopNav;

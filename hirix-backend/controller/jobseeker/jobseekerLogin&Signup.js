@@ -34,7 +34,7 @@ const userlogin = (req, res) => {
         const token = jwt.sign(
           { id: user.id, email: user.email, role: user.role },
           secretKey,
-          { expiresIn: "20m" }
+          { expiresIn: "7d" }
         );
 
         return res.json({

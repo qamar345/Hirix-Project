@@ -120,7 +120,7 @@ const EmpSideMenu = () => {
                     </span>
                     <span
                       onClick={
-                        item.label === "Logout" ? () => item.logOut() : "#"
+                        item.label === "Logout" ? () => item.logOut() : undefined
                       }
                     >
                       {item.label}

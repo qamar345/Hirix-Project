@@ -44,6 +44,9 @@ const {
   GetLatestJobs,
 } = require("../controller/combined/commonAboutPosts");
 
+const { GetSiteSettings, UpdateSiteSettings } = require("../controller/combined/siteConfigs");
+const { GetBlogs, GetBlogBySlug, AddBlog, EditBlog, DeleteBlog } = require("../controller/combined/blogs");
+
 //...............................Employee.....................................
 
 const {
@@ -82,6 +85,7 @@ const {
   Editcompany,
   DeleteCompany,
   GetCompanySpecific,
+  ResendCompanyVerification,
 } = require("../controller/employee/companies");
 const { Getapplicants } = require("../controller/employee/reviewApplicants");
 const {
@@ -141,6 +145,7 @@ const {
   SendVerificationLink,
   VerifyEmailLink,
   CheckMailStatus,
+  VerifyCompanyEmail,
 } = require("../utils/SendEmailVerificationLink");
 const {
   GetSkills,
@@ -218,6 +223,17 @@ router.get("/subcategories/:id", GetSubCategory);
 router.get("/get-posts", Getposts);
 router.get("/get-latest-jobs", GetLatestJobs);
 
+// Site Configurations Endpoints
+router.get("/site-settings", GetSiteSettings);
+router.put("/site-settings", verifyToken, UpdateSiteSettings);
+
+// Blog Engine Endpoints
+router.get("/get-blogs", GetBlogs);
+router.get("/get-blog/:slug", GetBlogBySlug);
+router.post("/add-blog", verifyToken, AddBlog);
+router.put("/edit-blog/:id", verifyToken, EditBlog);
+router.delete("/delete-blog/:id", verifyToken, DeleteBlog);
+
 router.get("/get-postsBYAdmin", GetpostsByAdmin);
 
 router.get("/getTotal_jobs", GetTotalJobs);
@@ -241,6 +257,7 @@ router.put("/forget-password", forgetPassword);
 router.post("/send-verify-email", SendVerificationLink);
 
 router.get("/verify-mail-link/:token", VerifyEmailLink);
+router.get("/verify-company-email/:token", VerifyCompanyEmail);
 
 router.get("/check-mail-status/:email", CheckMailStatus);
 router.post("/news-letter", verifyToken, Subscribe);
@@ -308,6 +325,7 @@ router.get("/select-company/:id", verifyToken, Selectcompany);
 router.delete("/deletecompany/:id", verifyToken, DeleteCompany);
 
 router.get("/getSpecificCompany/:id", verifyToken, GetCompanySpecific);
+router.post("/resend-company-verification/:id", verifyToken, ResendCompanyVerification);
 
 // LinkedIn Company Verification Routes
 const { getLinkedInAuthURL, handleLinkedInCallback } = require("../controller/employee/linkedinVerification");

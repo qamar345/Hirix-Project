@@ -47,7 +47,7 @@ WHERE job_seeker_id = ? AND applicants.status = 'Selected';
 
 // Select Skills in search bar
 const Skills_select = (req, res) => {
-  const query_select = `SELECT id, name FROM skillset`;
+  const query_select = `SELECT id, skills AS name FROM skillset`;
   conn_sql.query(query_select, (err, result) => {
     if (err) {
       console.error(err);

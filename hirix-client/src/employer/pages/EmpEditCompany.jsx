@@ -407,11 +407,14 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { EmpFooter } from "../index.js";
 import API, { BASE_URL } from "../../api";
+import { useGetSpecificCompanyQuery, useEditCompanyMutation } from "../../store/employerApi";
 
 const EmpEditCompany = () => {
   const navigate = useNavigate();
-  const editId = sessionStorage.getItem("editCompanyData");
+  const editId = JSON.parse(sessionStorage.getItem("editCompanyData"));
   const check = sessionStorage.getItem("isLoggedIn");
+  const { data: specificCompanyData } = useGetSpecificCompanyQuery(editId, { skip: !editId || editId === "new" });
+  const [editCompanyMutation] = useEditCompanyMutation();
 
   useEffect(() => {
     if (!check) navigate("/");
@@ -448,34 +451,25 @@ const EmpEditCompany = () => {
   }, []);
 
   useEffect(() => {
-    if (editId && editId !== "new") {
-      axios
-        .get(`/getSpecificCompany/${editId}`)
-        .then((res) => {
-          const data = res.data?.company;
-          if (data) {
-            setName(data.name || "");
-            setCategory(data.categories || "");
-            setDes(data.About || "");
-            setWebsiteLink(data.website_link || "");
-            setPhone(data.Contact || "");
-            setEmail(data.E_mail || "");
-            setFoundedIn(data.founded_in || "");
-            setCompanySize(data.total_members || "");
-            setTwitter(data.twitter || "");
-            setFacebook(data.facebook || "");
-            setInstagram(data.instagram || "");
-            setLinkedIn(data.linkedIn || "");
-            setProvince(data.province || "");
-            setCity(data.city || "");
-            setNtn(data.Ntn || "");
-          }
-        })
-        .catch((err) => {
-          console.error("Error fetching company data:", err);
-        });
+    const data = specificCompanyData?.[0] || specificCompanyData?.company;
+    if (data) {
+      setName(data.name || "");
+      setCategory(data.categories || "");
+      setDes(data.About || "");
+      setWebsiteLink(data.website_link || "");
+      setPhone(data.Contact || "");
+      setEmail(data.E_mail || "");
+      setFoundedIn(data.founded_in || "");
+      setCompanySize(data.total_members || "");
+      setTwitter(data.twitter || "");
+      setFacebook(data.facebook || "");
+      setInstagram(data.instagram || "");
+      setLinkedIn(data.linkedIn || "");
+      setProvince(data.province || "");
+      setCity(data.city || "");
+      setNtn(data.Ntn || "");
     }
-  }, [editId]);
+  }, [specificCompanyData]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -490,24 +484,21 @@ const EmpEditCompany = () => {
       facebook: facebook?.trim(),
       instagram: instagram?.trim(),
       linkedIn: LinkedIn?.trim(),
-      founded_in: foundedIn?.trim(),
+      founded_in: foundedIn ? foundedIn.toString().trim() : "",
       total_members: companySize,
       Contact: phone,
       city: City?.trim(),
       province: Province?.trim(),
       Ntn: Ntn?.trim(),
-      // logo: uploadedImage, // Optional: include if you enable logo upload
     };
 
     try {
-      const res = await API.put(
-        `/edit-company/${editId}`,
-        payload
-      );
-      alert(res.data.msg);
+      const res = await editCompanyMutation({ id: editId, payload }).unwrap();
+      alert(res.msg || "Company updated successfully!");
       navigate(`/employer/company`);
     } catch (error) {
       console.error("Error updating company:", error);
+      alert("Failed to update company.");
     }
   };
 

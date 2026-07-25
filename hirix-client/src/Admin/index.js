@@ -18,6 +18,8 @@ import AdCompany from "./pages/AdCompany";
 import AdManagement from "./pages/AdManagement";
 import AddManager from "./pages/AddManager";
 import AdSettings from "./pages/AdSettings";
+import AdBlogs from "./pages/AdBlogs";
+import AdBlogEditor from "./pages/AdBlogEditor";
 
 import JobList from "./tables/JobList";
 import ApplicantList from "./tables/ApplicantList";
@@ -52,4 +54,6 @@ export {
   AddManager,
   ManagersList,
   CompanyForm,
+  AdBlogs,
+  AdBlogEditor,
 };

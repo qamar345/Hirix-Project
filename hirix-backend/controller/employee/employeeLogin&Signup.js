@@ -30,7 +30,7 @@ const employeesignup = (req, res) => {
             return res.json({ msg: "Email Already Exists!" });
           } else {
             const sql_signup =
-              "INSERT INTO `user_accounts`(`first_name`, `last_name`, `username`, `email`,`password`, `role`, `phone`, `is_verified`) VALUES (? , ?, ?, ?, ?, ?, ?, 1)";
+              "INSERT INTO `user_accounts`(`first_name`, `last_name`, `username`, `email`,`password`, `role`, `phone`, `is_verified`, `image`) VALUES (? , ?, ?, ?, ?, ?, ?, 1, 'https://civi.uxper.co/wp-content/plugins/civi-framework/assets/images/default-user-image.png')";
             conn_sql.query(
               sql_signup,
               [first_name, last_name, username, email, hash, role, phone],
@@ -94,7 +94,7 @@ const employeelogin = (req, res) => {
 
           return res.json({
             token: jwt.sign({ email: user.email }, secretKey, {
-              expiresIn: "20m",
+              expiresIn: "7d",
             }),
             isloggedin: true,
             msg: "Login successfully!",
@@ -122,15 +122,21 @@ const EmployeeProfile = (req, res) => {
   const { first_name, last_name, email } = bodyData;
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
-  const sqlUpdate = `
+  let sqlUpdate = `
     UPDATE user_accounts 
-    SET first_name = ?, last_name = ?, email = ?, image = ?
-    WHERE id = ?
+    SET first_name = ?, last_name = ?, email = ?
   `;
+  const params = [first_name, last_name, email];
+  if (req.file) {
+    sqlUpdate += `, image = ?`;
+    params.push(`/uploads/${req.file.filename}`);
+  }
+  sqlUpdate += ` WHERE id = ?`;
+  params.push(id);
 
   conn_sql.query(
     sqlUpdate,
-    [first_name, last_name, email, imageUrl, id],
+    params,
     (err, result) => {
       if (err) {
         return res.status(500).json({ message: "Update failed", error: err });

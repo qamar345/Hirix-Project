@@ -1,32 +1,63 @@
 import React, { useState } from "react";
-
 import {
   FaLinkedin,
   FaTwitter,
   FaFacebook,
   FaInstagram,
   FaYoutube,
+  FaTiktok,
+  FaPinterest,
+  FaSnapchat,
+  FaWhatsapp,
+  FaTelegram,
+  FaGlobe,
 } from "react-icons/fa";
 import { letterBox } from "../assets/icons/index.js";
 import { NavLink } from "react-router-dom";
-import API, { BASE_URL } from "../../api";
+import API from "../../api";
+import useSiteSettings from "../../useSiteSettings";
+
+// Map platform name -> icon component
+const PLATFORM_ICONS = {
+  facebook:    <FaFacebook />,
+  linkedin:    <FaLinkedin />,
+  "twitter / x": <FaTwitter />,
+  twitter:     <FaTwitter />,
+  instagram:   <FaInstagram />,
+  youtube:     <FaYoutube />,
+  tiktok:      <FaTiktok />,
+  pinterest:   <FaPinterest />,
+  snapchat:    <FaSnapchat />,
+  whatsapp:    <FaWhatsapp />,
+  telegram:    <FaTelegram />,
+};
+
+const getPlatformIcon = (platform) => {
+  const key = (platform || "").toLowerCase();
+  return PLATFORM_ICONS[key] || <FaGlobe />;
+};
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const [email, setEmail] = useState("");
+  const { settings, socialLinks } = useSiteSettings();
+
+  const phone   = settings.site_phone    || "(00) 658 54332";
+  const mail    = settings.site_email    || "hello@hirix.pk";
+  const address = settings.footer_address || "";
 
   const SubmitNewsLetter = (e) => {
     e.preventDefault();
-    axios
-      .post("/news-letter", { email })
+    API.post("/news-letter", { email })
       .then((res) => {
         alert(res.data.msg);
-        window.location.reload();
+        setEmail("");
       })
       .catch((err) => {
         console.log(err);
       });
   };
+
   return (
     <footer className="footerWrapper">
       <section className="footer-top border-bottom">
@@ -53,9 +84,8 @@ const Footer = () => {
                         required
                         placeholder="Enter your email"
                         className="searchInput"
-                        onChange={(e) => {
-                          setEmail(e.target.value);
-                        }}
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                       />
                     </div>
                     <div className="col-md-4  d-flex ">
@@ -65,12 +95,6 @@ const Footer = () => {
                       >
                         Subscribe
                       </button>
-                      {/* <NavLink
-                        type="submit"
-                        className=
-                      >
-                        Subscribe
-                      </NavLink> */}
                     </div>
                   </div>
                 </div>
@@ -88,111 +112,95 @@ const Footer = () => {
               <ul>
                 <li>
                   <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam
-                    mauris risus, lobortis a commodo at, varius sit amet ipsum.
+                    Hirix is Pakistan's leading job portal connecting top talent
+                    with the best employers across all industries.
                   </p>
                 </li>
-                <li>
-                  <span className="d-block">T. (00) 658 54332</span>
-                </li>
-                <li>
-                  <span className="d-block">E. hello@uxper.co</span>
-                </li>
+                {phone && (
+                  <li>
+                    <span className="d-block">
+                      T.{" "}
+                      <a href={`tel:${phone}`} style={{ color: "inherit" }}>
+                        {phone}
+                      </a>
+                    </span>
+                  </li>
+                )}
+                {mail && (
+                  <li>
+                    <span className="d-block">
+                      E.{" "}
+                      <a href={`mailto:${mail}`} style={{ color: "inherit" }}>
+                        {mail}
+                      </a>
+                    </span>
+                  </li>
+                )}
+                {address && (
+                  <li>
+                    <span className="d-block">{address}</span>
+                  </li>
+                )}
               </ul>
             </div>
             <div className="col-md-4 col-xl-2">
               <h4>Company</h4>
               <ul>
-                <li>
-                  <a href="#">about us</a>
-                </li>
-                <li>
-                  <a href="#">carrier</a>
-                </li>
-                <li>
-                  <a href="#">blogs</a>
-                </li>
-                <li>
-                  <a href="#">FAQ's</a>
-                </li>
-                <li>
-                  <a href="#">contact</a>
-                </li>
+                <li><a href="#">about us</a></li>
+                <li><a href="#">carrier</a></li>
+                <li><a href="#">blogs</a></li>
+                <li><a href="#">FAQ's</a></li>
+                <li><a href="#">contact</a></li>
               </ul>
             </div>
             <div className="col-md-4 col-xl-2">
               <h4>Service</h4>
               <ul>
-                <li>
-                  <a href="#">jobs</a>
-                </li>
-                <li>
-                  <a href="#">companies</a>
-                </li>
-                <li>
-                  <a href="#">candidates</a>
-                </li>
-                <li>
-                  <a href="#">pricing</a>
-                </li>
-                <li>
-                  <a href="#">partner</a>
-                </li>
+                <li><a href="#">jobs</a></li>
+                <li><a href="#">companies</a></li>
+                <li><a href="#">candidates</a></li>
+                <li><a href="#">pricing</a></li>
+                <li><a href="#">partner</a></li>
               </ul>
             </div>
             <div className="col-md-4 col-xl-2">
               <h4>Support</h4>
               <ul>
-                <li>
-                  <a href="#">privacy policy</a>
-                </li>
-                <li>
-                  <a href="#">terms of use</a>
-                </li>
-                <li>
-                  <a href="#">help center</a>
-                </li>
-                <li>
-                  <a href="#">updates</a>
-                </li>
-                <li>
-                  <a href="#">documentation</a>
-                </li>
+                <li><a href="#">privacy policy</a></li>
+                <li><a href="#">terms of use</a></li>
+                <li><a href="#">help center</a></li>
+                <li><a href="#">updates</a></li>
+                <li><a href="#">documentation</a></li>
               </ul>
             </div>
             <div className="col-md-4 col-xl-2">
               <h4>Connect</h4>
               <ul>
-                <li>
-                  <a href="#">
-                    <FaLinkedin className="social-icon" />
-                    Linkedin
-                  </a>
-                </li>
-                <li>
-                  <a href="#">
-                    <FaTwitter className="social-icon" />
-                    Twitter
-                  </a>
-                </li>
-                <li>
-                  <a href="#">
-                    <FaFacebook className="social-icon" />
-                    Facebook
-                  </a>
-                </li>
-                <li>
-                  <a href="#">
-                    <FaInstagram className="social-icon" />
-                    Instagram
-                  </a>
-                </li>
-                <li>
-                  <a href="#">
-                    <FaYoutube className="social-icon" />
-                    Youtube
-                  </a>
-                </li>
+                {socialLinks.length > 0 ? (
+                  socialLinks.map((link, i) => (
+                    <li key={i}>
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <span className="social-icon">
+                          {getPlatformIcon(link.platform)}
+                        </span>
+                        {link.platform}
+                      </a>
+                    </li>
+                  ))
+                ) : (
+                  /* Fallback when nothing is set yet */
+                  <>
+                    <li><a href="#"><FaLinkedin className="social-icon" /> Linkedin</a></li>
+                    <li><a href="#"><FaTwitter className="social-icon" /> Twitter</a></li>
+                    <li><a href="#"><FaFacebook className="social-icon" /> Facebook</a></li>
+                    <li><a href="#"><FaInstagram className="social-icon" /> Instagram</a></li>
+                    <li><a href="#"><FaYoutube className="social-icon" /> Youtube</a></li>
+                  </>
+                )}
               </ul>
             </div>
           </div>

@@ -17,7 +17,14 @@ const columnsToAdd = [
 const companyColumnsToAdd = [
   { name: "is_linkedin_verified", definition: "TINYINT(1) DEFAULT 0" },
   { name: "linkedin_company_id", definition: "VARCHAR(100) DEFAULT NULL" },
-  { name: "linkedin_verified_at", definition: "DATETIME DEFAULT NULL" }
+  { name: "linkedin_verified_at", definition: "DATETIME DEFAULT NULL" },
+  { name: "is_email_verified", definition: "TINYINT(1) DEFAULT 0" },
+  { name: "email_verification_token", definition: "VARCHAR(255) DEFAULT NULL" },
+  { name: "status_delete", definition: "TINYINT(1) DEFAULT 1" },
+  { name: "province", definition: "VARCHAR(255) DEFAULT NULL" },
+  { name: "city", definition: "VARCHAR(255) DEFAULT NULL" },
+  { name: "Ntn", definition: "VARCHAR(100) DEFAULT NULL" },
+  { name: "founded_in", definition: "VARCHAR(100) DEFAULT NULL" }
 ];
 
 async function queryPromise(sql, params = []) {
@@ -70,7 +77,68 @@ async function migrateSchema() {
     console.log("Adding isVerified column to verifyemail...");
     await queryPromise("ALTER TABLE `verifyemail` ADD COLUMN `isVerified` TINYINT(1) DEFAULT 0");
   }
+
+  // 4. Migrate Companies Social Networks
+  const socialFields = await queryPromise("DESCRIBE `companies_social_networks`");
+  const existingSocialColumns = socialFields.map(f => f.Field);
+  if (!existingSocialColumns.includes("linkedIn")) {
+    console.log("Adding missing column to companies_social_networks: linkedIn");
+    await queryPromise("ALTER TABLE `companies_social_networks` ADD COLUMN `linkedIn` VARCHAR(100) DEFAULT NULL");
+  }
   
+  // 5. Migrate Site Configs Table
+  await queryPromise(`
+    CREATE TABLE IF NOT EXISTS \`site_configs\` (
+      \`config_key\` VARCHAR(100) PRIMARY KEY,
+      \`config_value\` TEXT NOT NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  // Insert default values if site_configs is empty
+  const configsCount = await queryPromise("SELECT COUNT(*) as count FROM `site_configs`");
+  if (configsCount[0].count === 0) {
+    console.log("Seeding default site configurations...");
+    const defaultConfigs = [
+      ["site_email", "info@hirix.pk"],
+      ["site_phone", "+92 300 1234567"],
+      ["footer_address", "Office 12, Ground Floor, Ezitech Solutions, Pakistan"],
+      ["site_title", "Hirix Pakistan \u2013 Find Jobs & Hire Talent"],
+      ["site_meta_description", "Hirix is Pakistan's leading job portal. Search thousands of jobs or post a vacancy and hire top talent today."],
+      ["social_links", JSON.stringify([
+        { platform: "Facebook", url: "https://facebook.com" },
+        { platform: "LinkedIn", url: "https://linkedin.com" },
+        { platform: "Instagram", url: "https://instagram.com" }
+      ])],
+      ["gtm_id", ""],
+      ["pixel_id", ""],
+      ["gsc_verification", ""]
+    ];
+    for (const [key, val] of defaultConfigs) {
+      await queryPromise("INSERT INTO `site_configs` (`config_key`, `config_value`) VALUES (?, ?)", [key, val]);
+    }
+  }
+
+  // 6. Migrate Blogs Table
+  await queryPromise(`
+    CREATE TABLE IF NOT EXISTS \`blogs\` (
+      \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+      \`title\` VARCHAR(255) NOT NULL,
+      \`slug\` VARCHAR(255) UNIQUE NOT NULL,
+      \`content\` LONGTEXT NOT NULL,
+      \`cover_image\` VARCHAR(255) DEFAULT NULL,
+      \`category\` VARCHAR(100) DEFAULT NULL,
+      \`tags\` TEXT DEFAULT NULL,
+      \`focus_keyword\` VARCHAR(100) DEFAULT NULL,
+      \`seo_title\` VARCHAR(255) DEFAULT NULL,
+      \`meta_description\` TEXT DEFAULT NULL,
+      \`canonical_url\` VARCHAR(255) DEFAULT NULL,
+      \`og_image\` VARCHAR(255) DEFAULT NULL,
+      \`status\` VARCHAR(50) DEFAULT 'Draft',
+      \`created_at\` DATETIME DEFAULT CURRENT_TIMESTAMP,
+      \`updated_at\` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
   console.log("Migration complete!");
 }
 

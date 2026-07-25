@@ -89,6 +89,12 @@ const AdSideBar = ({ isCollapsed, handleSidebarToggle }) => {
               link: "/admin/company",
             },
             {
+              src: job,
+              alt: "Blogs",
+              label: "Blogs",
+              link: "/admin/blogs",
+            },
+            {
               src: candidate,
               alt: "Management",
               label: "Management",

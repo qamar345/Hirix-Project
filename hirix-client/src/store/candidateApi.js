@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:9000";
+const BASE_URL = import.meta.env.VITE_API_URL || "https://api.hirix.com.pk";
 const getToken = () => sessionStorage.getItem("token");
 
 // ─── Candidate (Job Seeker) API Slice ─────────────────────────────────────────
