@@ -19,7 +19,10 @@ const VerifyEmailLink = (req, res) => {
 
   const sql = "SELECT * FROM `verifyemail` WHERE `token` = ?";
   conn_sql.query(sql, [token], (err, data) => {
-    if (err) return res.send("Something went wrong!!!");
+    if (err) {
+      console.error("VerifyEmailLink Error 1:", err);
+      return res.send("Something went wrong!!!");
+    }
 
     if (data.length > 0) {
       const sql_verified =
@@ -36,7 +39,10 @@ const VerifyEmailLink = (req, res) => {
   `;
 
       conn_sql.query(sql_verified, [token], (err, confirmRes) => {
-        if (err) return res.send("Something went wrong!!!");
+        if (err) {
+          console.error("VerifyEmailLink Error 2:", err);
+          return res.send("Something went wrong!!!");
+        }
         if (confirmRes) return res.send(html);
       });
     } else {

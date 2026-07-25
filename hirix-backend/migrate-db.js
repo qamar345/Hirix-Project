@@ -54,6 +54,23 @@ async function migrate() {
         await queryPromise(`ALTER TABLE \`companies\` ADD COLUMN \`${col.name}\` ${col.definition}`);
       }
     }
+
+    // 3. Migrate VerifyEmail
+    const verifyemailFields = await queryPromise("DESCRIBE `verifyemail`");
+    const existingVerifyemailColumns = verifyemailFields.map(f => f.Field);
+
+    // Change token column type to VARCHAR(255) to accommodate UUID strings
+    const tokenFieldInfo = verifyemailFields.find(f => f.Field === "token");
+    if (tokenFieldInfo && tokenFieldInfo.Type.toLowerCase().includes("int")) {
+      console.log("Modifying token column type in verifyemail to VARCHAR(255)...");
+      await queryPromise("ALTER TABLE `verifyemail` MODIFY COLUMN `token` VARCHAR(255) NOT NULL");
+    }
+
+    // Add isVerified column if it doesn't exist
+    if (!existingVerifyemailColumns.includes("isVerified")) {
+      console.log("Adding isVerified column to verifyemail...");
+      await queryPromise("ALTER TABLE `verifyemail` ADD COLUMN `isVerified` TINYINT(1) DEFAULT 0");
+    }
     
     console.log("Migration complete!");
     process.exit(0);
