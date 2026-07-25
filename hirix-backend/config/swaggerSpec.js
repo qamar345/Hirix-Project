@@ -7,8 +7,16 @@ const swaggerSpec = {
   },
   servers: [
     {
+      url: "/",
+      description: "Current Host (Auto-detected)",
+    },
+    {
+      url: "https://api.hirix.com.pk",
+      description: "Production Server",
+    },
+    {
       url: "http://localhost:9000",
-      description: "Development Server",
+      description: "Local Development Server",
     },
   ],
   components: {
