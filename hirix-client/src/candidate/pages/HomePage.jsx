@@ -52,15 +52,20 @@ const HomePage = () => {
       const city = params.get("city") || "";
       const category = params.get("category") || "";
 
-      if (!search.trim() || !city.trim() || !category.trim()) {
-        setJobs([]);
+      // Only fetch if at least one filter is active
+      if (!search.trim() && !city.trim() && !category.trim()) {
         return;
       }
       try {
         const res = await API.get("/jobs", {
           params: { search, city, category },
         });
-        setJobs(res.data);
+        const fetchedJobs = res.data || [];
+        setJobs(fetchedJobs);
+        // Auto-select first job when new search results arrive
+        if (fetchedJobs.length > 0) {
+          setSelectedJob(fetchedJobs[0]);
+        }
       } catch (error) {
         setJobs([]);
       }
@@ -68,14 +73,6 @@ const HomePage = () => {
 
     fetchFilteredJobs();
   }, [location.search]);
-
-  useEffect(() => {
-    if (jobs.length === 0) {
-      setSelectedJob(null);
-    } else {
-      setSelectedJob(jobs[0]);
-    }
-  }, [jobs]);
   return (
     <>
       <div>
