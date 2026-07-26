@@ -25,7 +25,10 @@ API.interceptors.request.use(
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+    const token = sessionStorage.getItem("token");
+    // Only force logout if user WAS logged in and token expired/invalid
+    // Do NOT redirect guest/public users who get 401 on optional auth endpoints
+    if (token && error.response && (error.response.status === 401 || error.response.status === 403)) {
       console.warn("Session expired or unauthorized. Logging out...");
       sessionStorage.clear();
       window.location.href = "/";

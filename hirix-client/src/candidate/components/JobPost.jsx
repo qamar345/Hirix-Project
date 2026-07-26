@@ -37,14 +37,18 @@ const JobPost = ({ job, fromShare }) => {
   const jobId = job?.id;
   useEffect(() => {
     if (!jobId) return; // guard: don't fetch if no job selected
+    const userId = sessionStorage.getItem("id");
+    const userToken = sessionStorage.getItem("token");
+    // Only fetch wishlist if user is logged in
+    if (!userId || !userToken) return;
+
     const fetchWishlist = async () => {
       try {
-        const userId = sessionStorage.getItem("id");
         const res = await API.get(
           `/getWishlists/${userId}`,
           {
             headers: {
-              "x-access-token": token,
+              "x-access-token": userToken,
             },
           }
         );
