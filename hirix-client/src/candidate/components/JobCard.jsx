@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import API, { BASE_URL } from "../../api";
-import { NavLink, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { MdOutlineLocationOn } from "react-icons/md";
 import { FaRegHeart } from "react-icons/fa";
 import { urgent, featured } from "../assets/icons/index.js";
@@ -111,19 +111,19 @@ const JobCard = ({
             />
             <div className="jobs-left-inner">
               <h3 className="jobs-title">
-                <NavLink to="">{title}</NavLink>
+                <span>{title}</span>
               </h3>
               <div className="info-company d-flex gap-2 flex-wrap">
                 <span>by</span>
-                <NavLink to="" className={`authour civi-link-bottom`}>
+                <span className={`authour civi-link-bottom`}>
                   {employer_username}
-                </NavLink>
+                </span>
                 <span>in</span>
                 <div className="categories-warpper">
                   <div className="cate-warpper">
-                    <NavLink to="" className={`cate civi-link-bottom`}>
+                    <span className={`cate civi-link-bottom`}>
                       {company_name}
-                    </NavLink>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -160,14 +160,14 @@ const JobCard = ({
         </div>
         <div className="jobs-archive-footer">
           <div className="jobs-footer-left">
-            <NavLink to="" className={`label label-type`}>
+            <span className={`label label-type`}>
               {job_type}
-            </NavLink>
+            </span>
 
-            <NavLink to="" className={`label label-location`}>
+            <span className={`label label-location`}>
               <MdOutlineLocationOn />
               {city}
-            </NavLink>
+            </span>
 
             <div className="label label-price">
               {" "}
