@@ -44,14 +44,11 @@ const JobPost = ({ job, fromShare }) => {
 
     const fetchWishlist = async () => {
       try {
-        const res = await API.get(
-          `/getWishlists/${userId}`,
-          {
-            headers: {
-              "x-access-token": userToken,
-            },
-          }
-        );
+        const res = await API.get(`/getWishlists/${userId}`, {
+          headers: {
+            "x-access-token": userToken,
+          },
+        });
         const jobIds = res.data.map((item) => item.job_id);
         setWishlistJobs(jobIds);
       } catch (error) {}
@@ -104,16 +101,12 @@ const JobPost = ({ job, fromShare }) => {
     } else {
       try {
         const userid = sessionStorage.getItem("id");
-        const res = await API.post(
-          `/apply-for-job/${userid}`,
-          null,
-          {
-            params: { job_id: id },
-            headers: {
-              "x-access-token": token,
-            },
-          }
-        );
+        const res = await API.post(`/apply-for-job/${userid}`, null, {
+          params: { job_id: id },
+          headers: {
+            "x-access-token": token,
+          },
+        });
 
         if (res.data.msg) {
           alert(res.data.msg);
@@ -133,16 +126,12 @@ const JobPost = ({ job, fromShare }) => {
 
     try {
       const userId = sessionStorage.getItem("id");
-      const res = await API.post(
-        `/addWishlist/${userId}`,
-        null,
-        {
-          params: { job_id: id },
-          headers: {
-            "x-access-token": token,
-          },
-        }
-      );
+      const res = await API.post(`/addWishlist/${userId}`, null, {
+        params: { job_id: id },
+        headers: {
+          "x-access-token": token,
+        },
+      });
 
       const message = res.data.msg;
 
@@ -301,7 +290,12 @@ const JobPost = ({ job, fromShare }) => {
                 </div>
                 <div>
                   <button
-                    style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: 0,
+                    }}
                     onClick={handleWishlist}
                   >
                     {wishlistJobs.includes(id) ? (
@@ -321,18 +315,25 @@ const JobPost = ({ job, fromShare }) => {
                   <MdOutlineLocationOn />
                   {city}
                 </span>
-                <span className={`label label-type`}>
-                  {job_type}
-                </span>
+                <span className={`label label-type`}>{job_type}</span>
               </div>
-              {check ? (
+              {check || !check ? (
                 <div className="right">
                   {ApplyType === "internal" && (
                     <a
                       href="#"
-                      type="button"
-                      className={`civi-button civi-button-apply civi_form_apply_jobs`}
-                      onClick={(e) => { e.preventDefault(); handleApply(); }}
+                      className="civi-button civi-button-apply civi_form_apply_jobs"
+                      onClick={(e) => {
+                        e.preventDefault();
+
+                        if (!check) {
+                          alert("Please Login First!");
+                          navigate("/");
+                          return;
+                        }
+
+                        handleApply();
+                      }}
                     >
                       Apply Now
                     </a>
@@ -341,9 +342,9 @@ const JobPost = ({ job, fromShare }) => {
                   {ApplyType === "email" && (
                     <a
                       href={`mailto:${Email}`}
-                      type="button"
-                      className={`civi-button civi-button-apply civi_form_apply_jobs`}
+                      className="civi-button civi-button-apply civi_form_apply_jobs"
                       target="_blank"
+                      rel="noopener noreferrer"
                     >
                       Apply Now
                     </a>
@@ -352,20 +353,18 @@ const JobPost = ({ job, fromShare }) => {
                   {ApplyType === "phone" && (
                     <a
                       href={`tel:${Phone}`}
-                      type="button"
-                      className={`civi-button civi-button-apply civi_form_apply_jobs`}
-                      target="_blank"
+                      className="civi-button civi-button-apply civi_form_apply_jobs"
                     >
                       Apply Now
                     </a>
                   )}
 
-                  {ApplyType === "url" && (
+                  {(ApplyType === "external" || ApplyType === "url") && (
                     <a
                       href={Url}
-                      type="button"
-                      className={`civi-button civi-button-apply civi_form_apply_jobs`}
+                      className="civi-button civi-button-apply civi_form_apply_jobs"
                       target="_blank"
+                      rel="noopener noreferrer"
                     >
                       Apply Now
                     </a>
@@ -487,7 +486,7 @@ const JobPost = ({ job, fromShare }) => {
                                 "en-CA",
                                 {
                                   timeZone: "Asia/Karachi",
-                                }
+                                },
                               )
                             : "N/A"}
                         </p>
@@ -766,7 +765,7 @@ const JobPost = ({ job, fromShare }) => {
                           {/* <p>{companyDetail.About}</p> */}
                         </div>
 
-                      {/* <p>
+                        {/* <p>
                     Foundation helps creators mint and auction their digital
                     artworks as NFTs on the Ethereum blockchain.
                   </p>
@@ -798,7 +797,7 @@ const JobPost = ({ job, fromShare }) => {
                   <p>
                     Let’s explore these new possibilities collectively.&nbsp;
                   </p> */}
-                      {/* <a href="#">Read more</a> */}
+                        {/* <a href="#">Read more</a> */}
                       </div>
                     </div>
                     <div className="info">
@@ -830,33 +829,53 @@ const JobPost = ({ job, fromShare }) => {
                     <div className="info">
                       <p className="title-info">Phone</p>
                       <p className="details-info company-phone">
-                        <a href={`tel:${companyDetail.Contact}`}>{companyDetail.Contact}</a>
+                        <a href={`tel:${companyDetail.Contact}`}>
+                          {companyDetail.Contact}
+                        </a>
                       </p>
                     </div>
                     <div className="info">
                       <p className="title-info">Email</p>
                       <p className="details-info email">
-                        <a href={`mailto:${companyDetail.E_mail}`}>{companyDetail.E_mail}</a>
+                        <a href={`mailto:${companyDetail.E_mail}`}>
+                          {companyDetail.E_mail}
+                        </a>
                       </p>
                     </div>
                     <ul className="list-social">
                       <li>
-                        <a href="https://www.facebook.com" target="_blank" rel="noreferrer">
+                        <a
+                          href="https://www.facebook.com"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
                           <i className="fab fa-facebook-f" />
                         </a>
                       </li>
                       <li>
-                        <a href="https://twitter.com/foundation" target="_blank" rel="noreferrer">
+                        <a
+                          href="https://twitter.com/foundation"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
                           <i className="fab fa-twitter" />
                         </a>
                       </li>
                       <li>
-                        <a href="https://linkedin.com/company/foundation-labs-inc" target="_blank" rel="noreferrer">
+                        <a
+                          href="https://linkedin.com/company/foundation-labs-inc"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
                           <i className="fab fa-linkedin" />
                         </a>
                       </li>
                       <li>
-                        <a href="https://instagram.com/withfoundation" target="_blank" rel="noreferrer">
+                        <a
+                          href="https://instagram.com/withfoundation"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
                           <i className="fab fa-instagram" />
                         </a>
                       </li>
@@ -972,12 +991,32 @@ const JobPost = ({ job, fromShare }) => {
               <span>{daysLeft > 0 ? daysLeft : 0} </span>days left to apply
             </p>
           </div>
+          {ApplyType === "internal" && (
+            <a
+              href="#"
+              className="civi-button civi-button-apply civi_form_apply_jobs"
+              onClick={(e) => {
+                e.preventDefault();
+
+                if (!check) {
+                  alert("Please Login First!");
+                  navigate("/");
+                  return;
+                }
+
+                handleApply();
+              }}
+            >
+              Apply Now
+            </a>
+          )}
+
           {ApplyType === "email" && (
             <a
               href={`mailto:${Email}`}
-              type="button"
-              className={`civi-button civi-button-apply civi_form_apply_jobs`}
+              className="civi-button civi-button-apply civi_form_apply_jobs"
               target="_blank"
+              rel="noopener noreferrer"
             >
               Apply Now
             </a>
@@ -986,20 +1025,18 @@ const JobPost = ({ job, fromShare }) => {
           {ApplyType === "phone" && (
             <a
               href={`tel:${Phone}`}
-              type="button"
-              className={`civi-button civi-button-apply civi_form_apply_jobs`}
-              target="_blank"
+              className="civi-button civi-button-apply civi_form_apply_jobs"
             >
               Apply Now
             </a>
           )}
 
-          {ApplyType === "url" && (
+          {(ApplyType === "external" || ApplyType === "url") && (
             <a
               href={Url}
-              type="button"
-              className={`civi-button civi-button-apply civi_form_apply_jobs`}
+              className="civi-button civi-button-apply civi_form_apply_jobs"
               target="_blank"
+              rel="noopener noreferrer"
             >
               Apply Now
             </a>
