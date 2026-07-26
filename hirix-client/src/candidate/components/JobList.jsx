@@ -56,13 +56,22 @@ const JobList = ({ onSelectJob }) => {
         },
       });
 
-      setjobData(res.data.data.jobs);
-      setfiltersJobs(res.data.data.jobs);
-      settCurrentPage(res.data.meta.page);
-      setTotalPages(res.data.meta.totalPages);
-      setCompanies(res.data.data.company);
-    } catch (error) {}
+      console.log("GET /get-posts response:", res.data);
+
+      const jobs = res.data?.data?.jobs || [];
+      const companies = res.data?.data?.company || [];
+      const meta = res.data?.meta || {};
+
+      setjobData(jobs);
+      setfiltersJobs(jobs);
+      settCurrentPage(meta.page || 1);
+      setTotalPages(meta.totalPages || 1);
+      setCompanies(companies);
+    } catch (error) {
+      console.error("GET /get-posts failed:", error?.response?.data || error.message);
+    }
   };
+
 
   const handlePageChange = (page) => {
     settCurrentPage(page);
