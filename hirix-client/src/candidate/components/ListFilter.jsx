@@ -58,13 +58,12 @@ const ListFilter = () => {
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
-        const res = await fetch("/filtersCountData", {
+        const res = await API.get("/filtersCountData", {
           headers: {
             "x-access-token": token,
           },
         });
-        const data = await res.json();
-        setFilterOptions(data); // set this to state
+        setFilterOptions(res.data);
       } catch (error) {
         console.error("Error fetching filter options:", error);
       }
