@@ -32,6 +32,30 @@ const JobPost = ({ job, fromShare }) => {
   const handleTabClick = (tab) => {
     setActiveTab(tab);
   };
+
+  // ✅ useEffect MUST be before any conditional return (Rules of Hooks)
+  const jobId = job?.id;
+  useEffect(() => {
+    if (!jobId) return; // guard: don't fetch if no job selected
+    const fetchWishlist = async () => {
+      try {
+        const userId = sessionStorage.getItem("id");
+        const res = await API.get(
+          `/getWishlists/${userId}`,
+          {
+            headers: {
+              "x-access-token": token,
+            },
+          }
+        );
+        const jobIds = res.data.map((item) => item.job_id);
+        setWishlistJobs(jobIds);
+      } catch (error) {}
+    };
+
+    fetchWishlist();
+  }, [jobId]);
+
   if (!job) {
     return (
       <div className="job-post-placeholder">
@@ -39,6 +63,7 @@ const JobPost = ({ job, fromShare }) => {
       </div>
     );
   }
+
   const {
     companyDetail,
     id,
@@ -66,28 +91,7 @@ const JobPost = ({ job, fromShare }) => {
   } = job;
   const today = new Date();
   const expiryDate = new Date(expiry_date);
-
   const daysLeft = differenceInDays(expiryDate, today);
-
-  useEffect(() => {
-    const fetchWishlist = async () => {
-      try {
-        const userId = sessionStorage.getItem("id");
-        const res = await API.get(
-          `/getWishlists/${userId}`,
-          {
-            headers: {
-              "x-access-token": token,
-            },
-          }
-        );
-        const jobIds = res.data.map((item) => item.job_id);
-        setWishlistJobs(jobIds);
-      } catch (error) {}
-    };
-
-    fetchWishlist();
-  }, []);
 
   const handleApply = async () => {
     if (!check) {
