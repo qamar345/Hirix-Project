@@ -193,15 +193,15 @@ const JobPost = ({ job, fromShare }) => {
                   </div>
                   <div className="d-flex gap-2">
                     <span>by</span>
-                    <NavLink to="" className={`authour civi-link-bottom`}>
+                    <span className={`authour civi-link-bottom`}>
                       {employer_username}
-                    </NavLink>
+                    </span>
                     <span>in</span>
                     <div className="categories-warpper">
                       <div className="cate-warpper">
-                        <NavLink to="" className={`cate civi-link-bottom`}>
+                        <span className={`cate civi-link-bottom`}>
                           {company_name}
-                        </NavLink>
+                        </span>
                       </div>
                     </div>
                     {/* <div className="jobs-view">
@@ -296,7 +296,10 @@ const JobPost = ({ job, fromShare }) => {
                   </div> */}
                 </div>
                 <div>
-                  <NavLink to="#" onClick={handleWishlist}>
+                  <button
+                    style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                    onClick={handleWishlist}
+                  >
                     {wishlistJobs.includes(id) ? (
                       <FaHeart
                         style={{ fontSize: "20px", color: "red", fill: "red" }}
@@ -304,19 +307,19 @@ const JobPost = ({ job, fromShare }) => {
                     ) : (
                       <FaRegHeart style={{ fontSize: "20px", color: "gray" }} />
                     )}
-                  </NavLink>
+                  </button>
                 </div>
               </div>
             </div>
             <div className="civi-jobs-header-bottom">
               <div className="left d-flex">
-                <NavLink to="" className={`label label-location`}>
+                <span className={`label label-location`}>
                   <MdOutlineLocationOn />
                   {city}
-                </NavLink>
-                <NavLink to="" className={`label label-type`}>
+                </span>
+                <span className={`label label-type`}>
                   {job_type}
-                </NavLink>
+                </span>
               </div>
               {check ? (
                 <div className="right">
@@ -325,7 +328,7 @@ const JobPost = ({ job, fromShare }) => {
                       href="#"
                       type="button"
                       className={`civi-button civi-button-apply civi_form_apply_jobs`}
-                      onClick={handleApply}
+                      onClick={(e) => { e.preventDefault(); handleApply(); }}
                     >
                       Apply Now
                     </a>
@@ -370,7 +373,8 @@ const JobPost = ({ job, fromShare }) => {
                     href="#"
                     type="button"
                     className={`civi-button civi-button-apply civi_form_apply_jobs`}
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
                       alert("Login first!!!");
                     }}
                   >
