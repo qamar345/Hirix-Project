@@ -47,6 +47,13 @@ const JobCard = ({
   const navigate = useNavigate();
   const check = sessionStorage.getItem("isLoggedIn");
   const [sharedHighlight, setSharedHighlight] = useState(false);
+
+  const handleSelectJob = (event) => {
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    onClick?.();
+  };
+
   const handleWishlist = async () => {
     if (!check) {
       alert("Please Login First!");
@@ -89,7 +96,15 @@ const JobCard = ({
       <div
         id={id}
         className={`civi-jobs-item layout-list  ${customClass}`}
-        onClick={onClick}
+        role="button"
+        tabIndex={0}
+        onClick={handleSelectJob}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            handleSelectJob(event);
+          }
+        }}
         // style={{ cursor: "pointer" }}
         style={
           sharedHighlight

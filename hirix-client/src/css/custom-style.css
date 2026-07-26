@@ -8066,6 +8066,7 @@ body.single-candidate .widget-area-init.has-sticky {
   display: -ms-flexbox;
   display: flex;
   flex-wrap: wrap;
+  gap: 12px 24px;
 }
 .archive-layout .preview-tabs .company-overview .content,
 .archive-layout .preview-tabs .company-overview .title {
@@ -8073,13 +8074,34 @@ body.single-candidate .widget-area-init.has-sticky {
   flex: 0 0 100%;
   max-width: 100%;
 }
+.archive-layout .preview-tabs .company-overview .civi-description-details {
+  -ms-flex: 0 0 100%;
+  flex: 0 0 100%;
+  max-width: 100%;
+  margin-bottom: 8px;
+}
 .archive-layout .preview-tabs .company-overview .info {
-  -ms-flex: 0 0 33.33%;
-  flex: 0 0 33.33%;
-  max-width: 33.33%;
+  -ms-flex: 0 0 calc(50% - 12px);
+  flex: 0 0 calc(50% - 12px);
+  max-width: calc(50% - 12px);
+  margin-bottom: 8px;
+}
+.archive-layout .preview-tabs .company-overview .list-social {
+  -ms-flex: 0 0 100%;
+  flex: 0 0 100%;
+  max-width: 100%;
+  margin-top: 8px;
+  padding-left: 0;
 }
 .archive-layout .preview-tabs .company-overview .content {
   margin-bottom: 20px;
+}
+@media (max-width: 576px) {
+  .archive-layout .preview-tabs .company-overview .info {
+    -ms-flex: 0 0 100%;
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
 }
 .archive-layout .preview-tabs .company-overview .content a,
 .archive-layout .preview-tabs .info a,

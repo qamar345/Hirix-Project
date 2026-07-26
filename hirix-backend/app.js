@@ -22,6 +22,8 @@ app.use(express.json());
 app.use((req, res, next) => {
   const allowedOrigins = [
     "https://jobs.hirix.com.pk",
+    "https://www.hirix.com.pk",
+    "https://hirix.com.pk",
     "http://localhost:5173",
     "http://localhost:5174",
     "http://localhost:3000"

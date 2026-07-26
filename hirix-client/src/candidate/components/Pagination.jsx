@@ -8,7 +8,10 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }) => {
 
   const [activePage, setActivePage] = useState(1);
 
-  const handlePageClick = (number) => {
+  const handlePageClick = (event, number) => {
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    onPageChange?.(number);
     setActivePage(number);
   };
   return (
@@ -24,10 +27,7 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }) => {
                 <a
                   className="page-link"
                   href="#"
-                  onClick={() => {
-                    onPageChange(number);
-                    handlePageClick(number);
-                  }}
+                  onClick={(event) => handlePageClick(event, number)}
                 >
                   {number}
                 </a>

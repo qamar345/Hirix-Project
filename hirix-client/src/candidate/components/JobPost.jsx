@@ -392,22 +392,42 @@ const JobPost = ({ job, fromShare }) => {
           <div className="preview-tabs">
             <ul className="tab-nav">
               <li>
-                <a
+                <button
+                  type="button"
                   onClick={() => handleTabClick("job-detail")}
-                  className={activeTab === "job-detail" ? "is-active" : ""}
+                  className={`tab-link ${
+                    activeTab === "job-detail" ? "is-active" : ""
+                  }`}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    font: "inherit",
+                    cursor: "pointer",
+                    color: "inherit",
+                  }}
                 >
                   Job Detail
-                </a>
+                </button>
               </li>
               <li>
-                <a
+                <button
+                  type="button"
                   onClick={() => handleTabClick("company-overview")}
-                  className={
+                  className={`tab-link ${
                     activeTab === "company-overview" ? "is-active" : ""
-                  }
+                  }`}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    font: "inherit",
+                    cursor: "pointer",
+                    color: "inherit",
+                  }}
                 >
                   Company Overview
-                </a>
+                </button>
               </li>
             </ul>
             <div
@@ -735,15 +755,16 @@ const JobPost = ({ job, fromShare }) => {
                 activeTab === "company-overview" ? "is-active" : ""
               }`}
             >
-              <div className="company-overview">
+              <div className="company-overview block-archive-inner">
                 {companyDetail ? (
                   <>
-                    <h4 className="title-post">Overview</h4>
+                    <h4 className="title-jobs">Overview</h4>
 
-                    <div className="civi-description">
-                      <div className="row">
-                        {/* <p>{companyDetail.About}</p> */}
-                      </div>
+                    <div className="civi-description-details">
+                      <div className="civi-description">
+                        <div className="row">
+                          {/* <p>{companyDetail.About}</p> */}
+                        </div>
 
                       {/* <p>
                     Foundation helps creators mint and auction their digital
@@ -778,6 +799,7 @@ const JobPost = ({ job, fromShare }) => {
                     Let’s explore these new possibilities collectively.&nbsp;
                   </p> */}
                       {/* <a href="#">Read more</a> */}
+                      </div>
                     </div>
                     <div className="info">
                       <p className="title-info">Categories</p>
@@ -785,9 +807,6 @@ const JobPost = ({ job, fromShare }) => {
                         <a href="#" className="cate civi-link-bottom">
                           {companyDetail.categories}
                         </a>
-                        {/* <a href="#" className="cate civi-link-bottom">
-                      Ecommerce
-                    </a> */}
                       </div>
                     </div>
                     <div className="info">
@@ -811,34 +830,33 @@ const JobPost = ({ job, fromShare }) => {
                     <div className="info">
                       <p className="title-info">Phone</p>
                       <p className="details-info company-phone">
-                        <a href="tel:(+12)321654987">{companyDetail.Contact}</a>
-                        <i className="fal fa-eye" />
+                        <a href={`tel:${companyDetail.Contact}`}>{companyDetail.Contact}</a>
                       </p>
                     </div>
                     <div className="info">
                       <p className="title-info">Email</p>
                       <p className="details-info email">
-                        <a href="#">{companyDetail.E_mail}</a>
+                        <a href={`mailto:${companyDetail.E_mail}`}>{companyDetail.E_mail}</a>
                       </p>
                     </div>
                     <ul className="list-social">
                       <li>
-                        <a href="https://www.facebook.com">
+                        <a href="https://www.facebook.com" target="_blank" rel="noreferrer">
                           <i className="fab fa-facebook-f" />
                         </a>
                       </li>
                       <li>
-                        <a href="https://twitter.com/foundation">
+                        <a href="https://twitter.com/foundation" target="_blank" rel="noreferrer">
                           <i className="fab fa-twitter" />
                         </a>
                       </li>
                       <li>
-                        <a href="https://linkedin.com/company/foundation-labs-inc">
+                        <a href="https://linkedin.com/company/foundation-labs-inc" target="_blank" rel="noreferrer">
                           <i className="fab fa-linkedin" />
                         </a>
                       </li>
                       <li>
-                        <a href="https://instagram.com/withfoundation">
+                        <a href="https://instagram.com/withfoundation" target="_blank" rel="noreferrer">
                           <i className="fab fa-instagram" />
                         </a>
                       </li>
