@@ -146,7 +146,7 @@ const CanProfile = () => {
   //   fetchUserData();
   // }, []);
   useEffect(() => {
-    axios
+    API
       .get(`/getProfile/${id}`, {
         headers: {
           "x-access-token": token,

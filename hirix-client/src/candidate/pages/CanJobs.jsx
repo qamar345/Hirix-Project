@@ -113,7 +113,7 @@ const CanJobs = () => {
   }, [sort, Alljobs]);
 
   const StatusDelete = async (application_id) => {
-    await axios
+    await API
       .put(`/Deleted/${application_id}`, null, {
         headers: {
           "x-access-token": token,
@@ -127,7 +127,7 @@ const CanJobs = () => {
   };
 
   const StatusApply = async (application_id) => {
-    await axios
+    await API
       .put(`/apply/${application_id}`, null, {
         headers: {
           "x-access-token": token,
@@ -145,7 +145,7 @@ const CanJobs = () => {
       "Are you sure you want to cancel this application?"
     );
     if (confirm) {
-      await axios
+      await API
         .delete(
           `/cancleApplication/${application_id}`,
           null,

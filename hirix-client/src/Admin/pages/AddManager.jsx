@@ -74,7 +74,7 @@ const AddManager = () => {
     };
 
     try {
-      await axios
+      await API
         .post("/addManager", payload, {
           headers: {
             "x-access-token": token,

@@ -89,7 +89,7 @@ const ApplicantList = () => {
   useEffect(() => {}, [applicants]);
 
   const Review = async (id) => {
-    await axios
+    await API
       .put(`/status-review/${id}`, null, {
         headers: {
           "x-access-token": token,
@@ -102,7 +102,7 @@ const ApplicantList = () => {
       .catch((err) => {});
   };
   const Selected = async (id) => {
-    await axios
+    await API
       .put(`/statusselected/${id}`, null, {
         headers: {
           "x-access-token": token,
@@ -116,7 +116,7 @@ const ApplicantList = () => {
   };
 
   const Rejected = async (id) => {
-    await axios
+    await API
       .put(`/statusrejected/${id}`, null, {
         headers: {
           "x-access-token": token,

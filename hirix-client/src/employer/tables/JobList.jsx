@@ -72,7 +72,7 @@ function JobList() {
   }, [filter, sort, jobs]);
 
   const StatusClosed = async (id) => {
-    await axios
+    await API
       .put(`/del-job-posts/${id}`, {
         headers: {
           "x-access-token": token,
@@ -86,7 +86,7 @@ function JobList() {
   };
 
   const DeleteJob = async (id) => {
-    await axios
+    await API
       .delete(`/deleteJob/${id}`, null, {
         headers: {
           "x-access-token": token,
@@ -105,7 +105,7 @@ function JobList() {
   };
 
   const StatusOpen = async (id) => {
-    await axios
+    await API
       .put(`/update-status-opening/${id}`, null, {
         headers: {
           "x-access-token": token,
@@ -119,7 +119,7 @@ function JobList() {
   };
 
   const StatusPause = async (id) => {
-    await axios
+    await API
       .put(`/status_Pause/${id}`, null, {
         headers: {
           "x-access-token": token,
