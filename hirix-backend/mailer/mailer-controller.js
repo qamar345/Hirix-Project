@@ -1,11 +1,13 @@
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 
+const mailPort = parseInt(process.env.MAILPORT || 465);
+
 // Create a global transporter
 const transporter = nodemailer.createTransport({
-  host: process.env.MAILHOST,
-  port: parseInt(process.env.MAILPORT),
-  secure: true,
+  host: process.env.MAILHOST || "mail.hirix.com.pk",
+  port: mailPort,
+  secure: mailPort === 465,
   auth: {
     user: process.env.MAILERUSER,
     pass: process.env.MAILERPASS,
@@ -16,7 +18,10 @@ const transporter = nodemailer.createTransport({
 });
 
 const VerifyEmail = (email, token) => {
-  const link = `${process.env.URL}/${token}`;
+  const isLocal = process.env.NODE_ENV !== "production" && (!process.env.URL || process.env.URL.includes("localhost"));
+  const link = isLocal
+    ? `http://localhost:9000/verify-mail-link/${token}`
+    : `https://api.hirix.com.pk/verify-mail-link/${token}`;
 
   const mailOptions = {
     from: `"Hirix" <${process.env.MAILERUSER}>`,
@@ -133,7 +138,7 @@ const VerifyEmail = (email, token) => {
 };
 
 const SendCompanyVerificationEmail = (email, token, companyName) => {
-  const isLocal = process.env.URL.includes("localhost");
+  const isLocal = process.env.NODE_ENV !== "production" && (!process.env.URL || process.env.URL.includes("localhost"));
   const link = isLocal
     ? `http://localhost:9000/verify-company-email/${token}`
     : `https://api.hirix.com.pk/verify-company-email/${token}`;
@@ -365,8 +370,52 @@ const SendForgotPasswordEmail = (email, token) => {
   });
 };
 
+const SendContactFormEmail = (name, email, subject, message) => {
+  const mailOptions = {
+    from: `"Hirix Contact Form" <${process.env.MAILERUSER}>`,
+    to: "support@hirix.com.pk",
+    replyTo: email,
+    subject: `New Contact Query: ${subject} (from ${name})`,
+    html: `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>New Contact Query</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 30px; margin: 0;">
+  <div style="max-width: 600px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+    <h2 style="color: #00743f; border-bottom: 2px solid #00743f; padding-bottom: 10px; margin-top: 0;">New Contact Query Received</h2>
+    <p><strong>Name:</strong> ${name}</p>
+    <p><strong>Email:</strong> <a href="mailto:${email}" style="color: #00743f;">${email}</a></p>
+    <p><strong>Subject:</strong> ${subject}</p>
+    <div style="margin-top: 20px; padding: 15px; background-color: #f8fafc; border-left: 4px solid #00743f; border-radius: 4px;">
+      <p style="margin: 0; white-space: pre-wrap; color: #334155; line-height: 1.6;">${message}</p>
+    </div>
+    <hr style="margin-top: 30px; border: none; border-top: 1px solid #eeeeee;" />
+    <p style="font-size: 12px; color: #64748b; margin-bottom: 0;">This query was sent via the contact form on Hirix Pakistan.</p>
+  </div>
+</body>
+</html>
+    `,
+  };
+
+  return new Promise((resolve, reject) => {
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending contact email:", error);
+        reject(error);
+      } else {
+        console.log("Contact email sent:", info.response);
+        resolve(info);
+      }
+    });
+  });
+};
+
 module.exports = {
   VerifyEmail,
   SendCompanyVerificationEmail,
   SendForgotPasswordEmail,
+  SendContactFormEmail,
 };

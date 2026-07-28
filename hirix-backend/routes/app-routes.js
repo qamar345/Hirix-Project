@@ -42,6 +42,7 @@ const {
   forgetPasswordForAdmin,
   filtersCount,
   GetLatestJobs,
+  SendContactEmail,
 } = require("../controller/combined/commonAboutPosts");
 
 const { GetSiteSettings, UpdateSiteSettings } = require("../controller/combined/siteConfigs");
@@ -258,6 +259,8 @@ router.post("/send-verify-email", SendVerificationLink);
 
 router.get("/verify-mail-link/:token", VerifyEmailLink);
 router.get("/verify-company-email/:token", VerifyCompanyEmail);
+
+router.post("/send-contact-email", SendContactEmail);
 
 router.get("/check-mail-status/:email", CheckMailStatus);
 router.post("/news-letter", verifyToken, Subscribe);

@@ -108,10 +108,18 @@ header.site-header.sticky-header.on {
   background-color: #ffffff !important;
 }
 header.site-header .site-logo img {
-  max-width: 80px;
+  max-width: 140px;
+  max-height: 48px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 .nav-dashboard-header .site-logo img {
-  max-width: 80px;
+  max-width: 140px;
+  max-height: 48px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 header.site-header {
   padding-top: 8px;

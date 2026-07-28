@@ -107,7 +107,13 @@ const HomePage = () => {
                 </div> */}
                   {/* Job List */}
                   <JobList
-                    onSelectJob={(job) => setSelectedJob(job)}
+                    onSelectJob={(job) => {
+                      if (window.innerWidth <= 991) {
+                        navigate(`/JobPage/${job.id}`);
+                      } else {
+                        setSelectedJob(job);
+                      }
+                    }}
                     jobs={jobs}
                     setJobs={setJobs}
                     companies={companies}

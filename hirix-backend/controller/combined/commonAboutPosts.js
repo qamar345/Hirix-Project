@@ -1,5 +1,5 @@
 const { conn_sql } = require("../../config/connection");
-const { VerifyEmail, SendForgotPasswordEmail } = require("../../mailer/mailer-controller");
+const { VerifyEmail, SendForgotPasswordEmail, SendContactFormEmail } = require("../../mailer/mailer-controller");
 const bcrypt = require("bcryptjs");
 
 // get All job posts
@@ -485,11 +485,11 @@ const GetLatestJobs = (req, res) => {
       jobs.Experience, 
       jobs.expiry_date,
       jobs.required_skills,
-      companies.name AS company_name, 
+      COALESCE(companies.name, jobs.company_name) AS company_name, 
       companies.images AS company_logo
     FROM jobs 
-    LEFT JOIN companies ON jobs.company_name = companies.id
-    WHERE jobs.status = 'Open' AND (jobs.expiry_date >= CURDATE() OR jobs.expiry_date IS NULL)
+    LEFT JOIN companies ON (jobs.company_name = companies.name OR jobs.company_name = CAST(companies.id AS CHAR))
+    WHERE jobs.status != 'Closed' OR jobs.status IS NULL
     ORDER BY jobs.id DESC 
     LIMIT ?
   `;
@@ -509,6 +509,22 @@ const GetLatestJobs = (req, res) => {
   });
 };
 
+// Send Contact Email Query
+const SendContactEmail = async (req, res) => {
+  const { name, email, subject, message } = req.body;
+  if (!name || !email || !subject || !message) {
+    return res.status(400).json({ msg: "All fields (name, email, subject, message) are required." });
+  }
+
+  try {
+    await SendContactFormEmail(name, email, subject, message);
+    return res.json({ msg: "Your message has been sent successfully! We will get back to you shortly." });
+  } catch (error) {
+    console.error("SendContactEmail Error:", error);
+    return res.status(500).json({ msg: "Failed to send email. Please try again later.", error: error.message });
+  }
+};
+
 module.exports = {
   GetpostsByAdmin,
   Getposts,
@@ -522,4 +538,5 @@ module.exports = {
   GetSpecificPost,
   GetTotalJobs,
   GetLatestJobs,
+  SendContactEmail,
 };

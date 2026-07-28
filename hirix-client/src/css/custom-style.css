@@ -10364,3 +10364,142 @@ a.label:hover {
 .elementor-section.rtl .civi-blog .top-blog .post-categories {
   padding-right: 0;
 }
+
+/* ==========================================================================
+   Mobile Responsive Fixes for Job Details Card (JobPost)
+   ========================================================================== */
+@media (max-width: 991px) {
+  .jobDetailWrapper {
+    width: 100% !important;
+    padding: 0 !important;
+  }
+}
+
+@media (max-width: 767px) {
+  /* Ensure header container wraps nicely on mobile */
+  .civi-jobs-header-top {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+  }
+
+  .civi-jobs-header-top .civi-header-left {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+  }
+
+  /* Make sure share and wishlist buttons remain visible on mobile */
+  .civi-jobs-header-top .civi-header-right {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin-top: 8px !important;
+  }
+
+  .jobs-head-details .title-wapper {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+
+  .jobs-head-details .title-wapper h1 {
+    font-size: 20px !important;
+    line-height: 1.3 !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  /* Header bottom section: badges and Apply button */
+  .civi-jobs-header-bottom {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
+    margin-top: 16px !important;
+  }
+
+  .civi-jobs-header-bottom .left {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+  }
+
+  .civi-jobs-header-bottom .right {
+    width: 100% !important;
+  }
+
+  .civi-jobs-header-bottom .right .civi-button-apply {
+    display: block !important;
+    width: 100% !important;
+    text-align: center !important;
+    padding: 12px 20px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Tabs responsive scroll & alignment */
+  .archive-layout .preview-tabs .tab-nav {
+    padding: 0 12px !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 12px !important;
+    border-bottom: 2px solid #eee !important;
+  }
+
+  .archive-layout .preview-tabs .tab-nav li {
+    flex: 0 0 auto !important;
+    margin-right: 0 !important;
+  }
+
+  .archive-layout .preview-tabs .tab-nav button {
+    padding: 10px 4px !important;
+    font-size: 14px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Insights Grid Items on Mobile */
+  .list-jobs-insights .row {
+    margin-left: -8px !important;
+    margin-right: -8px !important;
+  }
+
+  .list-jobs-insights .list-item {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .list-jobs-insights .list-item .info .details-info {
+    word-break: break-word !important;
+  }
+
+  /* Inner Padding on Mobile */
+  .block-archive-inner {
+    padding: 16px 14px !important;
+  }
+
+  /* Description and skills formatting */
+  .civi-description-details .civi-description {
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    font-size: 14px !important;
+  }
+
+  .jobs-skills-details .skills-warpper {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+}
+
+@media (max-width: 575px) {
+  .list-jobs-insights .list-item {
+    flex: 0 0 100% !important;
+    max-width: 100% !important;
+  }
+}
+

@@ -36,9 +36,10 @@ const JobPage = () => {
         <div
           style={{
             margin: "0 auto",
-            width: "70%",
-            marginTop: "5%",
-            marginBottom: "5%",
+            maxWidth: "1100px",
+            width: "92%",
+            marginTop: "30px",
+            marginBottom: "30px",
           }}
         >
           {job ? (

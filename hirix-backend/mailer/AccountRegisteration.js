@@ -2,10 +2,11 @@ const nodemailer = require("nodemailer");
 require("dotenv").config();
 
 const SendAccountCreatedEmail = (email) => {
+  const mailPort = parseInt(process.env.MAILPORT || 465);
   const transporter = nodemailer.createTransport({
-    host: process.env.MAILHOST,
-    port: parseInt(process.env.MAILPORT),
-    secure: true,
+    host: process.env.MAILHOST || "mail.hirix.com.pk",
+    port: mailPort,
+    secure: mailPort === 465,
     auth: {
       user: process.env.MAILERUSER,
       pass: process.env.MAILERPASS,

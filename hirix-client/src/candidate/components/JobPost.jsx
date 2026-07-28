@@ -439,7 +439,7 @@ const JobPost = ({ job, fromShare }) => {
                 <h4 className="title-jobs">Job role insights</h4>
                 <ul className="list-jobs-insights">
                   <div className="row">
-                    <li className="list-item col-md-4 col-sm-6">
+                    <li className="list-item col-12 col-sm-6 col-md-4">
                       <div className="icon-jobs">
                         <svg
                           width={20}
@@ -463,7 +463,7 @@ const JobPost = ({ job, fromShare }) => {
                         </p>
                       </div>
                     </li>
-                    <li className="list-item col-md-4 col-sm-6">
+                    <li className="list-item col-12 col-sm-6 col-md-4">
                       <div className="icon-jobs">
                         <svg
                           width={20}
@@ -492,7 +492,7 @@ const JobPost = ({ job, fromShare }) => {
                         </p>
                       </div>
                     </li>
-                    <li className="list-item col-md-4 col-sm-6">
+                    <li className="list-item col-12 col-sm-6 col-md-4">
                       <div className="icon-jobs">
                         <svg
                           width={18}
@@ -516,7 +516,7 @@ const JobPost = ({ job, fromShare }) => {
                         </p>
                       </div>
                     </li>
-                    <li className="list-item salary col-md-4 col-sm-6">
+                    <li className="list-item salary col-12 col-sm-6 col-md-4">
                       <div className="icon-jobs">
                         <svg
                           width={20}
@@ -539,7 +539,7 @@ const JobPost = ({ job, fromShare }) => {
                         </p>
                       </div>
                     </li>
-                    <li className="list-item col-md-4 col-sm-6">
+                    <li className="list-item col-12 col-sm-6 col-md-4">
                       <div className="icon-jobs">
                         <svg
                           width={23}
@@ -561,7 +561,7 @@ const JobPost = ({ job, fromShare }) => {
                         </p>
                       </div>
                     </li>
-                    <li className="list-item col-md-4 col-sm-6">
+                    <li className="list-item col-12 col-sm-6 col-md-4">
                       <div className="icon-jobs">
                         <svg
                           width={16}
@@ -583,7 +583,7 @@ const JobPost = ({ job, fromShare }) => {
                         </p>
                       </div>
                     </li>
-                    <li className="list-item col-md-4 col-sm-6">
+                    <li className="list-item col-12 col-sm-6 col-md-4">
                       <div className="icon-jobs">
                         <svg
                           width={22}
@@ -605,7 +605,7 @@ const JobPost = ({ job, fromShare }) => {
                         </p>
                       </div>
                     </li>
-                    <li className="list-item col-md-4 col-sm-6">
+                    <li className="list-item col-12 col-sm-6 col-md-4">
                       <div className="icon-jobs">
                         <svg
                           width={20}
