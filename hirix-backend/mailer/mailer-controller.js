@@ -101,7 +101,7 @@ const VerifyEmail = (email, token) => {
       text-align: center;
     }
     .header h1 {
-      color: #00c4a5;
+      color: #126ebb;
       margin: 0;
       font-size: 28px;
       font-weight: 700;
@@ -125,14 +125,14 @@ const VerifyEmail = (email, token) => {
     }
     .btn {
       display: inline-block;
-      background-color: #00c4a5;
+      background-color: #126ebb;
       color: #ffffff !important;
       text-decoration: none;
       font-size: 16px;
       font-weight: 600;
       padding: 14px 32px;
       border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 196, 165, 0.25);
+      box-shadow: 0 4px 6px rgba(18, 110, 187, 0.25);
       transition: all 0.2s ease;
     }
     .footer {
@@ -149,13 +149,13 @@ const VerifyEmail = (email, token) => {
   <div class="wrapper">
     <div class="container">
       <div class="header">
-        <h1 style="color: #00c4a5; font-family: sans-serif;">HIRIX</h1>
+        <h1 style="color: #126ebb; font-family: sans-serif;">HIRIX</h1>
       </div>
       <div class="content">
         <h2>Verify Your Email Address</h2>
         <p>Thank you for signing up on the Hirix Job Portal. Please verify your email address by clicking the button below to activate your account.</p>
         <a href="${link}" class="btn" target="_blank">Verify Email Address</a>
-        <p style="margin-top: 30px; font-size: 14px; color: #9ca3af;">If the button above doesn't work, copy and paste this link into your browser:<br><a href="${link}" style="color: #00c4a5; word-break: break-all;">${link}</a></p>
+        <p style="margin-top: 30px; font-size: 14px; color: #9ca3af;">If the button above doesn't work, copy and paste this link into your browser:<br><a href="${link}" style="color: #126ebb; word-break: break-all;">${link}</a></p>
       </div>
       <div class="footer">
         <p>This is an automated message, please do not reply directly to this email.</p>
@@ -210,7 +210,7 @@ const SendCompanyVerificationEmail = (email, token, companyName) => {
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
     .header {
-      background-color: #00743f;
+      background-color: #126ebb;
       padding: 30px;
       text-align: center;
     }
@@ -239,14 +239,14 @@ const SendCompanyVerificationEmail = (email, token, companyName) => {
     }
     .btn {
       display: inline-block;
-      background-color: #00743f;
+      background-color: #126ebb;
       color: #ffffff !important;
       text-decoration: none;
       font-size: 16px;
       font-weight: 600;
       padding: 14px 32px;
       border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 116, 63, 0.25);
+      box-shadow: 0 4px 6px rgba(18, 110, 187, 0.25);
       transition: all 0.2s ease;
     }
     .footer {
@@ -269,7 +269,7 @@ const SendCompanyVerificationEmail = (email, token, companyName) => {
         <h2>Verify Company Domain Email</h2>
         <p>You have registered the company <strong>${companyName}</strong> on the Hirix Job Portal. Please verify this official email address by clicking the button below to complete your company registration.</p>
         <a href="${link}" class="btn" target="_blank">Verify Company Email</a>
-        <p style="margin-top: 30px; font-size: 14px; color: #9ca3af;">If the button above doesn't work, copy and paste this link into your browser:<br><a href="${link}" style="color: #00743f; word-break: break-all;">${link}</a></p>
+        <p style="margin-top: 30px; font-size: 14px; color: #9ca3af;">If the button above doesn't work, copy and paste this link into your browser:<br><a href="${link}" style="color: #126ebb; word-break: break-all;">${link}</a></p>
       </div>
       <div class="footer">
         <p>This is an automated message, please do not reply directly to this email.</p>
@@ -323,7 +323,7 @@ const SendForgotPasswordEmail = (email, token) => {
       text-align: center;
     }
     .header h1 {
-      color: #00c4a5;
+      color: #126ebb;
       margin: 0;
       font-size: 28px;
       font-weight: 700;
@@ -348,7 +348,7 @@ const SendForgotPasswordEmail = (email, token) => {
     .code-box {
       display: inline-block;
       background-color: #f3f4f6;
-      border: 2px dashed #00c4a5;
+      border: 2px dashed #126ebb;
       color: #0b1220;
       font-size: 32px;
       font-weight: 700;
@@ -371,7 +371,7 @@ const SendForgotPasswordEmail = (email, token) => {
   <div class="wrapper">
     <div class="container">
       <div class="header">
-        <h1 style="color: #00c4a5; font-family: sans-serif; margin: 0;">HIRIX</h1>
+        <h1 style="color: #126ebb; font-family: sans-serif; margin: 0;">HIRIX</h1>
       </div>
       <div class="content">
         <h2>Reset Your Password</h2>
@@ -408,11 +408,11 @@ const SendContactFormEmail = (name, email, subject, message) => {
 </head>
 <body style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 30px; margin: 0;">
   <div style="max-width: 600px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
-    <h2 style="color: #00743f; border-bottom: 2px solid #00743f; padding-bottom: 10px; margin-top: 0;">New Contact Query Received</h2>
+    <h2 style="color: #126ebb; border-bottom: 2px solid #126ebb; padding-bottom: 10px; margin-top: 0;">New Contact Query Received</h2>
     <p><strong>Name:</strong> ${name}</p>
-    <p><strong>Email:</strong> <a href="mailto:${email}" style="color: #00743f;">${email}</a></p>
+    <p><strong>Email:</strong> <a href="mailto:${email}" style="color: #126ebb;">${email}</a></p>
     <p><strong>Subject:</strong> ${subject}</p>
-    <div style="margin-top: 20px; padding: 15px; background-color: #f8fafc; border-left: 4px solid #00743f; border-radius: 4px;">
+    <div style="margin-top: 20px; padding: 15px; background-color: #f8fafc; border-left: 4px solid #126ebb; border-radius: 4px;">
       <p style="margin: 0; white-space: pre-wrap; color: #334155; line-height: 1.6;">${message}</p>
     </div>
     <hr style="margin-top: 30px; border: none; border-top: 1px solid #eeeeee;" />
