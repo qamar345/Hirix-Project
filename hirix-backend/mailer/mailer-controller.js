@@ -3,11 +3,14 @@ require("dotenv").config();
 
 const mailPort = parseInt(process.env.MAILPORT || 465);
 
-// Create a global transporter
-const transporter = nodemailer.createTransport({
+// Primary Transporter (noreply@hirix.com.pk)
+const primaryTransporter = nodemailer.createTransport({
   host: process.env.MAILHOST || "mail.hirix.com.pk",
   port: mailPort,
   secure: mailPort === 465,
+  connectionTimeout: 4000,
+  greetingTimeout: 4000,
+  socketTimeout: 4000,
   auth: {
     user: process.env.MAILERUSER,
     pass: process.env.MAILERPASS,
@@ -16,6 +19,44 @@ const transporter = nodemailer.createTransport({
     rejectUnauthorized: false,
   },
 });
+
+// Secondary / Fallback Transporter (Gmail)
+const secondaryTransporter = process.env.GMAIL_USER && process.env.GMAIL_PASS ? nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
+}) : null;
+
+// Helper to send mail with automatic fallback
+const sendMailWithFallback = (mailOptions) => {
+  return new Promise((resolve, reject) => {
+    primaryTransporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.warn("Primary mailer failed:", error.message || error);
+        if (secondaryTransporter) {
+          console.log("Attempting fallback via Gmail SMTP...");
+          const fallbackOptions = { ...mailOptions, from: `"Hirix" <${process.env.GMAIL_USER}>` };
+          secondaryTransporter.sendMail(fallbackOptions, (fbError, fbInfo) => {
+            if (fbError) {
+              console.error("Fallback Gmail mailer also failed:", fbError.message || fbError);
+              reject(fbError);
+            } else {
+              console.log("Email sent successfully via Gmail fallback:", fbInfo.response);
+              resolve(fbInfo);
+            }
+          });
+        } else {
+          reject(error);
+        }
+      } else {
+        console.log("Email sent successfully via Primary mailer:", info.response);
+        resolve(info);
+      }
+    });
+  });
+};
 
 const VerifyEmail = (email, token) => {
   const isLocal = process.env.NODE_ENV !== "production" && (!process.env.URL || process.env.URL.includes("localhost"));
@@ -128,13 +169,7 @@ const VerifyEmail = (email, token) => {
   };
 
   // Send the email
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log("Error:", error);
-    } else {
-      console.log("Email sent:", info.response);
-    }
-  });
+  sendMailWithFallback(mailOptions).catch(err => console.error("VerifyEmail error:", err));
 };
 
 const SendCompanyVerificationEmail = (email, token, companyName) => {
@@ -247,13 +282,7 @@ const SendCompanyVerificationEmail = (email, token, companyName) => {
     `,
   };
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log("Error sending company verification email:", error);
-    } else {
-      console.log("Company verification email sent:", info.response);
-    }
-  });
+  sendMailWithFallback(mailOptions).catch(err => console.error("SendCompanyVerificationEmail error:", err));
 };
 
 const SendForgotPasswordEmail = (email, token) => {
@@ -361,13 +390,7 @@ const SendForgotPasswordEmail = (email, token) => {
     `,
   };
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log("Error sending password reset email:", error);
-    } else {
-      console.log("Password reset email sent:", info.response);
-    }
-  });
+  sendMailWithFallback(mailOptions).catch(err => console.error("SendForgotPasswordEmail error:", err));
 };
 
 const SendContactFormEmail = (name, email, subject, message) => {
@@ -400,17 +423,7 @@ const SendContactFormEmail = (name, email, subject, message) => {
     `,
   };
 
-  return new Promise((resolve, reject) => {
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error("Error sending contact email:", error);
-        reject(error);
-      } else {
-        console.log("Contact email sent:", info.response);
-        resolve(info);
-      }
-    });
-  });
+  return sendMailWithFallback(mailOptions);
 };
 
 module.exports = {
