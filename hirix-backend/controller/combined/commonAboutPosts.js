@@ -488,7 +488,7 @@ const GetLatestJobs = (req, res) => {
       COALESCE(companies.name, jobs.company_name) AS company_name, 
       companies.images AS company_logo
     FROM jobs 
-    LEFT JOIN companies ON (jobs.company_name = companies.name OR jobs.company_name = CAST(companies.id AS CHAR))
+    LEFT JOIN companies ON (jobs.company_name COLLATE utf8mb4_general_ci = companies.name COLLATE utf8mb4_general_ci OR jobs.company_name = CAST(companies.id AS CHAR))
     WHERE jobs.status != 'Closed' OR jobs.status IS NULL
     ORDER BY jobs.id DESC 
     LIMIT ?
