@@ -69,6 +69,7 @@ import JobDetail from "./Admin/tables/jobdetail.jsx";
 import EmployeeDetail from "./Admin/tables/EmployeesDetails.jsx";
 import CompanyDetail from "./Admin/tables/CompanyDetails.jsx";
 import ApplicantDetail from "./Admin/tables/ApplicantsDetail.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 // Import your Publishable Key
 // const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -81,7 +82,14 @@ const router = createBrowserRouter(
       <Route path="/JobPage/:id" element={<JobPage />} />
       <Route path="*" element={<Error />} />
       {/* Candidate */}
-      <Route path="candidate" element={<Candidate />}>
+      <Route
+        path="candidate"
+        element={
+          <ProtectedRoute allow={["jobseeker"]}>
+            <Candidate />
+          </ProtectedRoute>
+        }
+      >
         <Route path="dashboard" element={<CanDashboard />} />
         <Route path="profile" element={<CanProfile />} />
         <Route path="jobs" element={<CanJobs />} />
@@ -95,7 +103,14 @@ const router = createBrowserRouter(
         <Route path="add-education" element={<AddEducation />} />
       </Route>
       {/* Employer */}
-      <Route path="employer" element={<Employer />}>
+      <Route
+        path="employer"
+        element={
+          <ProtectedRoute allow={["employee"]}>
+            <Employer />
+          </ProtectedRoute>
+        }
+      >
         <Route path="dashboard" element={<EmpDashboard />} />
 
         <Route path="candidates" element={<EmpCandidates />} />
@@ -108,35 +123,182 @@ const router = createBrowserRouter(
         <Route path="Edit_job" element={<EmpJobEdit />} />
         <Route path="Edit_Company" element={<EmpEditCompany />} />
       </Route>
-      <Route path="employer/jobs" element={<EmpJobs />} />
-      <Route path="employer/jobs/list" element={<JobList />} />
-      <Route path="employer/applicants" element={<EmpApplicants />} />
-      <Route path="/employer/applicants/list" element={<ApplicantList />} />
-      <Route path="employer/company" element={<EmpCompany />} />
+      <Route
+        path="employer/jobs"
+        element={
+          <ProtectedRoute allow={["employee"]}>
+            <EmpJobs />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="employer/jobs/list"
+        element={
+          <ProtectedRoute allow={["employee"]}>
+            <JobList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="employer/applicants"
+        element={
+          <ProtectedRoute allow={["employee"]}>
+            <EmpApplicants />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/employer/applicants/list"
+        element={
+          <ProtectedRoute allow={["employee"]}>
+            <ApplicantList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="employer/company"
+        element={
+          <ProtectedRoute allow={["employee"]}>
+            <EmpCompany />
+          </ProtectedRoute>
+        }
+      />
       {/* Admin */}
       <Route path="/admin-login" element={<HomePage />} />
-      <Route path="/admin" element={<Admin />}>
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+            <Admin />
+          </ProtectedRoute>
+        }
+      >
         <Route path="/admin/dashboard" element={<AdDashboard />} />
 
         <Route path="/admin/settings" element={<AdSettings />} />
         <Route path="/admin/add-manager" element={<AddManager />} />
       </Route>
-      <Route path="/admin/jobs" element={<AdJobs />} />
-      <Route path="/admin/jobs/list" element={<JobList />} />
-      <Route path="/jobdetail/:id" element={<JobDetail />} />
+      <Route
+        path="/admin/jobs"
+        element={
+          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+            <AdJobs />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/jobs/list"
+        element={
+          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+            <JobList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/jobdetail/:id"
+        element={
+          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+            <JobDetail />
+          </ProtectedRoute>
+        }
+      />
 
-      <Route path="/admin/company" element={<AdCompany />} />
-      <Route path="/CompanyDetails/:id" element={<CompanyDetail />} />
-      <Route path="/admin/candidates" element={<AdCandidates />} />
-      <Route path="/admin/candidates/list" element={<ApplicantList />} />
-      <Route path="/ApplicantDetails/:id" element={<ApplicantDetail />} />
-      <Route path="/admin/employees" element={<AdEmployee />} />
-      <Route path="/admin/employees/list" element={<EmployeeList />} />
-      <Route path="/employeeDetails/:id" element={<EmployeeDetail />} />
-      <Route path="/admin/user-management" element={<AdManagement />} />
-      <Route path="/admin/blogs" element={<AdBlogs />} />
-      <Route path="/admin/blogs/new" element={<AdBlogEditor />} />
-      <Route path="/admin/blogs/edit/:id" element={<AdBlogEditor />} />
+      <Route
+        path="/admin/company"
+        element={
+          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+            <AdCompany />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/CompanyDetails/:id"
+        element={
+          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+            <CompanyDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/candidates"
+        element={
+          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+            <AdCandidates />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/candidates/list"
+        element={
+          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+            <ApplicantList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ApplicantDetails/:id"
+        element={
+          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+            <ApplicantDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/employees"
+        element={
+          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+            <AdEmployee />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/employees/list"
+        element={
+          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+            <EmployeeList />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/employeeDetails/:id"
+        element={
+          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+            <EmployeeDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/user-management"
+        element={
+          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+            <AdManagement />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/blogs"
+        element={
+          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+            <AdBlogs />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/blogs/new"
+        element={
+          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+            <AdBlogEditor />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/blogs/edit/:id"
+        element={
+          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+            <AdBlogEditor />
+          </ProtectedRoute>
+        }
+      />
     </>
   )
 );

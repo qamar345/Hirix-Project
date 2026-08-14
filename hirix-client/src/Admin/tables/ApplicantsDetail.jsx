@@ -5,6 +5,7 @@ import { format } from "date-fns";
 const ApplicantDetail = () => {
   const { id } = useParams();
   const [applicant, setApplicant] = useState(null);
+  const [notFound, setNotFound] = useState(false);
   const token = sessionStorage.getItem("token");
 
   const formatDate = (dateString) => {
@@ -29,11 +30,22 @@ const ApplicantDetail = () => {
           }
         );
         setApplicant(res.data);
-      } catch (err) {}
+      } catch (err) {
+        console.error("Failed to load applicant profile", err);
+        setNotFound(true);
+      }
     };
 
     fetchJob();
   }, [id]);
+
+  if (notFound) {
+    return (
+      <div className="text-center mt-5">
+        Could not load this candidate's profile. They may not have applied to any of your jobs, or the profile no longer exists.
+      </div>
+    );
+  }
 
   if (!applicant) return <div className="text-center mt-5">Loading...</div>;
 

@@ -1,21 +1,10 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
-const BASE_URL = import.meta.env.VITE_API_URL || "https://api.hirix.com.pk";
-
-// Helper to get token from sessionStorage
-const getToken = () => sessionStorage.getItem("token");
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQueryWithReauth } from "./baseQueryWithReauth";
 
 // ─── Admin API Slice ─────────────────────────────────────────────────────────
 export const adminApi = createApi({
   reducerPath: "adminApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-    prepareHeaders: (headers) => {
-      const token = getToken();
-      if (token) headers.set("x-access-token", token);
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithReauth,
   tagTypes: ["AdminDashboard", "Employees", "Candidates", "Companies", "Jobs", "Managers", "AdminProfile"],
   endpoints: (builder) => ({
     // Dashboard

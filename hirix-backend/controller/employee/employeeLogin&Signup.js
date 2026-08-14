@@ -12,9 +12,14 @@ const { VerifyEmail } = require("../../mailer/mailer-controller");
 const path = require("path");
 
 //Employee registeration
+const ALLOWED_SIGNUP_ROLES = ["employee", "jobseeker"];
+
 const employeesignup = (req, res) => {
-  const { first_name, last_name, username, email, password, role, phone } =
+  const { first_name, last_name, username, email, password, phone } =
     req.body;
+  const role = ALLOWED_SIGNUP_ROLES.includes(req.body.role)
+    ? req.body.role
+    : "jobseeker";
 
   const confirmEmail =
     "SELECT `isVerified` FROM `verifyemail` WHERE `email` = ?";
@@ -83,22 +88,19 @@ const employeelogin = (req, res) => {
           const secretKey = process.env.SECRETKEY;
           // If passwords match, return success
 
-          // const token = jwt.sign(
-          //   { id: user.id, email: user.email, role: user.role },
-          //   secretKey,
-          //   { expiresIn: "15m" }
-          // );
+          const token = jwt.sign(
+            { id: user.id, email: user.email, role: user.role },
+            secretKey,
+            { expiresIn: "7d" }
+          );
 
-          // Set HTTP-only cookie
-          // res.cookie("x-access-token", token, { httpOnly: true, secure: false });
+          const { password: _pw, ...safeUser } = user;
 
           return res.json({
-            token: jwt.sign({ email: user.email }, secretKey, {
-              expiresIn: "7d",
-            }),
+            token,
             isloggedin: true,
             msg: "Login successfully!",
-            data: user,
+            data: safeUser,
           });
         } else {
           // If passwords don't match
@@ -219,9 +221,11 @@ const GetEmployee = (req, res) => {
   const sql_get = "SELECT * FROM `user_accounts` WHERE id = ?";
   conn_sql.query(sql_get, [id], (err, result) => {
     if (err) {
-      return res.json(err);
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
     } else {
-      return res.json(result);
+      const safeResult = result.map(({ password, ...rest }) => rest);
+      return res.json(safeResult);
     }
   });
 };
@@ -242,8 +246,10 @@ const GetEmpAndCom = (req, res) => {
     conn_sql.query(sql_get_companies, [id], (err2, companyResult) => {
       if (err2) return res.status(500).json({ error: err2 });
 
+      const { password: _pw, ...safeEmployee } = employeeResult[0];
+
       return res.json({
-        employee: employeeResult[0],
+        employee: safeEmployee,
         companies: companyResult,
       });
     });

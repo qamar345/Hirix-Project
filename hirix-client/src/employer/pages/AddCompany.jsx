@@ -8,6 +8,7 @@ import { IoCloseSharp } from "react-icons/io5";
 import Select from "react-select";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import DOMPurify from "dompurify";
 import { EmpFooter } from "../index.js";
 import API, { BASE_URL } from "../../api";
 import { useAddCompanyMutation } from "../../store/employerApi";
@@ -601,9 +602,10 @@ const AddCompany = () => {
                         <div
                           className="text-wrap"
                           dangerouslySetInnerHTML={{
-                            __html:
+                            __html: DOMPurify.sanitize(
                               companyData.description ||
-                              "Tell About your company",
+                                "Tell About your company"
+                            ),
                           }}
                         />
                       </div>

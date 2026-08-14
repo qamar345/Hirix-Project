@@ -20,7 +20,7 @@ const SearchFilter = () => {
     e.preventDefault();
     if (job.trim() !== "" || city.trim() !== "" || category.trim() !== "") {
       navigate(
-        `?search=${encodeURIComponent(job)}&city=${city}&category=${category}`
+        `?search=${encodeURIComponent(job)}&city=${encodeURIComponent(city)}&category=${encodeURIComponent(category)}`
       );
     }
   };

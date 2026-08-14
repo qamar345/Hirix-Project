@@ -1,5 +1,28 @@
 const { conn_sql } = require("../../config/connection");
 
+// Confirms the job at :id belongs to the authenticated employee (or the
+// caller is an admin) before allowing a read/mutation. Calls onOwned(job)
+// on success, otherwise responds 403/404/500 itself.
+function withJobOwnership(req, res, onOwned) {
+  const { id } = req.params;
+  conn_sql.query("SELECT id, employee_id FROM jobs WHERE id = ?", [id], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
+    }
+    if (rows.length === 0) {
+      return res.status(404).json({ msg: "Job not found" });
+    }
+    const job = rows[0];
+    const isOwner = req.user && String(job.employee_id) === String(req.user.id);
+    const isAdmin = req.user && req.user.role === "admin";
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ msg: "You do not have access to this job posting" });
+    }
+    onOwned(job);
+  });
+}
+
 // Post job
 const PostJob = (req, res) => {
   const { id } = req.params;
@@ -220,43 +243,46 @@ const editposts = (req, res) => {
     city,
   } = req.body;
 
-  const sqleditpost =
-    "UPDATE `jobs` SET `title`=? ,`job_category`=? ,`description`=? ,`job_type`=? ,`career_level`=? , `Experience` =? , `qualification` =? ,`available_seats` =? ,`gender` = ? , `currency` =? , `minimum_currency`= ? , `maximum_currency`=? ,`Rate`=?,`Email`=?, `Url`=?, `Phone`=?, `company_name`=? , `salary`=? ,`required_skills`=? ,`ApplyType`=?, `province`=?, `city`=?  WHERE id=?";
-  conn_sql.query(
-    sqleditpost,
-    [
-      title,
-      job_category,
-      description,
-      job_type,
-      career_level,
-      Experience,
-      qualification,
-      available_seats,
-      gender,
-      currency,
-      minimum_currency,
-      maximum_currency,
-      Rate,
-      Email,
-      Url,
-      Phone,
-      company_name,
-      salary,
-      required_skills,
-      ApplyType,
-      province,
-      city,
-      id,
-    ],
-    (err, result) => {
-      if (err) {
-        return res.json(err);
-      } else {
-        return res.json({ msg: "Updated...", result });
+  withJobOwnership(req, res, () => {
+    const sqleditpost =
+      "UPDATE `jobs` SET `title`=? ,`job_category`=? ,`description`=? ,`job_type`=? ,`career_level`=? , `Experience` =? , `qualification` =? ,`available_seats` =? ,`gender` = ? , `currency` =? , `minimum_currency`= ? , `maximum_currency`=? ,`Rate`=?,`Email`=?, `Url`=?, `Phone`=?, `company_name`=? , `salary`=? ,`required_skills`=? ,`ApplyType`=?, `province`=?, `city`=?  WHERE id=?";
+    conn_sql.query(
+      sqleditpost,
+      [
+        title,
+        job_category,
+        description,
+        job_type,
+        career_level,
+        Experience,
+        qualification,
+        available_seats,
+        gender,
+        currency,
+        minimum_currency,
+        maximum_currency,
+        Rate,
+        Email,
+        Url,
+        Phone,
+        company_name,
+        salary,
+        required_skills,
+        ApplyType,
+        province,
+        city,
+        id,
+      ],
+      (err, result) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ msg: "Database error" });
+        } else {
+          return res.json({ msg: "Updated...", result });
+        }
       }
-    }
-  );
+    );
+  });
 };
 
 //Job required_skills mentioned
@@ -294,67 +320,80 @@ const editposts = (req, res) => {
 // Job Post's status (opening)
 const post_status = (req, res) => {
   const { id } = req.params;
-  const sql_status = "UPDATE `jobs` SET `status`= 'Open' WHERE id=?";
-  conn_sql.query(sql_status, [id], (err, result) => {
-    if (err) {
-      return res.json(err);
-    } else {
-      return res.json({ msg: "Status Updated...", result });
-    }
+  withJobOwnership(req, res, () => {
+    const sql_status = "UPDATE `jobs` SET `status`= 'Open' WHERE id=?";
+    conn_sql.query(sql_status, [id], (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ msg: "Database error" });
+      } else {
+        return res.json({ msg: "Status Updated...", result });
+      }
+    });
   });
 };
 
 // Job Post's status (Pause)
 const status_pause = (req, res) => {
   const { id } = req.params;
-  const sql_status_pause = "UPDATE `jobs` SET `status`= 'Pause' WHERE id=?";
-  conn_sql.query(sql_status_pause, [id], (err, result) => {
-    if (err) {
-      return res.json(err);
-    } else {
-      return res.json({ msg: "Status Updated...", result });
-    }
+  withJobOwnership(req, res, () => {
+    const sql_status_pause = "UPDATE `jobs` SET `status`= 'Pause' WHERE id=?";
+    conn_sql.query(sql_status_pause, [id], (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ msg: "Database error" });
+      } else {
+        return res.json({ msg: "Status Updated...", result });
+      }
+    });
   });
 };
 
 // job Post's status (Closed)
 const delposts = (req, res) => {
   const { id } = req.params;
-  const sqldelpost = "UPDATE `jobs` SET `status`= 'Closed' WHERE id=?";
-  conn_sql.query(sqldelpost, [id], (err, result) => {
-    if (err) {
-      return res.json(err);
-    } else {
-      return res.json({ msg: "Status Updated...", result });
-    }
+  withJobOwnership(req, res, () => {
+    const sqldelpost = "UPDATE `jobs` SET `status`= 'Closed' WHERE id=?";
+    conn_sql.query(sqldelpost, [id], (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ msg: "Database error" });
+      } else {
+        return res.json({ msg: "Status Updated...", result });
+      }
+    });
   });
 };
 
 // Job Post Delete
 const jobDel = (req, res) => {
   const { id } = req.params;
-  console.log(id);
-  const sql_del = "DELETE FROM `jobs` WHERE id=?";
-  conn_sql.query(sql_del, [id], (err, result) => {
-    if (err) {
-      console.log(err);
-      return res.json({ msg: "Not deleted yet!!", err });
-    } else {
-      return res.json({ msg: "Job Deleted!", result });
-    }
+  withJobOwnership(req, res, () => {
+    const sql_del = "DELETE FROM `jobs` WHERE id=?";
+    conn_sql.query(sql_del, [id], (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ msg: "Not deleted yet!!" });
+      } else {
+        return res.json({ msg: "Job Deleted!", result });
+      }
+    });
   });
 };
 // Get specific Post
 const GetJob = (req, res) => {
   const { id } = req.params;
-  const sql_get =
-    " SELECT j.*, c.name AS company_name FROM jobs j LEFT JOIN companies c ON j.company_name = c.id WHERE j.id = ?";
-  conn_sql.query(sql_get, [id], (err, result) => {
-    if (err) {
-      return res.json(err);
-    } else {
-      return res.json(result);
-    }
+  withJobOwnership(req, res, () => {
+    const sql_get =
+      " SELECT j.*, c.name AS company_name FROM jobs j LEFT JOIN companies c ON j.company_name = c.id WHERE j.id = ?";
+    conn_sql.query(sql_get, [id], (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ msg: "Database error" });
+      } else {
+        return res.json(result);
+      }
+    });
   });
 };
 
@@ -401,9 +440,9 @@ const Gethisposts = (req, res) => {
     if (err) {
       return res.json(err);
     } else {
-      const sql = "SELECT COUNT(*) as count FROM jobs  WHERE title LIKE ?";
+      const sql = "SELECT COUNT(*) as count FROM jobs WHERE employee_id = ? AND title LIKE ?";
 
-      conn_sql.query(sql, [`%${search}%`], (c_err, c_data) => {
+      conn_sql.query(sql, [id, `%${search}%`], (c_err, c_data) => {
         const totalData = c_data[0].count;
         const totalPages = Math.ceil(totalData / limit);
 

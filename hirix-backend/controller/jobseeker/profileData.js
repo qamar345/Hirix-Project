@@ -2,6 +2,27 @@ const { conn_sql } = require("../../config/connection");
 const { chromium } = require("playwright");
 const upload = require("../../middleware/upload");
 
+// Minimal HTML-escaping for interpolating user-supplied text into the
+// server-rendered CV template (prevents stored/reflected script injection
+// into the Playwright-rendered page).
+function escapeHtml(value) {
+  if (value === null || value === undefined) return "";
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function escapeAttr(value) {
+  // Only allow http(s) links through as href attributes; anything else
+  // (javascript:, data:, etc.) is neutralized.
+  const str = String(value || "");
+  if (!/^https?:\/\//i.test(str)) return "#";
+  return escapeHtml(str);
+}
+
 // Get Profile data
 const GetProfile = (req, res) => {
   const { id } = req.params;
@@ -530,35 +551,59 @@ const getUserProfileStatus = (req, res) => {
 const GenerateCv = (req, res) => {
   const { id } = req.params;
 
+  if (!/^\d+$/.test(String(id))) {
+    return res.status(400).json({ msg: "Invalid id" });
+  }
+
   // Fetch all data in parallel
   const queries = {
-    user: `SELECT first_name, last_name, email, image, phone, location FROM user_accounts WHERE id = ${id}`,
-    exp: `SELECT job_title, company_name, start_date, end_date, description FROM user_experience WHERE user_id = ${id}`,
-    edu: `SELECT degree_title, field_of_study, institute_name, start_year, end_year FROM user_qualification WHERE user_id = ${id}`,
-    skills: `SELECT skillset.name as skill_name FROM jobseeker_skills JOIN skillset ON jobseeker_skills.skillset_id = skillset.id WHERE jobseeker_skills.job_seeker_id = ${id}`,
-    awards: `SELECT title, awarded_by, award_date, description FROM user_awards WHERE user_id = ${id}`,
-    projects: `SELECT title, description, link FROM user_projects WHERE user_id = ${id}`,
+    user: "SELECT first_name, last_name, email, image, phone, location FROM user_accounts WHERE id = ?",
+    exp: "SELECT job_title, company_name, start_date, end_date, description FROM user_experience WHERE user_id = ?",
+    edu: "SELECT degree_title, field_of_study, institute_name, start_year, end_year FROM user_qualification WHERE user_id = ?",
+    skills: "SELECT skillset.name as skill_name FROM jobseeker_skills JOIN skillset ON jobseeker_skills.skillset_id = skillset.id WHERE jobseeker_skills.job_seeker_id = ?",
+    awards: "SELECT title, awarded_by, award_date, description FROM user_awards WHERE user_id = ?",
+    projects: "SELECT title, description, link FROM user_projects WHERE user_id = ?",
   };
 
-  conn_sql.query(queries.user, (err, userRows) => {
-    if (err) throw err;
+  conn_sql.query(queries.user, [id], (err, userRows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
+    }
+    if (userRows.length === 0) {
+      return res.status(404).json({ msg: "User not found" });
+    }
     const user = userRows[0];
-    const path = `../..${user.image}`;
 
-    conn_sql.query(queries.exp, (err, expRows) => {
-      if (err) throw err;
+    conn_sql.query(queries.exp, [id], (err, expRows) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ msg: "Database error" });
+      }
 
-      conn_sql.query(queries.edu, (err, eduRows) => {
-        if (err) throw err;
+      conn_sql.query(queries.edu, [id], (err, eduRows) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ msg: "Database error" });
+        }
 
-        conn_sql.query(queries.skills, (err, skillRows) => {
-          if (err) throw err;
+        conn_sql.query(queries.skills, [id], (err, skillRows) => {
+          if (err) {
+            console.error(err);
+            return res.status(500).json({ msg: "Database error" });
+          }
 
-          conn_sql.query(queries.awards, (err, awardRows) => {
-            if (err) throw err;
+          conn_sql.query(queries.awards, [id], (err, awardRows) => {
+            if (err) {
+              console.error(err);
+              return res.status(500).json({ msg: "Database error" });
+            }
 
-            conn_sql.query(queries.projects, async (err, projectRows) => {
-              if (err) throw err;
+            conn_sql.query(queries.projects, [id], async (err, projectRows) => {
+              if (err) {
+                console.error(err);
+                return res.status(500).json({ msg: "Database error" });
+              }
 
               // Watermark CSS
               const watermarkCSS = `
@@ -590,17 +635,17 @@ const GenerateCv = (req, res) => {
                 </head>
                 <body>
                  <div style="text-align: center;">
-                    <h1>${user.first_name} ${user.last_name}</h1>
-                    <p>${user.email}</p>
-                    <p>${user.phone}</p>
-                    <p>${user.location}</p>
+                    <h1>${escapeHtml(user.first_name)} ${escapeHtml(user.last_name)}</h1>
+                    <p>${escapeHtml(user.email)}</p>
+                    <p>${escapeHtml(user.phone)}</p>
+                    <p>${escapeHtml(user.location)}</p>
                   </div>
                   <h2>Experience</h2>
                   <ul>
                     ${expRows
                       .map(
                         (e) =>
-                          `<li><b>${e.job_title}</b> at ${e.company_name} (${e.start_date} - ${e.end_date})<br>${e.description}</li>`
+                          `<li><b>${escapeHtml(e.job_title)}</b> at ${escapeHtml(e.company_name)} (${escapeHtml(e.start_date)} - ${escapeHtml(e.end_date)})<br>${escapeHtml(e.description)}</li>`
                       )
                       .join("")}
                   </ul>
@@ -610,20 +655,20 @@ const GenerateCv = (req, res) => {
                     ${eduRows
                       .map(
                         (e) =>
-                          `<li>${e.degree_title} in ${e.field_of_study} - ${e.institute_name} (${e.start_year} - ${e.end_year})</li>`
+                          `<li>${escapeHtml(e.degree_title)} in ${escapeHtml(e.field_of_study)} - ${escapeHtml(e.institute_name)} (${escapeHtml(e.start_year)} - ${escapeHtml(e.end_year)})</li>`
                       )
                       .join("")}
                   </ul>
 
                   <h2>Skills</h2>
-                  <p>${skillRows.map((s) => s.skill_name).join(", ")}</p>
+                  <p>${skillRows.map((s) => escapeHtml(s.skill_name)).join(", ")}</p>
 
                   <h2>Awards</h2>
                   <ul>
                     ${awardRows
                       .map(
                         (a) =>
-                          `<li>${a.title} <br> ${a.awarded_by} <br> ${a.award_date}</li>`
+                          `<li>${escapeHtml(a.title)} <br> ${escapeHtml(a.awarded_by)} <br> ${escapeHtml(a.award_date)}</li>`
                       )
                       .join("")}
                   </ul>
@@ -633,7 +678,7 @@ const GenerateCv = (req, res) => {
                     ${projectRows
                       .map(
                         (p) =>
-                          `<li><b>${p.title}</b> <br> Project: <a href="${p.link}" target="_blank">Link</a><br>${p.description}</li>`
+                          `<li><b>${escapeHtml(p.title)}</b> <br> Project: <a href="${escapeAttr(p.link)}" target="_blank">Link</a><br>${escapeHtml(p.description)}</li>`
                       )
                       .join("")}
                   </ul>
@@ -651,10 +696,14 @@ const GenerateCv = (req, res) => {
                 // Emulate print media to include backgrounds
                 // (Playwright applies printBackground automatically for pdf)
                 viewport: { width: 1200, height: 800 }, // optional
+                // This is a static resume document, not an interactive page -
+                // disabling JS closes off script-injection/SSRF vectors via
+                // profile text fields rendered into the template above.
+                javaScriptEnabled: false,
               });
 
               const page = await context.newPage();
-              await page.setContent(html, { waitUntil: "networkidle" });
+              await page.setContent(html, { waitUntil: "load" });
 
               const pdfBuffer = await page.pdf({
                 format: "A4",

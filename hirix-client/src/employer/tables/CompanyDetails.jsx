@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import DOMPurify from "dompurify";
 import API, { BASE_URL } from "../../api";
 
 const CompanyDetail = () => {
@@ -88,7 +89,7 @@ const CompanyDetail = () => {
           <div className="d-flex flex-wrap gap-2">
             <p
               dangerouslySetInnerHTML={{
-                __html: companies.About,
+                __html: DOMPurify.sanitize(companies.About),
               }}
             ></p>
           </div>

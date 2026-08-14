@@ -4,6 +4,28 @@ const upload = require("../../middleware/upload");
 const { v4: uuidv4 } = require("uuid");
 const { SendCompanyVerificationEmail } = require("../../mailer/mailer-controller");
 
+// Confirms the company at :id belongs to the authenticated employee (or the
+// caller is an admin) before allowing a read/mutation.
+function withCompanyOwnership(req, res, onOwned) {
+  const { id } = req.params;
+  conn_sql.query("SELECT id, user_account_id FROM companies WHERE id = ?", [id], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
+    }
+    if (rows.length === 0) {
+      return res.status(404).json({ msg: "Company not found" });
+    }
+    const company = rows[0];
+    const isOwner = req.user && String(company.user_account_id) === String(req.user.id);
+    const isAdmin = req.user && req.user.role === "admin";
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ msg: "You do not have access to this company" });
+    }
+    onOwned(company);
+  });
+}
+
 //  Add Companies
 const Addcompany = (req, res) => {
   const bodyData = Object.assign({}, req.body);
@@ -48,16 +70,26 @@ const Addcompany = (req, res) => {
       location || "",
       token
     ],
-    (err, result) => {
+    async (err, result) => {
       if (err) {
-        console.log(err);
-        return res.json({ msg: "Error...", err });
+        console.error(err);
+        return res.status(500).json({ msg: "Database error" });
       } else {
         const companyId = result.insertId;
-        
-        // Send Verification Email
+
+        // Send verification email - don't let a mail failure block company
+        // creation, but do surface it so the caller isn't told an email
+        // went out when it didn't.
+        let emailSent = false;
+        let emailError = null;
         if (E_mail) {
-          SendCompanyVerificationEmail(E_mail, token, name);
+          try {
+            await SendCompanyVerificationEmail(E_mail, token, name);
+            emailSent = true;
+          } catch (mailErr) {
+            emailError = mailErr.message || String(mailErr);
+            console.error("Failed to send company verification email:", emailError);
+          }
         }
 
         const sql_company =
@@ -67,10 +99,16 @@ const Addcompany = (req, res) => {
           [companyId, twitter, facebook, instagram, linkedIn],
           (err, result) => {
             if (err) {
-              console.log(err);
-              return res.json({ msg: "Error...", err });
+              console.error(err);
+              return res.status(500).json({ msg: "Database error" });
             } else {
-              return res.json({ msg: "INSERTED...", result });
+              return res.json({
+                msg: emailSent
+                  ? "Company added. A verification email has been sent."
+                  : "Company added, but we couldn't send the verification email. Use 'Resend verification' to try again.",
+                emailSent,
+                result,
+              });
             }
           }
         );
@@ -78,22 +116,6 @@ const Addcompany = (req, res) => {
     }
   );
 };
-
-//Token generate
-const codeGenrate = () => Math.floor(Math.random() * 9999);
-const token = codeGenrate();
-console.log(token);
-
-//Email send function
-async function sendVerificationEmail(email, token) {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: "",
-      pass: "",
-    },
-  });
-}
 
 //Edit companies data
 const Editcompany = (req, res) => {
@@ -115,44 +137,49 @@ const Editcompany = (req, res) => {
     city,
     Ntn,
   } = req.body;
-  const sql_addcompany =
-    "UPDATE `companies` SET `name`=? , `categories`=? ,`About`=? , `website_link`=? ,`Contact`=? , `E_mail`=? ,`founded_in` = ? ,`total_members`= ? ,`province`=?, `city` = ?, `Ntn` = ? WHERE id=?";
-  conn_sql.query(
-    sql_addcompany,
-    [
-      name,
-      categories,
-      About,
-      website_link,
-      Contact,
-      E_mail,
-      founded_in,
-      total_members,
-      province,
-      city,
-      Ntn,
-      id,
-    ],
-    (err, result) => {
-      if (err) {
-        return res.json({ msg: "Error...", err });
-      } else {
-        const sql_updatelinks =
-          "UPDATE `companies_social_networks` SET `twitter`=? , `facebook`=? , `instagram`= ?, `linkedIn`= ? WHERE companies_id = ?";
-        conn_sql.query(
-          sql_updatelinks,
-          [twitter, facebook, instagram, linkedIn, id],
-          (err, result) => {
-            if (err) throw err;
-            else {
-              console.log(result);
-              return res.json({ msg: "Updated...", result });
+
+  withCompanyOwnership(req, res, () => {
+    const sql_addcompany =
+      "UPDATE `companies` SET `name`=? , `categories`=? ,`About`=? , `website_link`=? ,`Contact`=? , `E_mail`=? ,`founded_in` = ? ,`total_members`= ? ,`province`=?, `city` = ?, `Ntn` = ? WHERE id=?";
+    conn_sql.query(
+      sql_addcompany,
+      [
+        name,
+        categories,
+        About,
+        website_link,
+        Contact,
+        E_mail,
+        founded_in,
+        total_members,
+        province,
+        city,
+        Ntn,
+        id,
+      ],
+      (err, result) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ msg: "Database error" });
+        } else {
+          const sql_updatelinks =
+            "UPDATE `companies_social_networks` SET `twitter`=? , `facebook`=? , `instagram`= ?, `linkedIn`= ? WHERE companies_id = ?";
+          conn_sql.query(
+            sql_updatelinks,
+            [twitter, facebook, instagram, linkedIn, id],
+            (err, result) => {
+              if (err) {
+                console.error(err);
+                return res.status(500).json({ msg: "Database error" });
+              } else {
+                return res.json({ msg: "Updated...", result });
+              }
             }
-          }
-        );
+          );
+        }
       }
-    }
-  );
+    );
+  });
 };
 
 //  For Select company (showing all his/her companies)
@@ -199,54 +226,67 @@ const Selectcompany = (req, res) => {
 const DeleteCompany = (req, res) => {
   const { id } = req.params;
 
-  const sql_update =
-    "UPDATE `companies` SET `status_delete` = 0 WHERE `id` = ?";
-  conn_sql.query(sql_update, [id], (err, result) => {
-    if (err) {
-      return res.status(500).json({ msg: "SQL Error", error: err.sqlMessage });
-    }
+  withCompanyOwnership(req, res, () => {
+    const sql_update =
+      "UPDATE `companies` SET `status_delete` = 0 WHERE `id` = ?";
+    conn_sql.query(sql_update, [id], (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ msg: "Database error" });
+      }
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ msg: "Company not found" });
-    }
-    return res.json({ msg: "Company deleted successfully!" });
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ msg: "Company not found" });
+      }
+      return res.json({ msg: "Company deleted successfully!" });
+    });
   });
 };
 
 // Get specific company
 const GetCompanySpecific = (req, res) => {
-  const { id } = req.params;
-  const sql_get = "SELECT * FROM `companies` WHERE id = ?";
-  conn_sql.query(sql_get, [id], (err, result) => {
-    if (err) {
-      return res.json(err);
-    } else {
-      return res.json(result);
-    }
+  withCompanyOwnership(req, res, (company) => {
+    const sql_get = "SELECT * FROM `companies` WHERE id = ?";
+    conn_sql.query(sql_get, [company.id], (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ msg: "Database error" });
+      } else {
+        return res.json(result);
+      }
+    });
   });
 };
 
 const ResendCompanyVerification = (req, res) => {
-  const { id } = req.params;
-  const sql_get = "SELECT name, E_mail, email_verification_token, is_email_verified FROM `companies` WHERE id = ?";
-  conn_sql.query(sql_get, [id], (err, result) => {
-    if (err || result.length === 0) {
-      return res.status(404).json({ msg: "Company not found" });
-    }
-    const company = result[0];
-    if (company.is_email_verified === 1) {
-      return res.json({ msg: "Company is already verified!" });
-    }
-    
-    let token = company.email_verification_token;
-    if (!token) {
-      token = uuidv4();
-      const sql_update = "UPDATE `companies` SET `email_verification_token` = ? WHERE id = ?";
-      conn_sql.query(sql_update, [token, id]);
-    }
-    
-    SendCompanyVerificationEmail(company.E_mail, token, company.name);
-    return res.json({ msg: "Verification link resent successfully to " + company.E_mail });
+  withCompanyOwnership(req, res, (company) => {
+    const sql_get = "SELECT name, E_mail, email_verification_token, is_email_verified FROM `companies` WHERE id = ?";
+    conn_sql.query(sql_get, [company.id], async (err, result) => {
+      if (err || result.length === 0) {
+        return res.status(404).json({ msg: "Company not found" });
+      }
+      const fullCompany = result[0];
+      if (fullCompany.is_email_verified === 1) {
+        return res.json({ msg: "Company is already verified!" });
+      }
+
+      let token = fullCompany.email_verification_token;
+      if (!token) {
+        token = uuidv4();
+        const sql_update = "UPDATE `companies` SET `email_verification_token` = ? WHERE id = ?";
+        conn_sql.query(sql_update, [token, company.id]);
+      }
+
+      try {
+        await SendCompanyVerificationEmail(fullCompany.E_mail, token, fullCompany.name);
+        return res.json({ msg: "Verification link resent successfully to " + fullCompany.E_mail });
+      } catch (mailErr) {
+        console.error("Failed to resend company verification email:", mailErr.message || mailErr);
+        return res.status(502).json({
+          msg: "We couldn't send the verification email right now. Please try again in a moment.",
+        });
+      }
+    });
   });
 };
 

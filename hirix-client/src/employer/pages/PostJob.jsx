@@ -49,6 +49,7 @@ const PostJob = () => {
   const [Province, setProvince] = useState("");
   const [City, setCity] = useState("");
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
   const { data: companiesList, refetch: refetchCompanies } = useGetCompaniesForEmpQuery(id);
   const CompanyData = useMemo(() => {
     return (companiesList || []).map((company) => ({
@@ -101,6 +102,7 @@ const PostJob = () => {
 
   const submit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
 
     // Frontend Validations
     const newErrors = {};
@@ -170,18 +172,21 @@ const PostJob = () => {
       province: Province?.trim(),
     };
 
+    setSubmitting(true);
     try {
-      await API
-        .post(`/postbyEmployee/${id}`, payload, {
-          headers: {
-            "x-access-token": token,
-          },
-        })
-        .then((res) => {
-          alert(res.data.msg);
-          navigate(`/employer/jobs`);
-        });
-    } catch (error) {}
+      const res = await API.post(`/postbyEmployee/${id}`, payload, {
+        headers: {
+          "x-access-token": token,
+        },
+      });
+      alert(res.data.msg);
+      navigate(`/employer/jobs`);
+    } catch (error) {
+      console.error("Failed to post job", error);
+      alert("Something went wrong while posting this job. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
 
     // try {
     //         await axios
@@ -460,11 +465,14 @@ const PostJob = () => {
                     >
                       Save As Draft
                     </Link>
-                    <button type="submit" className="btn-normal">
-                      <span>Publish</span>
-                      <span className="btn-loading">
-                        <FaSpinner />
-                      </span>
+                    <button type="submit" className="btn-normal" disabled={submitting}>
+                      {submitting ? (
+                        <span className="btn-loading">
+                          <FaSpinner />
+                        </span>
+                      ) : (
+                        <span>Publish</span>
+                      )}
                     </button>
                   </div>
                 </div>

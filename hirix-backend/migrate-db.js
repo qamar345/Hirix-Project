@@ -79,6 +79,12 @@ async function migrateSchema() {
     await queryPromise("ALTER TABLE `verifyemail` ADD COLUMN `isVerified` TINYINT(1) DEFAULT 0");
   }
 
+  // Add expires_at column so password-reset codes can be time-limited
+  if (!existingVerifyemailColumns.includes("expires_at")) {
+    console.log("Adding expires_at column to verifyemail...");
+    await queryPromise("ALTER TABLE `verifyemail` ADD COLUMN `expires_at` DATETIME NULL");
+  }
+
   // 4. Migrate Companies Social Networks
   const socialFields = await queryPromise("DESCRIBE `companies_social_networks`");
   const existingSocialColumns = socialFields.map(f => f.Field);

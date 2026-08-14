@@ -116,13 +116,18 @@ const {
   GetWishlist,
 } = require("../controller/jobseeker/appliedTo");
 const verifyToken = require("../middleware/authToken");
+const { requireRole, requireSelf } = require("../middleware/authorize");
+const rateLimit = require("../middleware/rateLimit");
+
+// Throttle brute-forceable auth endpoints (login attempts, reset codes)
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: "Too many attempts, please try again in a few minutes." });
+const resetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 8, message: "Too many attempts, please try again in a few minutes." });
 const {
   Getcompanies,
   Approvedcompany,
   Rejectcompany,
 } = require("../controller/combined/companies");
 const { AddManager } = require("../controller/admin/AddManagers");
-const { pagination } = require("../controller/combined/Pagination");
 const { Graph, CandidateGraph } = require("../controller/admin/Graph");
 const { Dashboard, dashData } = require("../controller/employee/DashboardData");
 const {
@@ -163,56 +168,57 @@ const { Test } = require("../controller/test/test.controller");
 //....................................Admin.......................................
 const router = express.Router();
 
-router.post("/admin-login", Adminlogin);
+router.post("/admin-login", authLimiter, Adminlogin);
 
 router.put(
   "/admin-profile/:id",
   verifyToken,
+  requireRole("admin"),
+  requireSelf("id"),
   upload.single("image"),
   AdminProfile
 );
 
-router.get("/GetAdmin/:id", verifyToken, GetAdmin);
+router.get("/GetAdmin/:id", verifyToken, requireRole("admin"), GetAdmin);
 
-router.get("/get-data", verifyToken, Getdata);
+router.get("/get-data", verifyToken, requireRole("admin"), Getdata);
 
-router.get("/getusers", verifyToken, Getusers);
+router.get("/getusers", verifyToken, requireRole("admin"), Getusers);
 
-router.get("/DashboardData", verifyToken, GetDashboard);
+router.get("/DashboardData", verifyToken, requireRole("admin"), GetDashboard);
 
-router.get("/graph/:days", verifyToken, Graph);
+router.get("/graph/:days", verifyToken, requireRole("admin"), Graph);
 
-router.get("/Candidategraph/:days", verifyToken, CandidateGraph);
+router.get("/Candidategraph/:days", verifyToken, requireRole("admin"), CandidateGraph);
 
 // router.put("/approved-request/:id",verifyToken, request);
 
 // router.put("/rejected/:id",verifyToken, requestrejected);
 
-router.put("/active-employee/:id", verifyToken, Active);
+router.put("/active-employee/:id", verifyToken, requireRole("admin"), Active);
 
-router.put("/freezeusers/:id", verifyToken, FreezeUsers);
+router.put("/freezeusers/:id", verifyToken, requireRole("admin"), FreezeUsers);
 
-router.post("/freeze-employee/:id", verifyToken, verifyToken, Freeze);
+router.post("/freeze-employee/:id", verifyToken, requireRole("admin"), Freeze);
 
-router.get("/getManagers", verifyToken, GetManagers);
+router.get("/getManagers", verifyToken, requireRole("admin"), GetManagers);
 
-router.put("/activeManager/:id", verifyToken, ActiveManagers);
+router.put("/activeManager/:id", verifyToken, requireRole("admin"), ActiveManagers);
 
-router.put("/freezeManager/:id", verifyToken, InactiveManagers);
+router.put("/freezeManager/:id", verifyToken, requireRole("admin"), InactiveManagers);
 
-router.post("/addManager", verifyToken, AddManager);
+router.post("/addManager", verifyToken, requireRole("admin"), AddManager);
 
-router.put("/change-password/:id", verifyToken, AdminChangePassword);
+router.put("/change-password/:id", verifyToken, requireRole("admin"), requireSelf("id"), AdminChangePassword);
 
 router.get("/getPostSpecific/:id", verifyToken, GetSpecificPost);
 
-router.post("/verify-emailForAdmin", verifyToken, SendCodeForAdmin);
+router.post("/verify-emailForAdmin", verifyToken, requireRole("admin"), resetLimiter, SendCodeForAdmin);
 
-router.put("/forget-passwordForAdmin", verifyToken, forgetPasswordForAdmin);
+router.put("/forget-passwordForAdmin", verifyToken, requireRole("admin"), resetLimiter, forgetPasswordForAdmin);
 
-router.get("/GetAllProfileData/:id", verifyToken, GetFullApplicantProfile);
+router.get("/GetAllProfileData/:id", verifyToken, requireRole("admin", "employee"), GetFullApplicantProfile);
 
-// router.get("/pagination", pagination);
 //......................................Combined........................................
 
 router.get("/get-skills", GetSkills);
@@ -226,14 +232,14 @@ router.get("/get-latest-jobs", GetLatestJobs);
 
 // Site Configurations Endpoints
 router.get("/site-settings", GetSiteSettings);
-router.put("/site-settings", verifyToken, UpdateSiteSettings);
+router.put("/site-settings", verifyToken, requireRole("admin"), UpdateSiteSettings);
 
 // Blog Engine Endpoints
 router.get("/get-blogs", GetBlogs);
 router.get("/get-blog/:slug", GetBlogBySlug);
-router.post("/add-blog", verifyToken, AddBlog);
-router.put("/edit-blog/:id", verifyToken, EditBlog);
-router.delete("/delete-blog/:id", verifyToken, DeleteBlog);
+router.post("/add-blog", verifyToken, requireRole("admin"), AddBlog);
+router.put("/edit-blog/:id", verifyToken, requireRole("admin"), EditBlog);
+router.delete("/delete-blog/:id", verifyToken, requireRole("admin"), DeleteBlog);
 
 router.get("/get-postsBYAdmin", GetpostsByAdmin);
 
@@ -241,21 +247,21 @@ router.get("/getTotal_jobs", GetTotalJobs);
 
 router.get("/get-post-by-id/:id", Getpostbyid);
 
-router.get("/getcompanies", verifyToken, Getcompanies);
+router.get("/getcompanies", verifyToken, requireRole("admin"), Getcompanies);
 
-router.put("/approvedCompany/:id", verifyToken, Approvedcompany);
+router.put("/approvedCompany/:id", verifyToken, requireRole("admin"), Approvedcompany);
 
-router.put("/rejectCompany/:id", verifyToken, Rejectcompany);
+router.put("/rejectCompany/:id", verifyToken, requireRole("admin"), Rejectcompany);
 
-router.get("/get-reviews", verifyToken, Getreviews);
+router.get("/get-reviews", verifyToken, requireRole("admin"), Getreviews);
 
 router.get("/filtersCountData", filtersCount);
 
-router.post("/verify-email", SendCode);
+router.post("/verify-email", resetLimiter, SendCode);
 
-router.put("/forget-password", forgetPassword);
+router.put("/forget-password", resetLimiter, forgetPassword);
 
-router.post("/send-verify-email", SendVerificationLink);
+router.post("/send-verify-email", resetLimiter, SendVerificationLink);
 
 router.get("/verify-mail-link/:token", VerifyEmailLink);
 router.get("/verify-company-email/:token", VerifyCompanyEmail);
@@ -270,32 +276,36 @@ router.post("/news-letter", verifyToken, Subscribe);
 router.put(
   "/employee-profile-update/:id",
   verifyToken,
+  requireSelf("id"),
   upload.single("image"),
   EmployeeProfile
 );
 
-router.put("/Employer-password/:id", verifyToken, EmployeeChangePassword);
+router.put("/Employer-password/:id", verifyToken, requireSelf("id"), EmployeeChangePassword);
 
-router.post("/employee-login", employeelogin);
+router.post("/employee-login", authLimiter, employeelogin);
 
-router.get("/EmployerGraph/:id/:days", verifyToken, EmployerGraph);
+router.get("/EmployerGraph/:id/:days", verifyToken, requireSelf("id"), EmployerGraph);
 
-router.get("/DashEmpData/:id", verifyToken, Dashboard);
+router.get("/DashEmpData/:id", verifyToken, requireSelf("id"), Dashboard);
 
-router.get("/dashDataEmployer/:id", verifyToken, dashData);
+router.get("/dashDataEmployer/:id", verifyToken, requireSelf("id"), dashData);
 
-router.post("/employee-signup", employeesignup);
+router.post("/employee-signup", authLimiter, employeesignup);
 
-router.get("/getEmployer/:id", verifyToken, GetEmployee);
+router.get("/getEmployer/:id", verifyToken, requireSelf("id", ["admin"]), GetEmployee);
 
-router.get("/GetEmployeesWithCompanies/:id", verifyToken, GetEmpAndCom);
+router.get("/GetEmployeesWithCompanies/:id", verifyToken, requireSelf("id", ["admin"]), GetEmpAndCom);
 
-router.post("/postbyEmployee/:id", verifyToken, PostJob);
+router.post("/postbyEmployee/:id", verifyToken, requireSelf("id"), PostJob);
 
-router.post("/saveAsDraft/:id", verifyToken, draftJob);
+router.post("/saveAsDraft/:id", verifyToken, requireSelf("id"), draftJob);
 
-router.get("/GetCompanies/:id", verifyToken, SelectCompanies);
+router.get("/GetCompanies/:id", verifyToken, requireSelf("id"), SelectCompanies);
 
+// Job/company/applicant records below are looked up by their OWN id, not
+// the caller's id, so ownership is verified inside each controller
+// against req.user.id rather than at the route level.
 router.put("/edit-posts/:id", verifyToken, editposts);
 
 router.put("/del-job-posts/:id", verifyToken, delposts);
@@ -317,6 +327,7 @@ router.put("/statusrejected/:id", verifyToken, status_rejected);
 router.post(
   "/add-company/:id",
   verifyToken,
+  requireSelf("id"),
   upload.single("image"),
   Addcompany
 );
@@ -335,13 +346,13 @@ const { getLinkedInAuthURL, handleLinkedInCallback } = require("../controller/em
 router.get("/auth/linkedin", verifyToken, getLinkedInAuthURL);
 router.get("/auth/linkedin/callback", handleLinkedInCallback);
 
-router.get("/get-applicants/:id", verifyToken, Getapplicants);
+router.get("/get-applicants/:id", verifyToken, requireSelf("id"), Getapplicants);
 
-router.post("/send-message/:id", verifyToken, send_message);
+router.post("/send-message/:id", verifyToken, requireSelf("id"), send_message);
 
-router.get("/inbox/:id", verifyToken, inbox_message);
+router.get("/inbox/:id", verifyToken, requireSelf("id"), inbox_message);
 
-router.get("/outbox/:id", verifyToken, outbox_message);
+router.get("/outbox/:id", verifyToken, requireSelf("id"), outbox_message);
 
 // router.get("/messages", messages);
 
@@ -349,29 +360,29 @@ router.get("/outbox/:id", verifyToken, outbox_message);
 
 // router.put("/edit-skillset/:id", Editskillset);
 
-router.get("/get-his-posts/:id", verifyToken, Gethisposts);
+router.get("/get-his-posts/:id", verifyToken, requireSelf("id"), Gethisposts);
 
 // router.post("/required-skills/:id", required_skills);
 
 //...................................Job Seeker.....................................
 
-router.post("/user-login", userlogin);
+router.post("/user-login", authLimiter, userlogin);
 
-router.get("/DasboardJobseeker/:id", verifyToken, JS_Dashboard);
+router.get("/DasboardJobseeker/:id", verifyToken, requireSelf("id"), JS_Dashboard);
 
-router.get("/UserGraph/:id/:days", verifyToken, GraphUser);
+router.get("/UserGraph/:id/:days", verifyToken, requireSelf("id"), GraphUser);
 
 router.get("/getSkills", Skills_select);
 
-router.put("/update-user-profile/:id", verifyToken, UserProfile);
+router.put("/update-user-profile/:id", verifyToken, requireSelf("id"), UserProfile);
 
-router.put("/updatePassword/:id", verifyToken, JobSeekerChangePassword);
+router.put("/updatePassword/:id", verifyToken, requireSelf("id"), JobSeekerChangePassword);
 
 router.post("/add-review", verifyToken, AddReview);
 
 router.put("/edit-review/:id", verifyToken, editreview);
 
-router.get("/appliedTo/:id", verifyToken, appliedTo);
+router.get("/appliedTo/:id", verifyToken, requireSelf("id"), appliedTo);
 
 router.put("/apply/:id", verifyToken, Apply);
 
@@ -379,43 +390,44 @@ router.put("/Deleted/:id", verifyToken, DeleteFromTable);
 
 router.delete("/cancleApplication/:id", verifyToken, CancleApplication);
 
-router.post("/apply-for-job/:id", verifyToken, ApplyForJob);
+router.post("/apply-for-job/:id", verifyToken, requireSelf("id"), ApplyForJob);
 
-router.post("/addWishlist/:id", verifyToken, AddToWishlist);
+router.post("/addWishlist/:id", verifyToken, requireSelf("id"), AddToWishlist);
 
-router.get("/getWishlists/:id", verifyToken, GetWishlist);
+router.get("/getWishlists/:id", verifyToken, requireSelf("id"), GetWishlist);
 
-router.get("/show-jobs/:id", verifyToken, showjobs);
+router.get("/show-jobs/:id", verifyToken, requireSelf("id"), showjobs);
 
-router.post("/add-skillset/:id", verifyToken, Addskillset);
+router.post("/add-skillset/:id", verifyToken, requireSelf("id"), Addskillset);
 
-router.get("/getProfile/:id", verifyToken, GetProfile);
+router.get("/getProfile/:id", verifyToken, requireSelf("id", ["admin", "employee"]), GetProfile);
 
 router.post(
   "/postProfile/:id",
   verifyToken,
+  requireSelf("id"),
   upload.single("image"),
   ProfileBasicInfo
 );
 
-router.post("/AddEducation/:id", verifyToken, upload.none(), Education);
-router.get("/get-candidate-qualification/:id", verifyToken, GetEducation);
+router.post("/AddEducation/:id", verifyToken, requireSelf("id"), upload.none(), Education);
+router.get("/get-candidate-qualification/:id", verifyToken, requireSelf("id", ["admin", "employee"]), GetEducation);
 
-router.post("/AddExperience/:id", verifyToken, Experience);
-router.get("/get-candidate-exp/:id", verifyToken, GetExperience);
+router.post("/AddExperience/:id", verifyToken, requireSelf("id"), Experience);
+router.get("/get-candidate-exp/:id", verifyToken, requireSelf("id", ["admin", "employee"]), GetExperience);
 
-router.post("/AddProject/:id", verifyToken, Project);
-router.get("/get-candidate-projects/:id", verifyToken, GetCandidateProjects);
+router.post("/AddProject/:id", verifyToken, requireSelf("id"), Project);
+router.get("/get-candidate-projects/:id", verifyToken, requireSelf("id", ["admin", "employee"]), GetCandidateProjects);
 
-router.post("/AddAward/:id", verifyToken, Award);
+router.post("/AddAward/:id", verifyToken, requireSelf("id"), Award);
 
-router.get("/profile-status/:id", verifyToken, getUserProfileStatus);
+router.get("/profile-status/:id", verifyToken, requireSelf("id"), getUserProfileStatus);
 
 router.get("/GenerateAutoUserName", GenerateUserName);
 
 router.delete("/remove-skill/:id", verifyToken, RemoveCandidateSkills);
 
-router.get("/download-cv/:id", verifyToken, GenerateCv);
+router.get("/download-cv/:id", verifyToken, requireSelf("id", ["admin", "employee"]), GenerateCv);
 
 router.get("/test", Test);
 

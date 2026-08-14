@@ -61,14 +61,18 @@ const Adminlogin = (req, res) => {
     }
 
     const secretKey = process.env.SECRETKEY;
-    const token = jwt.sign({ email: admin.email }, secretKey, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign(
+      { id: admin.id, email: admin.email, role: admin.role || "admin" },
+      secretKey,
+      { expiresIn: "7d" }
+    );
+
+    const { password: _pw, ...safeAdmin } = admin;
 
     return res.json({
       loginStatus: true,
       token,
-      admin,
+      admin: safeAdmin,
       message: "Login Successfully!",
     });
   });
@@ -84,11 +88,19 @@ const AdminProfile = (req, res) => {
 
   const imageUrl = req.file ? `/uploads/${req.file.filename}` : null;
 
-  const sqladmin = "UPDATE `admin` SET `image`= ? WHERE id=?";
-  conn_sql.query(sqladmin, [name, email, imageUrl, id], (err, result) => {
+  let sqladmin = "UPDATE `admin` SET `name` = ?, `email` = ?";
+  const params = [name, email];
+  if (imageUrl) {
+    sqladmin += ", `image` = ?";
+    params.push(imageUrl);
+  }
+  sqladmin += " WHERE id = ?";
+  params.push(id);
+
+  conn_sql.query(sqladmin, params, (err, result) => {
     if (err) {
-      console.log(err);
-      return res.json(err);
+      console.error(err);
+      return res.status(500).json({ message: "Failed to update profile" });
     } else {
       return res.json({ message: "Profile updated...", result, imageUrl });
     }
@@ -139,10 +151,12 @@ const AdminChangePassword = (req, res) => {
 
 const GetAdmin = (req, res) => {
   const { id } = req.params;
-  const sql_get = "SELECT * FROM `admin` WHERE id = ?";
+  const sql_get =
+    "SELECT id, email, role, name, image FROM `admin` WHERE id = ?";
   conn_sql.query(sql_get, [id], (err, result) => {
     if (err) {
-      return res.json(err);
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
     } else {
       return res.json(result);
     }

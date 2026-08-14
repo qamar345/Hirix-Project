@@ -1,5 +1,24 @@
 const { conn_sql } = require("../../config/connection");
 
+// Confirms the applicant row at :id belongs to the authenticated jobseeker.
+function withApplicationOwnership(req, res, onOwned) {
+  const { id } = req.params;
+  conn_sql.query("SELECT id, job_seeker_id FROM applicants WHERE id = ?", [id], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: "Database error" });
+    }
+    if (rows.length === 0) {
+      return res.status(404).json({ msg: "Application not found" });
+    }
+    const application = rows[0];
+    if (!req.user || String(application.job_seeker_id) !== String(req.user.id)) {
+      return res.status(403).json({ msg: "You do not have access to this application" });
+    }
+    onOwned(application);
+  });
+}
+
 // Tracking (this is for job seeker who wants to see his/her jobs where he/she applied to)
 const appliedTo = (req, res) => {
   const { id } = req.params;
@@ -67,58 +86,59 @@ const appliedTo = (req, res) => {
 
 // Apply (wishlist to apply job)
 const Apply = (req, res) => {
-  const { id } = req.params;
+  withApplicationOwnership(req, res, (application) => {
+    const sql_delete = "UPDATE `applicants` SET `status`= 'Applied' WHERE id=?";
 
-  const sql_delete = "UPDATE `applicants` SET `status`= 'Applied' WHERE id=?";
-
-  conn_sql.query(sql_delete, [id], (err, result) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    } else {
-      if (result && result.affectedRows > 0) {
-        return res.json({ msg: "Applied successfully", result });
+    conn_sql.query(sql_delete, [application.id], (err, result) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
       } else {
-        return res.status(404).json({ msg: "Application not found or no change made" });
+        if (result && result.affectedRows > 0) {
+          return res.json({ msg: "Applied successfully", result });
+        } else {
+          return res.status(404).json({ msg: "Application not found or no change made" });
+        }
       }
-    }
+    });
   });
 };
 
 // Delete From Table
 const DeleteFromTable = (req, res) => {
-  const { id } = req.params;
+  withApplicationOwnership(req, res, (application) => {
+    const sql_delete = "UPDATE `applicants` SET `delete`= 1 WHERE id=?";
 
-  const sql_delete = "UPDATE `applicants` SET `delete`= 1 WHERE id=?";
-
-  conn_sql.query(sql_delete, [id], (err, result) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    } else {
-      if (result && result.affectedRows > 0) {
-        return res.json({ msg: "Deleted successfully", result });
+    conn_sql.query(sql_delete, [application.id], (err, result) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
       } else {
-        return res.status(404).json({ msg: "Record not found or no change made" });
+        if (result && result.affectedRows > 0) {
+          return res.json({ msg: "Deleted successfully", result });
+        } else {
+          return res.status(404).json({ msg: "Record not found or no change made" });
+        }
       }
-    }
+    });
   });
 };
 
 // Cancel Application
 const CancleApplication = (req, res) => {
-  const { id } = req.params;
+  withApplicationOwnership(req, res, (application) => {
+    const sql_delete = "DELETE FROM `applicants` WHERE id=?";
 
-  const sql_delete = "DELETE FROM `applicants` WHERE id=?";
-
-  conn_sql.query(sql_delete, [id], (err, result) => {
-    if (err) {
-      return res.json(err);
-    } else {
-      if (result.affectedRows > 0) {
-        return res.json({ msg: "Application canceled successfully" });
+    conn_sql.query(sql_delete, [application.id], (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ msg: "Database error" });
       } else {
-        return res.json({ msg: "No application found with this ID" });
+        if (result.affectedRows > 0) {
+          return res.json({ msg: "Application canceled successfully" });
+        } else {
+          return res.json({ msg: "No application found with this ID" });
+        }
       }
-    }
+    });
   });
 };
 

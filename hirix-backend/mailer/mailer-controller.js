@@ -1,6 +1,16 @@
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 
+function escapeHtml(value) {
+  if (value === null || value === undefined) return "";
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 const mailPort = parseInt(process.env.MAILPORT || 465);
 
 // Primary Transporter (noreply@hirix.com.pk)
@@ -168,8 +178,9 @@ const VerifyEmail = (email, token) => {
     `,
   };
 
-  // Send the email
-  sendMailWithFallback(mailOptions).catch(err => console.error("VerifyEmail error:", err));
+  // Send the email - return the promise so the caller can tell whether it
+  // actually went out instead of always reporting success to the user.
+  return sendMailWithFallback(mailOptions);
 };
 
 const SendCompanyVerificationEmail = (email, token, companyName) => {
@@ -282,7 +293,7 @@ const SendCompanyVerificationEmail = (email, token, companyName) => {
     `,
   };
 
-  sendMailWithFallback(mailOptions).catch(err => console.error("SendCompanyVerificationEmail error:", err));
+  return sendMailWithFallback(mailOptions);
 };
 
 const SendForgotPasswordEmail = (email, token) => {
@@ -390,7 +401,7 @@ const SendForgotPasswordEmail = (email, token) => {
     `,
   };
 
-  sendMailWithFallback(mailOptions).catch(err => console.error("SendForgotPasswordEmail error:", err));
+  return sendMailWithFallback(mailOptions);
 };
 
 const SendContactFormEmail = (name, email, subject, message) => {
@@ -409,11 +420,11 @@ const SendContactFormEmail = (name, email, subject, message) => {
 <body style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 30px; margin: 0;">
   <div style="max-width: 600px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
     <h2 style="color: #126ebb; border-bottom: 2px solid #126ebb; padding-bottom: 10px; margin-top: 0;">New Contact Query Received</h2>
-    <p><strong>Name:</strong> ${name}</p>
-    <p><strong>Email:</strong> <a href="mailto:${email}" style="color: #126ebb;">${email}</a></p>
-    <p><strong>Subject:</strong> ${subject}</p>
+    <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+    <p><strong>Email:</strong> <a href="mailto:${escapeHtml(email)}" style="color: #126ebb;">${escapeHtml(email)}</a></p>
+    <p><strong>Subject:</strong> ${escapeHtml(subject)}</p>
     <div style="margin-top: 20px; padding: 15px; background-color: #f8fafc; border-left: 4px solid #126ebb; border-radius: 4px;">
-      <p style="margin: 0; white-space: pre-wrap; color: #334155; line-height: 1.6;">${message}</p>
+      <p style="margin: 0; white-space: pre-wrap; color: #334155; line-height: 1.6;">${escapeHtml(message)}</p>
     </div>
     <hr style="margin-top: 30px; border: none; border-top: 1px solid #eeeeee;" />
     <p style="font-size: 12px; color: #64748b; margin-bottom: 0;">This query was sent via the contact form on Hirix Pakistan.</p>

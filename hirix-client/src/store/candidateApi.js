@@ -1,19 +1,10 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-
-const BASE_URL = import.meta.env.VITE_API_URL || "https://api.hirix.com.pk";
-const getToken = () => sessionStorage.getItem("token");
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQueryWithReauth } from "./baseQueryWithReauth";
 
 // ─── Candidate (Job Seeker) API Slice ─────────────────────────────────────────
 export const candidateApi = createApi({
   reducerPath: "candidateApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-    prepareHeaders: (headers) => {
-      const token = getToken();
-      if (token) headers.set("x-access-token", token);
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithReauth,
   tagTypes: ["CanDashboard", "CanProfile", "Applications", "Wishlist", "Skills", "Reviews", "Education", "Experience", "Projects"],
   endpoints: (builder) => ({
     // Dashboard

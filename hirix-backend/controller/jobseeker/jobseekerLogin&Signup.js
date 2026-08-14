@@ -37,10 +37,12 @@ const userlogin = (req, res) => {
           { expiresIn: "7d" }
         );
 
+        const { password: _pw, ...safeUser } = user;
+
         return res.json({
           isloggedin: true,
           msg: "Login Successfully!",
-          data: user,
+          data: safeUser,
           token,
         });
       } else {
@@ -51,18 +53,23 @@ const userlogin = (req, res) => {
 };
 
 // Job seeker Update Profile
+// Note: email/password are intentionally NOT editable here. Email changes
+// must go through the verified-email flow, and password changes must go
+// through JobSeekerChangePassword (which requires the current password and
+// hashes the new one). Accepting them here previously allowed an
+// authenticated user to silently take over any account by ID.
 const UserProfile = (req, res) => {
   const { id } = req.params;
-  const { username, image, email, password, phone, qualification, location } =
-    req.body;
+  const { username, image, phone, qualification, location } = req.body;
   const sqladmin =
-    "UPDATE `user_accounts` SET `username`= ?,`image`= ?, `email`= ? , `password`= ?, `phone`= ?, `qualification`=? , `location`=? WHERE id=?";
+    "UPDATE `user_accounts` SET `username`= ?,`image`= ?, `phone`= ?, `qualification`=? , `location`=? WHERE id=?";
   conn_sql.query(
     sqladmin,
-    [username, image, email, password, phone, qualification, location, id],
+    [username, image, phone, qualification, location, id],
     (err, result) => {
       if (err) {
-        return res.json(err);
+        console.error(err);
+        return res.status(500).json({ msg: "Database error" });
       } else {
         return res.json({ msg: "Your Profile is Updated now.", result });
       }
@@ -139,21 +146,34 @@ const JobSeekerChangePassword = (req, res) => {
 
     const storedPassword = results[0].password;
 
-    if (storedPassword !== currentPass) {
-      return res.json({ msg: "Current password is incorrect" });
-    }
-    const updatePasswordQuery =
-      "UPDATE `user_accounts` SET `password`= ? WHERE id=?";
-    conn_sql.query(
-      updatePasswordQuery,
-      [newPass, id],
-      (updateErr, updateResult) => {
-        if (updateErr) {
-          return res.json({ msg: "Failed to update password", updateErr });
-        }
-        return res.json({ msg: "Password updated successfully", updateResult });
+    bcrypt.compare(currentPass, storedPassword, (compareErr, isMatch) => {
+      if (compareErr) {
+        return res.status(500).json({ msg: "Error comparing passwords" });
       }
-    );
+      if (!isMatch) {
+        return res.json({ msg: "Current password is incorrect" });
+      }
+
+      bcrypt.hash(newPass, 10, (hashErr, hashedNewPass) => {
+        if (hashErr) {
+          return res.status(500).json({ msg: "Error hashing new password" });
+        }
+
+        const updatePasswordQuery =
+          "UPDATE `user_accounts` SET `password`= ? WHERE id=?";
+        conn_sql.query(
+          updatePasswordQuery,
+          [hashedNewPass, id],
+          (updateErr, updateResult) => {
+            if (updateErr) {
+              console.error(updateErr);
+              return res.status(500).json({ msg: "Failed to update password" });
+            }
+            return res.json({ msg: "Password updated successfully", updateResult });
+          }
+        );
+      });
+    });
   });
 };
 

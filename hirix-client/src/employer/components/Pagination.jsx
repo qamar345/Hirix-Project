@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 
 export const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   const pageNumbers = [];
@@ -6,10 +6,10 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }) => {
     pageNumbers.push(i);
   }
 
-  const [activePage, setActivePage] = useState(1);
-
-  const handlePageClick = (number) => {
-    setActivePage(number);
+  const handlePageClick = (event, number) => {
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    onPageChange?.(number);
   };
   return (
     <>
@@ -19,15 +19,12 @@ export const Pagination = ({ currentPage, totalPages, onPageChange }) => {
             {pageNumbers.map((number) => (
               <li
                 key={number}
-                className={`page-item ${activePage === number ? "active" : ""}`}
+                className={`page-item ${currentPage === number ? "active" : ""}`}
               >
                 <a
                   className="page-link"
                   href="#"
-                  onClick={() => {
-                    onPageChange(number);
-                    handlePageClick(number);
-                  }}
+                  onClick={(event) => handlePageClick(event, number)}
                 >
                   {number}
                 </a>

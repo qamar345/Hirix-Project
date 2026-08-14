@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import PhoneInput from "react-phone-number-input";
 import Select from "react-select";
 import ReactQuill from "react-quill";
+import DOMPurify from "dompurify";
 import { RiUploadLine } from "react-icons/ri";
 import { IoCloseSharp } from "react-icons/io5";
 import "react-quill/dist/quill.snow.css";
@@ -1408,7 +1409,7 @@ const CanProfile = () => {
                         ) : (
                           <p
                             dangerouslySetInnerHTML={{
-                              __html: CandidateExp.map((rs) => rs.description),
+                              __html: DOMPurify.sanitize(CandidateExp.map((rs) => rs.description).join("")),
                             }}
                           ></p>
                         )}
@@ -1550,7 +1551,7 @@ const CanProfile = () => {
                           Description:
                           <span
                             dangerouslySetInnerHTML={{
-                              __html: res.description,
+                              __html: DOMPurify.sanitize(res.description),
                             }}
                           ></span>
                         </div>

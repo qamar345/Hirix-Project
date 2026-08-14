@@ -7,10 +7,21 @@ const SendVerificationLink = (req, res) => {
   const token = uuidv4();
 
   const sql = "INSERT INTO `verifyemail`(`email`, `token`, `isVerified`) VALUES (?, ?, 0) ON DUPLICATE KEY UPDATE `token` = ?, `isVerified` = 0";
-  conn_sql.query(sql, [email, token, token], (err, data) => {
-    if (err) return res.json(err);
-    VerifyEmail(email, token);
-    return res.json({ msg: "Email verification link send to your email" });
+  conn_sql.query(sql, [email, token, token], async (err, data) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
+    }
+
+    try {
+      await VerifyEmail(email, token);
+      return res.json({ msg: "Email verification link sent to your email" });
+    } catch (mailErr) {
+      console.error("Failed to send verification email:", mailErr.message || mailErr);
+      return res.status(502).json({
+        msg: "We couldn't send the verification email right now. Please try again in a moment, or contact support if this keeps happening.",
+      });
+    }
   });
 };
 

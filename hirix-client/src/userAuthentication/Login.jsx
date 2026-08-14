@@ -165,6 +165,11 @@ const Login = ({ ...props }) => {
   const verifyAndRegister = async (e) => {
     e.preventDefault();
 
+    if (!isVerified) {
+      alert("Please verify your email before submitting.");
+      return;
+    }
+
     // Just check if role is set before proceeding
     if (!role) {
       alert("Please select a role before submitting.");
@@ -338,13 +343,14 @@ const Login = ({ ...props }) => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
-                    <span
-                      toggle="#ip_password"
+                    <button
+                      type="button"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                       className="field-icon civi-toggle-password"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       <FaRegEye className="mb-3" />
-                    </span>
+                    </button>
                   </div>
                   <p className="msg">Sending login info,please wait...</p>
                   <div className="form-group">
@@ -398,7 +404,8 @@ const Login = ({ ...props }) => {
                         Token
                       </label>
                       <input
-                        type="number"
+                        type="text"
+                        inputMode="numeric"
                         className="form-control input-field valid"
                         name="token"
                         autoComplete="on"
@@ -428,13 +435,14 @@ const Login = ({ ...props }) => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                       />
-                      <span
-                        toggle="#ip_password"
+                      <button
+                        type="button"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
                         className="field-icon civi-toggle-password"
                         onClick={() => setShowPassword(!showPassword)}
                       >
                         <FaRegEye className="mb-3" />
-                      </span>
+                      </button>
                     </div>
                     <p className="msg">Sending login info,please wait...</p>
 
@@ -651,8 +659,9 @@ const Login = ({ ...props }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-                <span
-                  toggle="#ip_reg_password"
+                <button
+                  type="button"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   className="fa fa-fw fa-eye field-icon civi-toggle-password"
                   onClick={() => setShowPassword(!showPassword)}
                 />

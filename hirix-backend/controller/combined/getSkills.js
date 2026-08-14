@@ -47,10 +47,26 @@ const GetCandidateSkills = (req, res) => {
 const RemoveCandidateSkills = (req, res) => {
   const { id } = req.params;
 
-  const sql = "DELETE FROM `jobseeker_skills` WHERE `id` = ?";
-  conn_sql.query(sql, [id], (err, result) => {
-    if (err) return res.json({ msg: err });
-    return res.json({ msg: "Skill removed!!!" });
+  conn_sql.query("SELECT job_seeker_id FROM `jobseeker_skills` WHERE id = ?", [id], (err, rows) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
+    }
+    if (rows.length === 0) {
+      return res.status(404).json({ msg: "Skill not found" });
+    }
+    if (!req.user || String(rows[0].job_seeker_id) !== String(req.user.id)) {
+      return res.status(403).json({ msg: "You do not have access to this skill" });
+    }
+
+    const sql = "DELETE FROM `jobseeker_skills` WHERE `id` = ?";
+    conn_sql.query(sql, [id], (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ msg: "Database error" });
+      }
+      return res.json({ msg: "Skill removed!!!" });
+    });
   });
 };
 

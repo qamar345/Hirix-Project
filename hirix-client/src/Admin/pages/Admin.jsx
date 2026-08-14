@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { AdSideBar, AdHeader } from "../index.js";
 import { Outlet } from "react-router-dom";
 
-const Employer = () => {
+const Admin = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleSidebarToggle = () => {
@@ -37,4 +37,4 @@ const Employer = () => {
   );
 };
 
-export default Employer;
+export default Admin;

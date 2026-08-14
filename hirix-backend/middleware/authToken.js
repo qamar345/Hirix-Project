@@ -17,6 +17,11 @@ function verifyToken(req, res, next) {
       }
 
       req.userEmail = decoded.email;
+      req.user = {
+        id: decoded.id !== undefined ? String(decoded.id) : undefined,
+        email: decoded.email,
+        role: decoded.role,
+      };
       next();
     });
   } catch (error) {

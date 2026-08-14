@@ -9,9 +9,10 @@ const Getdata = (req, res) => {
   const sql_get = "SELECT * FROM `user_accounts` WHERE role = 'employee' AND username LIKE ? LIMIT ? OFFSET ?";
   conn_sql.query(sql_get, [`%${search}%`, limit, offset], (err, result) => {
     if (err) {
-      return res.json(err);
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
     } else  {
-      const sql = "SELECT COUNT(*) as count FROM `user_accounts`  WHERE username LIKE ?";
+      const sql = "SELECT COUNT(*) as count FROM `user_accounts` WHERE role = 'employee' AND username LIKE ?";
 
       conn_sql.query(sql, [`%${search}%`], (c_err, c_data) => {
         const totalData = c_data[0].count;
@@ -42,9 +43,10 @@ const Getusers = (req, res) => {
   const sql_get = "SELECT * FROM `user_accounts` WHERE role ='jobseeker' AND username LIKE ?  LIMIT ? OFFSET ?";
   conn_sql.query(sql_get, [`%${search}%`, limit, offset], (err, result) => {
     if (err) {
-      return res.json(err);
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
     } else  {
-      const sql = "SELECT COUNT(*) as count FROM `user_accounts`  WHERE username LIKE ?";
+      const sql = "SELECT COUNT(*) as count FROM `user_accounts` WHERE role = 'jobseeker' AND username LIKE ?";
 
       conn_sql.query(sql, [`%${search}%`], (c_err, c_data) => {
         const totalData = c_data[0].count;
@@ -70,10 +72,9 @@ const GetDashboard = (req, res) => {
   const sql_get = "SELECT 'Total jobs' AS label, COUNT(*) AS num FROM `jobs` UNION SELECT 'candidates' AS label, COUNT(*) AS num FROM `user_accounts` WHERE role = 'jobseeker' UNION SELECT 'Employees' AS label, COUNT(*) AS num FROM `user_accounts` WHERE role = 'employee' UNION SELECT 'Total companies' AS label, COUNT(*) AS num FROM `companies` WHERE `status_delete` = 1";
   conn_sql.query(sql_get, (err, result) => {
     if (err) {
-      console.log(err);
-      return res.json(err);
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
     } else {
-      // console.log(result);
       return res.json(result);
     }
   });
@@ -87,9 +88,10 @@ const GetManagers = (req, res) => {
   const sql_get = "SELECT * FROM `admin-account` WHERE role !='admin' LIMIT ? OFFSET ?";
   conn_sql.query(sql_get,[limit, offset], (err, result) => {
     if (err) {
-      return res.json(err);
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
     } else  {
-      const sql = "SELECT COUNT(*) as count FROM `admin-account`";
+      const sql = "SELECT COUNT(*) as count FROM `admin-account` WHERE role != 'admin'";
 
       conn_sql.query(sql, (c_err, c_data) => {
         const totalData = c_data[0].count;

@@ -19,7 +19,7 @@ const EmpJobEdit = () => {
   const check = sessionStorage.getItem("isLoggedIn");
   useEffect(() => {
     if (!check) navigate("/");
-  });
+  }, [check, navigate]);
   const [title, setTitle] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
   const [category, setCategory] = useState("");
@@ -69,17 +69,50 @@ const EmpJobEdit = () => {
     fetchCompany();
   }, []);
 
-  useEffect(async () => {
-    if (editId && editId !== "new") {
-      API
-        .get(`/getjobPost/${editId}`, {
-          headers: {
-            "x-access-token": token,
-          },
-        })
-        .then((res) => {});
-    }
-  });
+  useEffect(() => {
+    if (!editId || editId === "new") return;
+
+    API.get(`/getjobPost/${editId}`, {
+      headers: {
+        "x-access-token": token,
+      },
+    })
+      .then((res) => {
+        const job = Array.isArray(res.data) ? res.data[0] : res.data;
+        if (!job) return;
+
+        setTitle(job.title || "");
+        setCategory(job.job_category || "");
+        setJobType(job.job_type || "");
+        setWorkPlaceType(job.workplace_type || "");
+        setDes(job.description || "");
+        setSkills(job.required_skills || "");
+        setCareerLevel(job.career_level || "");
+        setExperience(job.Experience || "");
+        setQualification(job.qualification || "");
+        setQuantity(job.available_seats || "");
+        setGender(job.gender || "");
+        setExpiryDate(
+          job.expiry_date ? new Date(job.expiry_date).toISOString().split("T")[0] : ""
+        );
+        setSalary(job.salary || "");
+        setCurrency(job.currency || "");
+        setRateType(job.Rate || "");
+        setMinValue(job.minimum_currency || "");
+        setMaxValue(job.maximum_currency || "");
+        setEmail(job.Email || "");
+        setURL(job.Url || "");
+        setPhone(job.Phone || "");
+        setAppliedType(job.ApplyType || "");
+        setCompany(job.company_name || "");
+        setProvince(job.province || "");
+        setCity(job.city || "");
+      })
+      .catch((err) => {
+        console.error("Failed to load job for editing", err);
+        alert("Could not load this job for editing. Please try again.");
+      });
+  }, [editId, token]);
 
   const Submit = async (e) => {
     e.preventDefault();
@@ -123,7 +156,10 @@ const EmpJobEdit = () => {
       );
       alert(res.data.msg);
       navigate(`/employer/jobs`);
-    } catch (error) {}
+    } catch (error) {
+      console.error("Failed to update job", error);
+      alert("Something went wrong while saving this job. Please try again.");
+    }
   };
 
   useEffect(() => {

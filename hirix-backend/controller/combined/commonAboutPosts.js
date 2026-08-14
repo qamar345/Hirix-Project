@@ -312,15 +312,22 @@ const SendCode = (req, res) => {
     if (result.length === 0) {
       return res.status(404).json({ message: "Invalid Email" });
     } else {
-      const Token = Math.floor(1000 + Math.random() * 9000);
+      const Token = Math.floor(100000 + Math.random() * 900000); // 6-digit code
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
       const sql_store_token =
-        "INSERT INTO `verifyemail` (`email`,`token`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `token` = ?";
-      conn_sql.query(sql_store_token, [email, Token, Token], (err, result) => {
+        "INSERT INTO `verifyemail` (`email`,`token`,`expires_at`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `token` = ?, `expires_at` = ?";
+      conn_sql.query(sql_store_token, [email, Token, expiresAt, Token, expiresAt], async (err, result) => {
         if (err) {
-          return res.status(500).json({ message: "Database token storage error", err });
-        } else {
-          SendForgotPasswordEmail(email, Token);
+          return res.status(500).json({ message: "Database token storage error" });
+        }
+        try {
+          await SendForgotPasswordEmail(email, Token);
           return res.json({ msg: "Verification token sent successfully!", result });
+        } catch (mailErr) {
+          console.error("Failed to send password reset email:", mailErr.message || mailErr);
+          return res.status(502).json({
+            message: "We couldn't send the verification email right now. Please try again in a moment.",
+          });
         }
       });
     }
@@ -339,15 +346,22 @@ const SendCodeForAdmin = (req, res) => {
     if (result.length === 0) {
       return res.status(404).json({ message: "Invalid Email" });
     } else {
-      const Token = Math.floor(1000 + Math.random() * 9000);
+      const Token = Math.floor(100000 + Math.random() * 900000); // 6-digit code
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
       const sql_store_token =
-        "INSERT INTO `verifyemail` (`email`,`token`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `token` = ?";
-      conn_sql.query(sql_store_token, [email, Token, Token], (err, result) => {
+        "INSERT INTO `verifyemail` (`email`,`token`,`expires_at`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `token` = ?, `expires_at` = ?";
+      conn_sql.query(sql_store_token, [email, Token, expiresAt, Token, expiresAt], async (err, result) => {
         if (err) {
-          return res.status(500).json({ message: "Database token storage error", err });
-        } else {
-          SendForgotPasswordEmail(email, Token);
+          return res.status(500).json({ message: "Database token storage error" });
+        }
+        try {
+          await SendForgotPasswordEmail(email, Token);
           return res.json({ msg: "Verification token sent successfully!", result });
+        } catch (mailErr) {
+          console.error("Failed to send admin password reset email:", mailErr.message || mailErr);
+          return res.status(502).json({
+            message: "We couldn't send the verification email right now. Please try again in a moment.",
+          });
         }
       });
     }
@@ -367,7 +381,7 @@ const forgetPasswordForAdmin = (req, res) => {
     }
 
     const sql_token =
-      "SELECT token FROM `verifyemail` WHERE email = ? AND token = ?";
+      "SELECT token, expires_at FROM `verifyemail` WHERE email = ? AND token = ?";
     conn_sql.query(sql_token, [email, token], (err, tokenResult) => {
       if (err) {
         return res.status(500).json({ message: "Internal server error", err });
@@ -375,6 +389,11 @@ const forgetPasswordForAdmin = (req, res) => {
 
       if (tokenResult.length === 0) {
         return res.status(400).json({ message: "Invalid token" });
+      }
+
+      const { expires_at } = tokenResult[0];
+      if (expires_at && new Date(expires_at) < new Date()) {
+        return res.status(400).json({ message: "Token has expired, please request a new one" });
       }
 
       // Hash the new password before updating
@@ -389,6 +408,9 @@ const forgetPasswordForAdmin = (req, res) => {
           if (updateErr) {
             return res.status(500).json({ message: "Error updating password", updateErr });
           }
+
+          // Invalidate the token so it can't be replayed
+          conn_sql.query("DELETE FROM `verifyemail` WHERE email = ? AND token = ?", [email, token], () => {});
 
           return res
             .status(200)
@@ -415,7 +437,7 @@ const forgetPassword = (req, res) => {
     }
 
     const sql_token =
-      "SELECT token FROM `verifyemail` WHERE email = ? AND token = ?";
+      "SELECT token, expires_at FROM `verifyemail` WHERE email = ? AND token = ?";
     conn_sql.query(sql_token, [email, token], (err, tokenResult) => {
       if (err) {
         return res.status(500).json({ message: "Error verifying token", err });
@@ -423,6 +445,11 @@ const forgetPassword = (req, res) => {
 
       if (tokenResult.length === 0) {
         return res.status(400).json({ message: "Invalid or expired token" });
+      }
+
+      const { expires_at } = tokenResult[0];
+      if (expires_at && new Date(expires_at) < new Date()) {
+        return res.status(400).json({ message: "Token has expired, please request a new one" });
       }
 
       // Hash the new password
@@ -444,6 +471,9 @@ const forgetPassword = (req, res) => {
                 .status(500)
                 .json({ message: "Error updating password", updateErr });
             }
+
+            // Invalidate the token so it can't be replayed
+            conn_sql.query("DELETE FROM `verifyemail` WHERE email = ? AND token = ?", [email, token], () => {});
 
             return res.json({
               message: "Updated Password Successfully!",

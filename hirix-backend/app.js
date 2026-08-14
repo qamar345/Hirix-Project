@@ -30,12 +30,13 @@ app.use((req, res, next) => {
 
   ];
   const origin = req.headers.origin;
-  
+
+  // Only echo back the Origin header when it's on the allowlist - never
+  // fall back to "*", which combined with credentialed requests would let
+  // any website read authenticated responses from this API.
   if (allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
-  } else {
-    // Fallback for development if origin is missing or mismatch
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
   }
 
   // Allowed methods
@@ -48,8 +49,11 @@ app.use((req, res, next) => {
     "Access-Control-Allow-Headers",
     "Content-Type, Authorization, X-Requested-With, x-access-token"
   );
-  
-  res.setHeader("Access-Control-Allow-Credentials", "true");
+
+  // Baseline security headers (in lieu of a helmet dependency)
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
 
   // Handle preflight requests
   if (req.method === "OPTIONS") {
@@ -87,6 +91,21 @@ migrateSchema().catch(err => {
 app.use("/uploads", express.static("uploads"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(router);
+
+// Centralized error handler - catches multer errors (bad file type, too
+// large) and anything else passed to next(err), and makes sure the client
+// always gets a clean JSON response instead of a raw stack trace or a
+// hung request.
+app.use((err, req, res, next) => {
+  if (err && err.name === "MulterError") {
+    return res.status(400).json({ success: false, msg: err.message });
+  }
+  if (err) {
+    console.error(err);
+    return res.status(err.status || 500).json({ success: false, msg: err.message || "Internal server error" });
+  }
+  next();
+});
 
 app.listen(port, () => {
   console.log("express app running on port 9000");

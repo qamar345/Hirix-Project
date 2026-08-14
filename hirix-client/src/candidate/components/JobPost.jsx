@@ -6,6 +6,7 @@ import { FaRegHeart, FaHeart } from "react-icons/fa";
 import { GoShareAndroid } from "react-icons/go";
 import { MdOutlineLocationOn } from "react-icons/md";
 import { differenceInDays } from "date-fns";
+import DOMPurify from "dompurify";
 import API, { BASE_URL } from "../../api";
 
 const JobPost = ({ job, fromShare }) => {
@@ -645,7 +646,7 @@ const JobPost = ({ job, fromShare }) => {
 
                   <p
                     dangerouslySetInnerHTML={{
-                      __html: description,
+                      __html: DOMPurify.sanitize(description),
                     }}
                   >
                     {/* We are Uxper. With a presence in more than 60 countries,

@@ -8,6 +8,7 @@ const JobPage = () => {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const [job, setJob] = useState(null);
+  const [notFound, setNotFound] = useState(false);
   const fromShare = searchParams.get("fromShare") === "true";
 
   useEffect(() => {
@@ -17,11 +18,27 @@ const JobPage = () => {
           `/get-post-by-id/${id}`
         );
         setJob(res.data);
-      } catch (err) {}
+      } catch (err) {
+        console.error("Failed to load job", err);
+        setNotFound(true);
+      }
     };
 
     fetchJob();
   }, [id]);
+
+  if (notFound) {
+    return (
+      <>
+        <TopNav />
+        <NavbarMenu />
+        <div style={{ padding: "60px 20px", textAlign: "center", color: "#888" }}>
+          This job posting could not be found. It may have been removed or the link is incorrect.
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   if (!job) return <p>Loading...</p>;
 

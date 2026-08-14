@@ -32,6 +32,7 @@ const AdLogin = ({ ...props }) => {
         sessionStorage.setItem("name", res.data.admin.name);
         sessionStorage.setItem("image", res.data.admin.image);
         sessionStorage.setItem("token", res.data.token);
+        sessionStorage.setItem("role", res.data.admin.role || "admin");
         sessionStorage.setItem("isLoggedIn", res.data.loginStatus);
         navigate("/admin/dashboard");
       } else {
@@ -177,13 +178,14 @@ const AdLogin = ({ ...props }) => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
-                    <span
-                      toggle="#ip_password"
+                    <button
+                      type="button"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                       className="field-icon civi-toggle-password"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       <FaRegEye className="mb-3" />
-                    </span>
+                    </button>
                   </div>
                   <p className="msg">Sending login info,please wait...</p>
 
@@ -226,7 +228,8 @@ const AdLogin = ({ ...props }) => {
                       Token
                     </label>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="numeric"
                       className="form-control input-field valid"
                       name="token"
                       autoComplete="on"
@@ -256,13 +259,14 @@ const AdLogin = ({ ...props }) => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                     />
-                    <span
-                      toggle="#ip_password"
+                    <button
+                      type="button"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                       className="field-icon civi-toggle-password"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       <FaRegEye className="mb-3" />
-                    </span>
+                    </button>
                   </div>
                   <p className="msg">Sending login info,please wait...</p>
 
