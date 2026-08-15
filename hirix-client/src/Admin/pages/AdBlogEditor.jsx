@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
-import { AdFooter } from "../index.js";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
+import { AdSideBar, AdHeader, AdFooter } from "../index.js";
 import API from "../../api";
 import {
   FiEdit3,
@@ -63,6 +63,8 @@ const AdBlogEditor = () => {
 
   const [activeTab, setActiveTab] = useState("content"); // "content" | "seo"
   const [saving, setSaving] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const handleSidebarToggle = () => setIsCollapsed(!isCollapsed);
   const [form, setForm] = useState({
     title: "",
     content: "",
@@ -177,8 +179,19 @@ const AdBlogEditor = () => {
   ];
 
   return (
-    <>
-      <div className="dashboardWrapper">
+    <div className={`tablePage ${isCollapsed ? "half" : "full"}`}>
+      <div className="page-sidebar">
+        <AdSideBar
+          isCollapsed={isCollapsed}
+          handleSidebarToggle={handleSidebarToggle}
+        />
+      </div>
+
+      <div className="page-content">
+        <div className="page-header">
+          <AdHeader />
+        </div>
+        <div className="content-main p-5">
         {/* Top bar */}
         <div className="row align-items-center mb-3">
           <div className="col-md-6">
@@ -548,11 +561,12 @@ const AdBlogEditor = () => {
             </div>
           </div>
         </div>
+        </div>
+        <div className="page-footer align-self-end">
+          <AdFooter />
+        </div>
       </div>
-      <div className="footer mt-5">
-        <AdFooter />
-      </div>
-    </>
+    </div>
   );
 };
 

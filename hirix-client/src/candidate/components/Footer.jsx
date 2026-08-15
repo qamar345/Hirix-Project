@@ -108,7 +108,7 @@ const Footer = () => {
         <div className="container">
           <div className="row">
             <div className="col-md-8 col-xl-4">
-              <h4 className="heading">About Us</h4>
+              <h4>About Us</h4>
               <ul>
                 <li>
                   <p>

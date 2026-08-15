@@ -2,10 +2,10 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 
 // Importing core components
-import QuillEditor from "react-quill";
+import QuillEditor from "react-quill-new";
 
 // Importing styles
-import "react-quill/dist/quill.snow.css";
+import "react-quill-new/dist/quill.snow.css";
 import styles from "../assets/style/editor.module.css";
 
 const Editor = () => {

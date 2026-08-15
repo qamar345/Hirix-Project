@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AdFooter } from "../index.js";
+import { AdSideBar, AdHeader, AdFooter } from "../index.js";
 import API from "../../api";
 
 const STATUS_COLORS = {
@@ -18,6 +18,8 @@ const AdBlogs = () => {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchQ, setSearchQ] = useState("");
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const handleSidebarToggle = () => setIsCollapsed(!isCollapsed);
 
   useEffect(() => {
     if (!check) navigate("/admin-login");
@@ -61,8 +63,19 @@ const AdBlogs = () => {
   });
 
   return (
-    <>
-      <div className="dashboardWrapper">
+    <div className={`tablePage ${isCollapsed ? "half" : "full"}`}>
+      <div className="page-sidebar">
+        <AdSideBar
+          isCollapsed={isCollapsed}
+          handleSidebarToggle={handleSidebarToggle}
+        />
+      </div>
+
+      <div className="page-content">
+        <div className="page-header">
+          <AdHeader />
+        </div>
+        <div className="content-main p-5">
         <div className="row align-items-center mb-3">
           <div className="col-md-6">
             <h6 className="heading" style={{ margin: 0 }}>Blog Posts</h6>
@@ -197,11 +210,12 @@ const AdBlogs = () => {
             </tbody>
           </table>
         </div>
+        </div>
+        <div className="page-footer align-self-end">
+          <AdFooter />
+        </div>
       </div>
-      <div className="footer mt-5">
-        <AdFooter />
-      </div>
-    </>
+    </div>
   );
 };
 

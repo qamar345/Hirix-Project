@@ -24,9 +24,17 @@ const employeesignup = (req, res) => {
   const confirmEmail =
     "SELECT `isVerified` FROM `verifyemail` WHERE `email` = ?";
   conn_sql.query(confirmEmail, [email], (err, confirmRes) => {
-    if (err) return res.json({ msg: "Email not Verified!!!" });
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
+    }
 
-    if (confirmRes) {
+    // confirmRes is always a truthy array from mysql2, even when empty -
+    // must check its contents, not just its presence, or an unverified
+    // (or nonexistent) email can sign up freely.
+    const isVerified = confirmRes.length > 0 && confirmRes[0].isVerified === 1;
+
+    if (isVerified) {
       bcrypt.hash(password, 10, function (err, hash) {
         const sql_check = "SELECT * FROM `user_accounts` WHERE email = ?";
         conn_sql.query(sql_check, [email], (err, result) => {
@@ -51,6 +59,10 @@ const employeesignup = (req, res) => {
             );
           }
         });
+      });
+    } else {
+      return res.status(403).json({
+        msg: "Please verify your email before signing up.",
       });
     }
   });

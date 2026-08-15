@@ -154,25 +154,13 @@ const NavbarMenu = () => {
                     )}
                   </div>
                 ) : (
-                  <>
-                    <NavLink
-                      className={`btn-login mr-3`}
-                      type="button"
-                      variant="dark"
-                      onClick={() => setModalShow(true)}
-                    >
-                      Login
-                    </NavLink>
-
-                    <Login
-                      show={modalShow}
-                      onHide={() => setModalShow(false)}
-                    />
-                    <AdLogin
-                      show={adModalShow}
-                      onHide={() => setAdModalShow(false)}
-                    />
-                  </>
+                  <button
+                    type="button"
+                    className="btn-login mr-3"
+                    onClick={() => setModalShow(true)}
+                  >
+                    Login
+                  </button>
                 )}
               </div>
             </div>
@@ -253,26 +241,13 @@ const NavbarMenu = () => {
                       )}
                     </div>
                   ) : (
-                    <>
-                      <NavLink
-                        className={`btn-login`}
-                        style={{ marginLeft: "-15px" }}
-                        type="button"
-                        variant="primary"
-                        onClick={() => setModalShow(true)}
-                      >
-                        Login
-                      </NavLink>
-
-                      <Login
-                        show={modalShow}
-                        onHide={() => setModalShow(false)}
-                      />
-                      <AdLogin
-                        show={adModalShow}
-                        onHide={() => setAdModalShow(false)}
-                      />
-                    </>
+                    <button
+                      type="button"
+                      className="btn-login btn-login--compact"
+                      onClick={() => setModalShow(true)}
+                    >
+                      Login
+                    </button>
                   )}
                 </div>
               </div>
@@ -286,6 +261,14 @@ const NavbarMenu = () => {
           </div>
         </div>
       </div>
+
+      {/* Rendered once (not per breakpoint) - these are Bootstrap modals
+          that portal to document.body regardless of where they're declared,
+          so duplicating them per responsive block made two fully-functional,
+          exactly-overlapping copies fight over clicks/focus at the same
+          screen position. */}
+      <Login show={modalShow} onHide={() => setModalShow(false)} />
+      <AdLogin show={adModalShow} onHide={() => setAdModalShow(false)} />
     </header>
   );
 };

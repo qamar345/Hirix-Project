@@ -4,8 +4,8 @@ import { FaSpinner, FaCheckCircle, FaRegMoneyBillAlt } from "react-icons/fa";
 import { PiMapPin } from "react-icons/pi";
 import { hirixText } from "../assets/icons/index.js";
 import Select from "react-select";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 import { FaTimes, FaChevronUp, FaChevronDown } from "react-icons/fa";
 import { CanFooter } from "../index.js";
 const AddEducation = () => {

@@ -104,11 +104,27 @@ footer p {
 .footer-middle {
   padding: 5rem 1.7rem 4rem;
 }
+/* The site-wide .heading class (28px, meant for dashboard page titles) and
+   the plain h4 default (24px) were both leaking into these footer column
+   labels, making a 5-column link list look like five separate page
+   headings stacked side by side. A footer needs a much quieter label. */
+.footer-middle h4 {
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 18px;
+}
+.footer-middle .col-md-8 h4 {
+  font-size: 18px;
+  text-transform: none;
+  letter-spacing: normal;
+}
 .footer-middle ul {
   display: flex;
   flex-direction: column;
-  gap: 1.6rem;
-  margin: 2rem 0;
+  gap: 1.2rem;
+  margin: 0.5rem 0 0;
 
   & li a {
     text-transform: capitalize;

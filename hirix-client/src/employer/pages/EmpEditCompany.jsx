@@ -6,8 +6,8 @@
 // import { RiUploadLine } from "react-icons/ri";
 // import { IoCloseSharp } from "react-icons/io5";
 // import Select from "react-select";
-// import ReactQuill from "react-quill";
-// import "react-quill/dist/quill.snow.css";
+// import ReactQuill from "react-quill-new";
+// import "react-quill-new/dist/quill.snow.css";
 // import { EmpFooter } from "../index.js";
 // import API, { BASE_URL } from "../../api";
 
@@ -403,8 +403,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaSpinner } from "react-icons/fa";
 import { RiUploadLine } from "react-icons/ri";
 import { IoCloseSharp } from "react-icons/io5";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 import { EmpFooter } from "../index.js";
 import API, { BASE_URL } from "../../api";
 import { useGetSpecificCompanyQuery, useEditCompanyMutation } from "../../store/employerApi";

@@ -1,6 +1,17 @@
 import { createRoot } from "react-dom/client";
 import React from "react";
 
+// Self-hosted Inter font - the site's CSS has always assumed a "Poppins"
+// typeface was loaded, but no @font-face/Google Fonts link ever actually
+// existed anywhere in the project, so every visitor was silently seeing
+// their OS default font instead. Inter is a better fit for a recruitment
+// platform anyway (neutral, highly legible, reads as professional/trustworthy
+// rather than playful) and is self-hosted here for privacy/reliability.
+import "@fontsource/inter/400.css";
+import "@fontsource/inter/500.css";
+import "@fontsource/inter/600.css";
+import "@fontsource/inter/700.css";
+
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "./style.css";

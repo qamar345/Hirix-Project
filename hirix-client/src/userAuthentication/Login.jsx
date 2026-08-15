@@ -197,7 +197,7 @@ const Login = ({ ...props }) => {
       window.location.reload();
     } catch (error) {
       console.log(error);
-      alert("Verification failed. Please check the code.");
+      alert(error.response?.data?.msg || "Signup failed. Please check the details and try again.");
     }
   };
 

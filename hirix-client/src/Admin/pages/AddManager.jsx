@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaSpinner } from "react-icons/fa";
 import Select from "react-select";
-import "react-quill/dist/quill.snow.css";
+import "react-quill-new/dist/quill.snow.css";
 import PhoneInput from "react-phone-number-input";
 import { AdFooter } from "../index.js";
 import API, { BASE_URL } from "../../api";

@@ -10,7 +10,6 @@
 @import url("./css/search-vertical.css");
 @import url("./css/child-style.css");
 /* @import url("./css/growl.css"); */
-/* @import url("./css/font-inter.css"); */
 @import url("./css/minify-style.css");
 @import url("./css/main.css");
 @import url("./css/topNav.css");
@@ -34,14 +33,7 @@
   --color-text: #555;
   --color-accent: #126ebb;
   --color-bg: #f9f9f9;
-  --primary-font-family: "Roboto";
-  --primary-font-weight: 600;
-  --secondary-font-family: "Roboto Slab";
-  --secondary-font-weight: 400;
-  --text-font-family: "Roboto";
-  --text-font-weight: 400;
-  --accent-font-family: "Roboto";
-  --accent-font-weight: 500;
+  --font-family: "Inter", sans-serif;
 
   --civi-color-text: #555555;
   /* --civi-color-accent: #007456; */
@@ -56,8 +48,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  /* font-family: "Inter", sans-serif; */
-  font-family: "Poppins", sans-serif;
+  font-family: "Inter", sans-serif;
 }
 html {
   font-size: 62.5%;
@@ -68,8 +59,7 @@ body {
   background-repeat: no-repeat;
   background-position: left top;
   background-attachment: scroll;
-  /* font-family: "Inter", sans-serif !important; */
-  font-family: "Poppins", sans-serif;
+  font-family: "Inter", sans-serif;
 }
 ul {
   list-style: none;

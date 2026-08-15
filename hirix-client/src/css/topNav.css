@@ -16,3 +16,67 @@
   height: 1.4rem;
   margin: 0 ;
 }
+
+/* Header "Login" trigger button - previously unstyled (no base rule existed
+   anywhere in the project), so it rendered as plain text. */
+.btn-login {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  color: #ffffff;
+  background-color: var(--brand-primary, #126ebb);
+  border: 1px solid var(--brand-primary, #126ebb);
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.btn-login:hover,
+.btn-login:focus-visible {
+  background-color: var(--brand-primary-hover, #0b4c84);
+  border-color: var(--brand-primary-hover, #0b4c84);
+  color: #ffffff;
+}
+
+.btn-login:focus-visible {
+  outline: 2px solid var(--brand-primary, #126ebb);
+  outline-offset: 3px;
+}
+
+.btn-login:active {
+  transform: scale(0.97);
+}
+
+/* Compact variant used in the mobile header, where the trigger sits inside
+   a small fixed-width icon slot with little room to spare. */
+.btn-login--compact {
+  padding: 8px 14px;
+  font-size: 13px;
+}
+
+@media (max-width: 420px) {
+  .btn-login--compact {
+    padding: 7px 12px;
+    font-size: 12px;
+    margin-right: 4px;
+  }
+}
+
+/* .icon-search is hard-locked to a tiny 2rem square everywhere else in the
+   app (it was built for a small search icon only), so on real mobile
+   devices the Login button was rendering at its real width but the box
+   around it stayed 2rem wide - the button just hung off the right edge
+   of the screen past the viewport boundary instead of being laid out
+   properly. Let it size to its actual content only when it's the login
+   trigger (or the logged-in profile block) sitting inside that slot. */
+.icon-search:has(.btn-login),
+.icon-search:has(.profile) {
+  width: auto !important;
+  height: auto !important;
+}
