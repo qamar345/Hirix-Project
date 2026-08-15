@@ -62,6 +62,25 @@ async function migrateSchema() {
     }
   }
 
+  // 2b. Phone/contact numbers were stored as INT, which silently clamps any
+  // value over 2,147,483,647 (and can't hold a leading "0") to that exact
+  // number instead of erroring - e.g. "03117305346" overflows and gets
+  // stored as 2147483647. Convert both columns to VARCHAR so real phone
+  // numbers survive intact. This does not recover values that already got
+  // clamped - those accounts will need to re-enter their phone number.
+  const userAccountsFields = await queryPromise("DESCRIBE `user_accounts`");
+  const phoneFieldInfo = userAccountsFields.find(f => f.Field === "phone");
+  if (phoneFieldInfo && phoneFieldInfo.Type.toLowerCase().includes("int")) {
+    console.log("Modifying phone column type in user_accounts to VARCHAR(20)...");
+    await queryPromise("ALTER TABLE `user_accounts` MODIFY COLUMN `phone` VARCHAR(20) NULL");
+  }
+
+  const companyContactFieldInfo = companyFields.find(f => f.Field === "Contact");
+  if (companyContactFieldInfo && companyContactFieldInfo.Type.toLowerCase().includes("int")) {
+    console.log("Modifying Contact column type in companies to VARCHAR(20)...");
+    await queryPromise("ALTER TABLE `companies` MODIFY COLUMN `Contact` VARCHAR(20) NULL");
+  }
+
   // 3. Migrate VerifyEmail
   const verifyemailFields = await queryPromise("DESCRIBE `verifyemail`");
   const existingVerifyemailColumns = verifyemailFields.map(f => f.Field);

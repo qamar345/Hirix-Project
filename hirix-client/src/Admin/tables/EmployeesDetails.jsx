@@ -61,7 +61,7 @@ const EmployeeDetail = () => {
             <div className="col-md-6 mb-3">
               <strong className="text-secondary">Address:</strong>
               {"  "}
-              {employees.province}, {employees.location}
+              {[employees.province, employees.location].filter(Boolean).join(", ") || "Not provided"}
             </div>
           </div>
         </div>
