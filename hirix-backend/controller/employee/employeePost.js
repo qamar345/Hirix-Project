@@ -61,7 +61,8 @@ const PostJob = (req, res) => {
     "SELECT user_account_id FROM companies WHERE user_account_id = ?";
   conn_sql.query(sql_getpost, [id], (err, result) => {
     if (err) {
-      return res.json(err);
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
     } else {
       console.log(id);
       if (result.length > 0) {
@@ -156,7 +157,8 @@ const draftJob = (req, res) => {
     "SELECT user_account_id FROM companies WHERE user_account_id = ?";
   conn_sql.query(sql_getpost, [id], (err, result) => {
     if (err) {
-      return res.json(err);
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
     } else {
       console.log(id);
       if (result.length > 0) {
@@ -438,7 +440,8 @@ const Gethisposts = (req, res) => {
     "SELECT j.*,(SELECT COUNT(*) FROM applicants a WHERE a.job_id = j.id) AS total_applicants FROM jobs j WHERE j.employee_id = ? AND j.title LIKE ? LIMIT ? OFFSET ?";
   conn_sql.query(sql_get, [id, `%${search}%`, limit, offset], (err, result) => {
     if (err) {
-      return res.json(err);
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
     } else {
       const sql = "SELECT COUNT(*) as count FROM jobs WHERE employee_id = ? AND title LIKE ?";
 

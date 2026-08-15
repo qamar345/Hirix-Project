@@ -424,7 +424,7 @@ const CanProfile = () => {
             },
           }
         );
-        setCandidateEdu(res.data);
+        setCandidateEdu(Array.isArray(res.data) ? res.data : []);
       } catch (error) {
         console.log(error);
       }
@@ -440,7 +440,7 @@ const CanProfile = () => {
             },
           }
         );
-        setCandidateExp(res.data);
+        setCandidateExp(Array.isArray(res.data) ? res.data : []);
       } catch (error) {
         console.log(error);
       }
@@ -453,7 +453,7 @@ const CanProfile = () => {
             "x-access-token": token,
           },
         });
-        setDbSkills(res.data);
+        setDbSkills(Array.isArray(res.data) ? res.data : []);
       } catch (error) {
         console.log(error);
       }
@@ -469,7 +469,7 @@ const CanProfile = () => {
             },
           }
         );
-        setCandidateSkills(res.data);
+        setCandidateSkills(Array.isArray(res.data) ? res.data : []);
       } catch (error) {
         console.log(error);
       }
@@ -485,7 +485,7 @@ const CanProfile = () => {
             },
           }
         );
-        setCandidateProj(res.data);
+        setCandidateProj(Array.isArray(res.data) ? res.data : []);
       } catch (error) {
         console.log(error);
       }

@@ -261,7 +261,10 @@ const GetEducation = (req, res) => {
   const { id } = req.params;
   const sql = "SELECT * FROM `user_qualification` WHERE `user_id` = ?";
   conn_sql.query(sql, [id], (err, result) => {
-    if (err) return res.json(err);
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
+    }
     return res.json(result);
   });
 };
@@ -317,7 +320,10 @@ const GetExperience = (req, res) => {
   const { id } = req.params;
   const sql = "SELECT * FROM `user_experience` WHERE `user_id` = ?";
   conn_sql.query(sql, [id], (err, result) => {
-    if (err) return res.json(err);
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
+    }
     return res.json(result);
   });
 };

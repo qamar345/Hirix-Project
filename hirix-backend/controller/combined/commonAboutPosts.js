@@ -13,7 +13,8 @@ const GetpostsByAdmin = (req, res) => {
 
   conn_sql.query(sql_get, [`%${search}%`, limit, offset], (err, result) => {
     if (err) {
-      return res.json(err);
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
     } else {
       const sql = "  SELECT COUNT(*) as count FROM jobs WHERE title LIKE ?";
 
@@ -116,10 +117,16 @@ const Getposts = (req, res) => {
   values.push(limit, offset);
 
   conn_sql.query(sql_getJobs, values, (err, jobsResult) => {
-    if (err) return res.json(err);
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
+    }
 
     conn_sql.query(`SELECT * FROM companies`, (compErr, companyResult) => {
-      if (compErr) return res.json(compErr);
+      if (compErr) {
+        console.error(compErr);
+        return res.status(500).json({ msg: "Database error" });
+      }
 
       const sql_count = `
         SELECT COUNT(*) as count FROM jobs
@@ -292,7 +299,8 @@ const Getreviews = (req, res) => {
   const sql_get = "SELECT * FROM `reviews`";
   conn_sql.query(sql_get, (err, result) => {
     if (err) {
-      return res.json(err);
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
     } else {
       return res.json(result);
     }

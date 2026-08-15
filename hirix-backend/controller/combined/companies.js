@@ -22,7 +22,8 @@ const Getcompanies = (req, res) => {
 
   conn_sql.query(sql_get, [limit, offset], (err, result) => {
     if (err) {
-      return res.json(err);
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
     } else {
       const sql = "SELECT COUNT(*) as count FROM companies";
       conn_sql.query(sql, (c_err, c_data) => {
