@@ -11,16 +11,21 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
+const mailHost = process.env.MAILHOST || "mail.hirix.com.pk";
 const mailPort = parseInt(process.env.MAILPORT || 465);
 
-// Primary Transporter (noreply@hirix.com.pk)
+// A short 4s timeout was tripping false failures on slightly slower
+// production network paths - give the SMTP handshake more room.
+const SMTP_TIMEOUT = 12000;
+
+// Primary Transporter (noreply@hirix.com.pk) on its configured port (465/SSL by default)
 const primaryTransporter = nodemailer.createTransport({
-  host: process.env.MAILHOST || "mail.hirix.com.pk",
+  host: mailHost,
   port: mailPort,
   secure: mailPort === 465,
-  connectionTimeout: 4000,
-  greetingTimeout: 4000,
-  socketTimeout: 4000,
+  connectionTimeout: SMTP_TIMEOUT,
+  greetingTimeout: SMTP_TIMEOUT,
+  socketTimeout: SMTP_TIMEOUT,
   auth: {
     user: process.env.MAILERUSER,
     pass: process.env.MAILERPASS,
@@ -30,42 +35,61 @@ const primaryTransporter = nodemailer.createTransport({
   },
 });
 
+// Some hosts block outbound 465 (implicit TLS) but allow 587 (STARTTLS).
+// Only add this as a distinct attempt when it isn't already what we tried above.
+const primaryAltTransporter = mailPort !== 587 ? nodemailer.createTransport({
+  host: mailHost,
+  port: 587,
+  secure: false,
+  requireTLS: true,
+  connectionTimeout: SMTP_TIMEOUT,
+  greetingTimeout: SMTP_TIMEOUT,
+  socketTimeout: SMTP_TIMEOUT,
+  auth: {
+    user: process.env.MAILERUSER,
+    pass: process.env.MAILERPASS,
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+}) : null;
+
 // Secondary / Fallback Transporter (Gmail)
 const secondaryTransporter = process.env.GMAIL_USER && process.env.GMAIL_PASS ? nodemailer.createTransport({
   service: "gmail",
+  connectionTimeout: SMTP_TIMEOUT,
+  greetingTimeout: SMTP_TIMEOUT,
+  socketTimeout: SMTP_TIMEOUT,
   auth: {
     user: process.env.GMAIL_USER,
     pass: process.env.GMAIL_PASS,
   },
 }) : null;
 
-// Helper to send mail with automatic fallback
-const sendMailWithFallback = (mailOptions) => {
-  return new Promise((resolve, reject) => {
-    primaryTransporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.warn("Primary mailer failed:", error.message || error);
-        if (secondaryTransporter) {
-          console.log("Attempting fallback via Gmail SMTP...");
-          const fallbackOptions = { ...mailOptions, from: `"Hirix" <${process.env.GMAIL_USER}>` };
-          secondaryTransporter.sendMail(fallbackOptions, (fbError, fbInfo) => {
-            if (fbError) {
-              console.error("Fallback Gmail mailer also failed:", fbError.message || fbError);
-              reject(fbError);
-            } else {
-              console.log("Email sent successfully via Gmail fallback:", fbInfo.response);
-              resolve(fbInfo);
-            }
-          });
-        } else {
-          reject(error);
-        }
-      } else {
-        console.log("Email sent successfully via Primary mailer:", info.response);
-        resolve(info);
-      }
-    });
-  });
+// Ordered chain of transporters to try. Each entry rewrites the "from"
+// header to match the account it actually sends through.
+const transporterChain = [
+  { label: "primary (mail.hirix.com.pk:" + mailPort + ")", transporter: primaryTransporter, rewriteFrom: null },
+  ...(primaryAltTransporter ? [{ label: "primary-alt (mail.hirix.com.pk:587)", transporter: primaryAltTransporter, rewriteFrom: null }] : []),
+  ...(secondaryTransporter ? [{ label: "Gmail fallback", transporter: secondaryTransporter, rewriteFrom: `"Hirix" <${process.env.GMAIL_USER}>` }] : []),
+];
+
+// Helper to send mail, walking the transporter chain until one succeeds.
+const sendMailWithFallback = async (mailOptions) => {
+  let lastError;
+  for (const { label, transporter, rewriteFrom } of transporterChain) {
+    const options = rewriteFrom ? { ...mailOptions, from: rewriteFrom } : mailOptions;
+    try {
+      const info = await transporter.sendMail(options);
+      console.log(`Email sent successfully via ${label}:`, info.response);
+      return info;
+    } catch (error) {
+      lastError = error;
+      console.warn(`Mailer [${label}] failed:`, error.message || error);
+    }
+  }
+  console.error("All mail transporters failed for:", mailOptions.to);
+  throw lastError;
 };
 
 const VerifyEmail = (email, token) => {
