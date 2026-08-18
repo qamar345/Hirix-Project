@@ -1,61 +1,20 @@
-const nodemailer = require("nodemailer");
+// Diagnostic script: exercises the real mailer chain (primary:465 -> primary:587 -> Gmail fallback)
+// so a passing run here reflects exactly what production would do.
 require("dotenv").config();
+const { VerifyEmail } = require("./mailer/mailer-controller");
 
-const primaryTransporter = nodemailer.createTransport({
-  host: process.env.MAILHOST || "mail.hirix.com.pk",
-  port: parseInt(process.env.MAILPORT || 465),
-  secure: parseInt(process.env.MAILPORT || 465) === 465,
-  connectionTimeout: 5000,
-  greetingTimeout: 5000,
-  socketTimeout: 5000,
-  auth: {
-    user: process.env.MAILERUSER,
-    pass: process.env.MAILERPASS,
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
+const testTargetEmail = process.env.GMAIL_USER || process.env.MAILERUSER;
 
-const secondaryTransporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS,
-  },
-  family: 4,
-});
-
-const testTargetEmail = process.env.GMAIL_USER;
-
-async function testMailers() {
-  console.log("========== TESTING PRIMARY MAILER (mail.hirix.com.pk) ==========");
+async function main() {
+  console.log("========== TESTING FULL MAILER FALLBACK CHAIN ==========");
+  console.log("Sending test verification email to:", testTargetEmail);
   try {
-    const info = await primaryTransporter.sendMail({
-      from: `"Hirix Test Primary" <${process.env.MAILERUSER}>`,
-      to: testTargetEmail,
-      subject: "Test Primary Email - Hirix",
-      html: "<h1 style='color: #126ebb;'>Primary Mailer Works!</h1>",
-    });
-    console.log("✅ Primary Mailer SUCCESS:", info.response);
+    const info = await VerifyEmail(testTargetEmail, "test-token-diagnostic");
+    console.log("✅ Mail sent successfully:", info.response);
   } catch (err) {
-    console.error("❌ Primary Mailer FAILED:", err.message || err);
-  }
-
-  console.log("\n========== TESTING FALLBACK GMAIL MAILER (Gmail SMTP) ==========");
-  try {
-    const info = await secondaryTransporter.sendMail({
-      from: `"Hirix Test Gmail" <${process.env.GMAIL_USER}>`,
-      to: testTargetEmail,
-      subject: "Test Gmail Fallback Email - Hirix",
-      html: "<h1 style='color: #126ebb;'>Gmail Fallback Mailer Works!</h1>",
-    });
-    console.log("✅ Fallback Gmail Mailer SUCCESS:", info.response);
-  } catch (err) {
-    console.error("❌ Fallback Gmail Mailer FAILED:", err.message || err);
+    console.error("❌ All transporters failed:", err.message || err);
+    process.exitCode = 1;
   }
 }
 
-testMailers();
+main();
