@@ -18,6 +18,28 @@ const mailPort = parseInt(process.env.MAILPORT || 465);
 // production network paths - give the SMTP handshake more room.
 const SMTP_TIMEOUT = 12000;
 
+// The mailbox for noreply@hirix.com.pk lives on the same server that runs
+// this app (both api.hirix.com.pk and the mail service resolve to the same
+// host), but the public DNS name "mail.hirix.com.pk" is misconfigured and
+// points elsewhere. Try the local mail service directly first - this works
+// even while that DNS record is wrong, and costs nothing when it's not
+// (e.g. local dev), since it just fails fast with connection-refused.
+const localMailTransporter = nodemailer.createTransport({
+  host: "127.0.0.1",
+  port: mailPort,
+  secure: mailPort === 465,
+  connectionTimeout: SMTP_TIMEOUT,
+  greetingTimeout: SMTP_TIMEOUT,
+  socketTimeout: SMTP_TIMEOUT,
+  auth: {
+    user: process.env.MAILERUSER,
+    pass: process.env.MAILERPASS,
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
+
 // Primary Transporter (noreply@hirix.com.pk) on its configured port (465/SSL by default)
 const primaryTransporter = nodemailer.createTransport({
   host: mailHost,
@@ -69,8 +91,9 @@ const secondaryTransporter = process.env.GMAIL_USER && process.env.GMAIL_PASS ? 
 // Ordered chain of transporters to try. Each entry rewrites the "from"
 // header to match the account it actually sends through.
 const transporterChain = [
-  { label: "primary (mail.hirix.com.pk:" + mailPort + ")", transporter: primaryTransporter, rewriteFrom: null },
-  ...(primaryAltTransporter ? [{ label: "primary-alt (mail.hirix.com.pk:587)", transporter: primaryAltTransporter, rewriteFrom: null }] : []),
+  { label: "primary-localhost (127.0.0.1:" + mailPort + ")", transporter: localMailTransporter, rewriteFrom: null },
+  { label: "primary (" + mailHost + ":" + mailPort + ")", transporter: primaryTransporter, rewriteFrom: null },
+  ...(primaryAltTransporter ? [{ label: "primary-alt (" + mailHost + ":587)", transporter: primaryAltTransporter, rewriteFrom: null }] : []),
   ...(secondaryTransporter ? [{ label: "Gmail fallback", transporter: secondaryTransporter, rewriteFrom: `"Hirix" <${process.env.GMAIL_USER}>` }] : []),
 ];
 
