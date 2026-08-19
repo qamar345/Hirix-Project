@@ -7,21 +7,21 @@ const SendVerificationLink = (req, res) => {
   const token = uuidv4();
 
   const sql = "INSERT INTO `verifyemail`(`email`, `token`, `isVerified`) VALUES (?, ?, 0) ON DUPLICATE KEY UPDATE `token` = ?, `isVerified` = 0";
-  conn_sql.query(sql, [email, token, token], async (err, data) => {
+  conn_sql.query(sql, [email, token, token], (err, data) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ msg: "Database error" });
     }
 
-    try {
-      await VerifyEmail(email, token);
-      return res.json({ msg: "Email verification link sent to your email" });
-    } catch (mailErr) {
+    // Send in the background instead of awaiting: the SMTP fallback chain
+    // can take longer than the reverse proxy's upstream timeout, which was
+    // turning a slow-but-eventually-successful send into a 502 before the
+    // app ever got to respond. The token is already stored, so it's safe
+    // to tell the user it's on its way and let the send happen after.
+    VerifyEmail(email, token).catch((mailErr) => {
       console.error("Failed to send verification email:", mailErr.message || mailErr);
-      return res.status(502).json({
-        msg: "We couldn't send the verification email right now. Please try again in a moment, or contact support if this keeps happening.",
-      });
-    }
+    });
+    return res.json({ msg: "Email verification link sent to your email" });
   });
 };
 

@@ -77,19 +77,14 @@ const Addcompany = (req, res) => {
       } else {
         const companyId = result.insertId;
 
-        // Send verification email - don't let a mail failure block company
-        // creation, but do surface it so the caller isn't told an email
-        // went out when it didn't.
-        let emailSent = false;
-        let emailError = null;
+        // Send the verification email in the background instead of awaiting
+        // it here: the SMTP fallback chain can take longer than the reverse
+        // proxy's upstream timeout, which was turning a slow-but-eventually
+        // -successful send into a 502 before the app ever responded.
         if (E_mail) {
-          try {
-            await SendCompanyVerificationEmail(E_mail, token, name);
-            emailSent = true;
-          } catch (mailErr) {
-            emailError = mailErr.message || String(mailErr);
-            console.error("Failed to send company verification email:", emailError);
-          }
+          SendCompanyVerificationEmail(E_mail, token, name).catch((mailErr) => {
+            console.error("Failed to send company verification email:", mailErr.message || mailErr);
+          });
         }
 
         const sql_company =
@@ -103,10 +98,9 @@ const Addcompany = (req, res) => {
               return res.status(500).json({ msg: "Database error" });
             } else {
               return res.json({
-                msg: emailSent
-                  ? "Company added. A verification email has been sent."
-                  : "Company added, but we couldn't send the verification email. Use 'Resend verification' to try again.",
-                emailSent,
+                msg: E_mail
+                  ? "Company added. A verification email is on its way — please check your inbox shortly."
+                  : "Company added.",
                 result,
               });
             }
@@ -277,15 +271,10 @@ const ResendCompanyVerification = (req, res) => {
         conn_sql.query(sql_update, [token, company.id]);
       }
 
-      try {
-        await SendCompanyVerificationEmail(fullCompany.E_mail, token, fullCompany.name);
-        return res.json({ msg: "Verification link resent successfully to " + fullCompany.E_mail });
-      } catch (mailErr) {
+      SendCompanyVerificationEmail(fullCompany.E_mail, token, fullCompany.name).catch((mailErr) => {
         console.error("Failed to resend company verification email:", mailErr.message || mailErr);
-        return res.status(502).json({
-          msg: "We couldn't send the verification email right now. Please try again in a moment.",
-        });
-      }
+      });
+      return res.json({ msg: "Verification link is being resent to " + fullCompany.E_mail });
     });
   });
 };
