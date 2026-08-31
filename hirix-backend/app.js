@@ -89,7 +89,12 @@ migrateSchema().catch(err => {
   console.error("Auto-migration on startup failed:", err);
 });
 app.use("/uploads", express.static("uploads"));
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// API docs describe the full route/param surface - keep them out of the
+// public production deployment, same NODE_ENV gate the mailer uses to tell
+// local dev from production.
+if (process.env.NODE_ENV !== "production") {
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+}
 app.use(router);
 
 // Centralized error handler - catches multer errors (bad file type, too
@@ -124,42 +129,20 @@ require("./controller/employee/companies");
 require("./controller/employee/reviewApplicants");
 require("./controller/employee/messages");
 
-// Generating JWT
-// app.post("/user/generateToken", (req, res) => {
-//     // Validate User Here
-//     // Then generate JWT Token
-
-//     let jwtSecretKey = process.env.JWT_SECRET_KEY;
-//     let data = {
-//         time: Date(),
-//         userId: 1,
-//     }
-
-//     const token = jwt.sign(data, jwtSecretKey);
-
-//     res.send(token);
-// });
-
-// Verification of JWT
-// app.get("/user/validateToken", (req, res) => {
-//     // Tokens are generally passed in header of request
-//     // Due to security reasons.
-
-//     let tokenHeaderKey = process.env.TOKEN_HEADER_KEY;
-//     let jwtSecretKey = process.env.JWT_SECRET_KEY;
-
-//     try {
-//         const token = req.header(tokenHeaderKey);
-
-//         const verified = jwt.verify(token, jwtSecretKey);
-//         if (verified) {
-//             return res.send("Successfully Verified");
-//         } else {
-//             // Access Denied
-//             return res.status(401).send(error);
-//         }
-//     } catch (error) {
-//         // Access Denied
-//         return res.status(401).send(error);
-//     }
-// });
+// Last-resort safety net: a handful of query callbacks run outside
+// Express's request cycle, so a thrown/rejected error there can't be
+// caught by Express - without this, one bad DB response would silently
+// kill the entire process for every user. Log it and exit so a process
+// supervisor (pm2, systemd, a Docker restart policy) can bring up a clean
+// instance, rather than limping on in a possibly-inconsistent state. Note:
+// plain `nodemon` (this repo's dev "start" script) does NOT auto-restart
+// after a crash exit - only on file changes - so production should run
+// this behind a real supervisor, not nodemon directly.
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught exception - restarting process:", err);
+  process.exit(1);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled promise rejection - restarting process:", reason);
+  process.exit(1);
+});

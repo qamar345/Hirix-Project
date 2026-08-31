@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
-import { FaPlus } from "react-icons/fa";
 import {
   AdSideBar,
   CompanyList,
   AdHeader,
   AdFooter,
-  Pagination,
 } from "../index.js";
 const EmpCompany = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -36,11 +33,6 @@ const EmpCompany = () => {
 
           <div className=" d-grid">
             <CompanyList />
-            {/* <CompanyList companydata={companies}/> */}
-          </div>
-          <div className="page-list">
-            <Pagination />
-             {/* <Pagination totalPages= {totalPages} currentpage= {currentPage} setcurrentPage ={setCurrentPage}/> */}
           </div>
           </div>
         <div className="page-footer align-self-end">

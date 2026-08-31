@@ -7,6 +7,7 @@ import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
 import { AdFooter } from "../index.js";
 import API, { BASE_URL } from "../../api";
+import { showSuccess, showError } from "../../utils/toast";
 
 const SOCIAL_PLATFORMS = [
   "Facebook", "LinkedIn", "Twitter / X", "Instagram", "YouTube",
@@ -16,6 +17,12 @@ const SOCIAL_PLATFORMS = [
 const AdSettings = () => {
   const check = sessionStorage.getItem("isLoggedIn");
   const token = sessionStorage.getItem("token");
+  const role = sessionStorage.getItem("role");
+  // Managers/Assistants live in a separate table (admin-account) with their
+  // own id-space - the admin-only endpoints below (GetAdmin, admin-profile,
+  // change-password) 404/403 against a manager's id, so this page hits a
+  // parallel set of manager-scoped endpoints instead.
+  const isManager = role === "Manager" || role === "Assistant";
   const [editUserData, setEditUserData] = useState({});
 
   // Basic configs
@@ -49,7 +56,9 @@ const AdSettings = () => {
               if (Array.isArray(parsed) && parsed.length > 0) {
                 setSocialLinks(parsed);
               }
-            } catch {}
+            } catch (parseErr) {
+              console.warn("Failed to parse social_links config:", parseErr);
+            }
           }
         }
       } catch (err) {
@@ -69,10 +78,10 @@ const AdSettings = () => {
       const res = await API.put("/site-settings", { settings: payload }, {
         headers: { "x-access-token": token }
       });
-      alert(res.data.msg || "Configurations updated successfully!");
+      showSuccess(res.data.msg || "Configurations updated successfully!");
     } catch (err) {
       console.error("Error saving configurations:", err);
-      alert("Failed to save site configurations.");
+      showError("Failed to save site configurations.");
     }
   };
 
@@ -156,20 +165,22 @@ const AdSettings = () => {
   useEffect(() => {
     const GetUserData = async () => {
       try {
-        const res = await API.get(
-          `/GetAdmin/${sessionStorage.getItem("id")}`,
-          {
-            headers: {
-              "x-access-token": token,
-            },
-          }
-        );
+        const endpoint = isManager
+          ? `/getManagerProfile/${sessionStorage.getItem("id")}`
+          : `/GetAdmin/${sessionStorage.getItem("id")}`;
+        const res = await API.get(endpoint, {
+          headers: {
+            "x-access-token": token,
+          },
+        });
         setUserData(res.data);
         setEditUserData(res.data);
-      } catch (error) {}
+      } catch (error) {
+        console.error("Failed to load profile:", error);
+      }
     };
     GetUserData();
-  }, []);
+  }, [isManager]);
 
   const handlePasswordChange = (e) => {
     setEditPasswordData({
@@ -185,8 +196,11 @@ const AdSettings = () => {
       formData.append("image", selectedFile);
     }
     try {
+      const endpoint = isManager
+        ? `/manager-profile/${sessionStorage.getItem("id")}`
+        : `/admin-profile/${sessionStorage.getItem("id")}`;
       const res = await API.put(
-        `/admin-profile/${sessionStorage.getItem("id")}`,
+        endpoint,
         formData,
         {
           headers: {
@@ -199,9 +213,12 @@ const AdSettings = () => {
         sessionStorage.setItem("image", res.data.imageUrl);
         window.dispatchEvent(new Event("profileUpdated"));
       }
-      alert(res.data.message);
+      showSuccess(res.data.message);
       navigate("/admin/dashboard");
-    } catch (err) {}
+    } catch (err) {
+      console.error("Failed to update profile:", err);
+      showError(err.response?.data?.message || "Failed to update profile. Please try again.");
+    }
   };
 
   const handlePasswordSubmit = async (e) => {
@@ -211,16 +228,19 @@ const AdSettings = () => {
       !editPasswordData.newPass ||
       !editPasswordData.confirmPass
     ) {
-      alert("All fields are required.");
+      showError("All fields are required.");
       return;
     }
     if (editPasswordData.newPass !== editPasswordData.confirmPass) {
-      alert("New password and confirm password do not match.");
+      showError("New password and confirm password do not match.");
       return;
     }
     try {
+      const endpoint = isManager
+        ? `/manager-change-password/${sessionStorage.getItem("id")}`
+        : `/change-password/${sessionStorage.getItem("id")}`;
       const response = await API.put(
-        `/change-password/${sessionStorage.getItem("id")}`,
+        endpoint,
         { editPasswordData },
         {
           headers: {
@@ -228,10 +248,10 @@ const AdSettings = () => {
           },
         }
       );
-      alert(response.data.msg);
+      showSuccess(response.data.msg);
       setEditPasswordData({ currentPass: "", newPass: "", confirmPass: "" });
     } catch (error) {
-      alert("Error updating password: ", error);
+      showError(error.response?.data?.msg || "Error updating password.");
     }
   };
 

@@ -1,273 +1,208 @@
 import Table from "react-bootstrap/Table";
 import { NavLink, useLocation } from "react-router-dom";
 import { lock, urgent } from "../assets/icons/index.js";
-import { FaEllipsisH } from "react-icons/fa";
+import { FaTrash } from "react-icons/fa";
 import React, { useEffect, useState } from "react";
-import API, { BASE_URL } from "../../api";
+import API from "../../api";
 import { Pagination } from "../components/Pagination";
-import { Dropdown } from "react-bootstrap";
-
-// Custom Toggle Component
-const CustomToggle = React.forwardRef(({ onClick }, ref) => (
-  <span
-    ref={ref}
-    onClick={(e) => {
-      e.preventDefault();
-      onClick(e);
-    }}
-    style={{ cursor: "pointer" }}
-  >
-    <FaEllipsisH />
-  </span>
-));
+import TableToolbar from "../../components/TableToolbar";
+import StatusBadge from "../../components/StatusBadge";
+import Loader from "../../components/Loader";
+import { showSuccess, showError } from "../../utils/toast";
 
 const JobList = () => {
   const token = sessionStorage.getItem("token");
   const [datauser, setdatauser] = useState([]);
   const [currentPage, settCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [filterUsers, setfiltersUsers] = useState([]);
+  const [entries, setEntries] = useState(10);
+  const [search, setSearch] = useState("");
   const [appliedJobs, setAppliedJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const location = useLocation();
 
   const queryParams = new URLSearchParams(location.search);
-  const filter = queryParams.get("filter") || "";
-  const searchQuery = queryParams.get("search") || "";
-  const sort = queryParams.get("sort") || "newest";
   const clientId = queryParams.get("Jid"); // Fetch the clientId from query params
 
-  // ✅ Final data to display
-  const dataToShow = clientId ? appliedJobs : filterUsers;
+  // Final data to display
+  const dataToShow = clientId ? appliedJobs : datauser;
 
-  // ✅ Fetch all job posts
-  const GetJobPosts = async (page = 1, search = "") => {
+  // Fetch all job posts
+  const GetJobPosts = async (page = 1, limit = 10, searchTerm = "") => {
+    setLoading(true);
     try {
       const res = await API.get("/get-postsBYAdmin", {
-        params: { page, search },
+        params: { page, limit, search: searchTerm },
         headers: { "x-access-token": token },
       });
 
       const jobs = Array.isArray(res.data.data) ? res.data.data : [];
-      console.log(jobs);
       setdatauser(jobs);
-      setfiltersUsers(jobs);
       settCurrentPage(res.data.meta?.page || 1);
       setTotalPages(res.data.meta?.totalPages || 1);
     } catch (error) {
       console.error("Error fetching job posts:", error);
       setdatauser([]);
-      setfiltersUsers([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // ✅ Fetch applied jobs
-  const GetAppliedJobs = async () => {
-    if (clientId) {
+  // Fetch applied jobs (when viewing a specific candidate's applications)
+  useEffect(() => {
+    const GetAppliedJobs = async () => {
+      if (!clientId) return;
       try {
         const res = await API.get(
           `/getPostSpecific/${clientId}`,
           { headers: { "x-access-token": token } }
         );
-
         const jobs = Array.isArray(res.data) ? res.data : [];
-        setdatauser(jobs);
-        setAppliedJobs(jobs); // <-- Important
+        setAppliedJobs(jobs);
       } catch (err) {
         console.error("Error fetching applied jobs:", err);
-        setdatauser([]);
         setAppliedJobs([]);
       }
-    }
-  };
-
-  // ✅ Initial fetch
-  useEffect(() => {
-    // GetAppliedJobs();
-    GetJobPosts();
+    };
+    GetAppliedJobs();
   }, [clientId]);
 
-  // ✅ Filtering + sorting
-  // useEffect(() => {
-  //   console.log(datauser);
-  //   if (!Array.isArray(datauser) || datauser.length === 0) {
-  //     setfiltersUsers([]);
-  //     return;
-  //   }
+  useEffect(() => {
+    GetJobPosts(currentPage, entries, search);
+  }, [currentPage, entries, search]);
 
-  //   let filteredData = [...datauser];
+  useEffect(() => {
+    settCurrentPage(1);
+  }, [entries, search]);
 
-  //   if (filter !== "") {
-  //     filteredData = filteredData.filter((user) => user.status === filter);
-  //   }
+  const handlePageChange = (page) => {
+    settCurrentPage(page);
+  };
 
-  //   if (sort === "newest") {
-  //     filteredData.sort(
-  //       (a, b) => new Date(b.created_at) - new Date(a.created_at)
-  //     );
-  //   } else if (sort === "oldest") {
-  //     filteredData.sort(
-  //       (a, b) => new Date(a.created_at) - new Date(b.created_at)
-  //     );
-  //   }
-
-  //   setfiltersUsers(filteredData);
-  // }, [filter, datauser, sort]);
-
-  // ✅ Delete handler
   const Delete = async (id) => {
     try {
       const res = await API.delete(`/deleteJob/${id}`, {
         headers: { "x-access-token": token },
       });
-      alert(res.data.msg);
-      GetJobPosts(currentPage, searchQuery); // refresh instead of reload
+      showSuccess(res.data.msg);
+      GetJobPosts(currentPage, entries, search);
     } catch (err) {
       console.error("Delete failed:", err);
+      showError(err.response?.data?.msg || "Failed to delete job. Please try again.");
     }
   };
 
   return (
-    <>
-      <Table hover responsive>
-        <thead>
-          <tr>
-            <th>TITLE</th>
-            <th>APPLICANTS</th>
-            <th>STATUS</th>
-            <th>POSTED</th>
-            <th>EXPIRED ON</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Array.isArray(dataToShow) && dataToShow.length > 0 ? (
-            dataToShow.map((job, index) => {
-              const postDate = job.created_at
-                ? new Date(job.created_at).toISOString().split("T")[0]
-                : "N/A";
-              const expiryDate = job.expiry_date
-                ? new Date(job.expiry_date).toISOString().split("T")[0]
-                : null;
-
-              // ✅ Expired check
-              const jobStatus =
-                job.expiry_date && new Date(job.expiry_date) < new Date()
-                  ? "Closed"
-                  : job.status || "Open";
-
-              // ✅ Applied check
-              const isApplied = Array.isArray(appliedJobs)
-                ? appliedJobs.some((appliedJob) => appliedJob.job_id === job.id)
-                : false;
-
-              return (
-                <tr
-                  key={index}
-                  className={isApplied ? "highlight-applied-job" : ""}
-                >
-                  <td>
-                    <h3 className="title-jobs-dashboard">
-                      <NavLink to={`/jobdetail/${job.id}`}>
-                        <span className="icon">
-                          {jobStatus === "Closed" ? (
-                            <img
-                              src={lock}
-                              alt={job.tooltip}
-                              title={job.tooltip}
-                            />
-                          ) : (
-                            <img
-                              src={urgent}
-                              alt={job.tooltip}
-                              title={job.tooltip}
-                            />
-                          )}
-                        </span>
-                        {job.title}
-                      </NavLink>
-                    </h3>
-                    <p>
-                      <span>
-                        {job.career_level || "N/A"} / {job.job_type || "N/A"}
-                      </span>
-                    </p>
-                  </td>
-                  <td className="title-jobs-dashboard">
-                    <span className="number">{job.applicant_count ?? 0} </span>
-                    <NavLink to=""> Application</NavLink>
-                  </td>
-                  <td>
-                    <span
-                      className={`label ${
-                        jobStatus === "Closed"
-                          ? "label-close"
-                          : jobStatus === "Open"
-                          ? "label-pending"
-                          : "label-open"
-                      }`}
-                    >
-                      {jobStatus}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="start-time">{postDate}</span>
-                  </td>
-                  <td>
-                    <span
-                      className="expires-time"
-                      style={{
-                        color:
-                          jobStatus === "Closed"
-                            ? "red"
-                            : jobStatus === "Open"
-                            ? "green"
-                            : "orange",
-                      }}
-                    >
-                      {jobStatus === "Closed"
-                        ? "Expired"
-                        : expiryDate || "No Expiry Date"}
-                    </span>
-                  </td>
-                  <td>
-                    <Dropdown>
-                      <Dropdown.Toggle as={CustomToggle} />
-                      <Dropdown.Menu>
-                        <Dropdown.Item>
-                          <button
-                            className="btn btn-light"
-                            onClick={() => Delete(job.id)}
-                            style={{
-                              display: "block",
-                              width: "100%",
-                              fontSize: "1.2rem",
-                            }}
-                          >
-                            Delete
-                          </button>
-                        </Dropdown.Item>
-                      </Dropdown.Menu>
-                    </Dropdown>
-                  </td>
-                </tr>
-              );
-            })
-          ) : (
+    <div className="dt-wrapper">
+      <TableToolbar
+        entries={entries}
+        onEntriesChange={setEntries}
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search jobs..."
+      />
+      <div className="table-responsive">
+        <Table hover responsive>
+          <thead>
             <tr>
-              <td colSpan="6" className="text-gray-500 text-center">
-                No data yet.
-              </td>
+              <th>Title</th>
+              <th>Applicants</th>
+              <th>Status</th>
+              <th>Posted</th>
+              <th>Expired On</th>
+              <th>Actions</th>
             </tr>
-          )}
-        </tbody>
-      </Table>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={6}>
+                  <Loader label="Loading jobs..." />
+                </td>
+              </tr>
+            ) : Array.isArray(dataToShow) && dataToShow.length > 0 ? (
+              dataToShow.map((job) => {
+                const postDate = job.created_at
+                  ? new Date(job.created_at).toISOString().split("T")[0]
+                  : "N/A";
+                const expiryDate = job.expiry_date
+                  ? new Date(job.expiry_date).toISOString().split("T")[0]
+                  : null;
 
+                const jobStatus =
+                  job.expiry_date && new Date(job.expiry_date) < new Date()
+                    ? "Closed"
+                    : job.status || "Open";
+
+                const isApplied = Array.isArray(appliedJobs)
+                  ? appliedJobs.some((appliedJob) => appliedJob.job_id === job.id)
+                  : false;
+
+                return (
+                  <tr
+                    key={job.id}
+                    className={isApplied ? "highlight-applied-job" : ""}
+                  >
+                    <td>
+                      <h3 className="title-jobs-dashboard">
+                        <NavLink to={`/jobdetail/${job.id}`}>
+                          <span className="icon">
+                            {jobStatus === "Closed" ? (
+                              <img src={lock} alt="Closed" />
+                            ) : (
+                              <img src={urgent} alt="Open" />
+                            )}
+                          </span>
+                          {job.title}
+                        </NavLink>
+                      </h3>
+                      <p>
+                        <span>
+                          {job.career_level || "N/A"} / {job.job_type || "N/A"}
+                        </span>
+                      </p>
+                    </td>
+                    <td>
+                      <span>{job.applicant_count ?? 0} </span>
+                      Application
+                    </td>
+                    <td>
+                      <StatusBadge status={jobStatus} />
+                    </td>
+                    <td>{postDate}</td>
+                    <td>
+                      {jobStatus === "Closed" ? "Expired" : expiryDate || "No Expiry Date"}
+                    </td>
+                    <td>
+                      <div className="dt-actions">
+                        <button
+                          className="dt-icon-btn dt-icon-btn--danger"
+                          title="Delete"
+                          onClick={() => Delete(job.id)}
+                        >
+                          <FaTrash />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={6} className="dt-empty">
+                  No data yet.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+      </div>
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
-        // onPageChange={handlePageChange}
+        onPageChange={handlePageChange}
       />
-    </>
+    </div>
   );
 };
 

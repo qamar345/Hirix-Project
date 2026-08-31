@@ -4,6 +4,7 @@ import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
 import { AdSideBar, AdHeader, AdFooter } from "../index.js";
 import API from "../../api";
+import { showSuccess, showError } from "../../utils/toast";
 import {
   FiEdit3,
   FiSearch,
@@ -122,21 +123,21 @@ const AdBlogEditor = () => {
     const payload = { ...form };
     if (statusOverride) payload.status = statusOverride;
 
-    if (!payload.title.trim()) { alert("Title is required."); return; }
-    if (!payload.content.trim() || payload.content === "<p><br></p>") { alert("Content is required."); return; }
+    if (!payload.title.trim()) { showError("Title is required."); return; }
+    if (!payload.content.trim() || payload.content === "<p><br></p>") { showError("Content is required."); return; }
 
     setSaving(true);
     try {
       if (isEdit) {
         await API.put(`/edit-blog/${id}`, payload, { headers: { "x-access-token": token } });
-        alert("Blog post updated successfully!");
+        showSuccess("Blog post updated successfully!");
       } else {
         await API.post("/add-blog", payload, { headers: { "x-access-token": token } });
-        alert("Blog post created successfully!");
+        showSuccess("Blog post created successfully!");
       }
       navigate("/admin/blogs");
     } catch (err) {
-      alert("Failed to save blog post.");
+      showError("Failed to save blog post.");
       console.error(err);
     } finally {
       setSaving(false);

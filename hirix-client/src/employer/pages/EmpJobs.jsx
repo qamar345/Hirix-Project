@@ -1,29 +1,18 @@
 import React, { useState } from "react";
 import Select from "react-select";
-import { NavLink, useNavigate } from "react-router-dom";
-import { IoIosSearch } from "react-icons/io";
+import { useNavigate } from "react-router-dom";
 import {
   EmpSideBar,
   JobList,
   EmpHeader,
   EmpFooter,
-  Pagination,
 } from "../index.js";
 const EmpJobs = () => {
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
   const handleSidebarToggle = () => {
     setIsCollapsed(!isCollapsed);
-  };
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim() !== "") {
-      navigate(`/employer/jobs?search=${encodeURIComponent(searchQuery)}`);
-      setSearchQuery("");
-    }
   };
 
   const jobType = [
@@ -76,28 +65,6 @@ const EmpJobs = () => {
                 defaultValue={jobType.find((option) => option.value === "")}
                 onChange={handleFilterChange}
               />
-
-              <div className="action-search selectFull">
-                <input
-                  type="text"
-                  // name="jobs_search"
-                  placeholder="Search jobs title"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button
-                  onClick={handleSearchSubmit}
-                  className="btn-search d-flex"
-                  style={{ all: "unset", cursor: "pointer" }}
-                >
-                  <IoIosSearch className="mx-3" />
-                </button>
-
-                {/* <NavLink type="submit" className="btn-search d-flex">
-                  <IoIosSearch className="mx-3" />
-                </NavLink>
-                 */}
-              </div>
             </div>
             <div className="d-flex align-items-center gap-3 selectFull">
               <label className="text-sorting d-none d-md-block ">Sort by</label>
@@ -114,9 +81,6 @@ const EmpJobs = () => {
           </div>
           <div className=" d-grid">
             <JobList />
-          </div>
-          <div className="page-list">
-            <Pagination />
           </div>
         </div>
         <div className="page-footer align-self-end">

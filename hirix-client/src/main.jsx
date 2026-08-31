@@ -179,7 +179,7 @@ const router = createBrowserRouter(
       <Route
         path="/admin"
         element={
-          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+          <ProtectedRoute allow={["admin", "Manager", "Assistant"]} redirectTo="/admin-login">
             <Admin />
           </ProtectedRoute>
         }
@@ -192,7 +192,7 @@ const router = createBrowserRouter(
       <Route
         path="/admin/jobs"
         element={
-          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+          <ProtectedRoute allow={["admin", "Manager", "Assistant"]} redirectTo="/admin-login">
             <AdJobs />
           </ProtectedRoute>
         }
@@ -200,7 +200,7 @@ const router = createBrowserRouter(
       <Route
         path="/admin/jobs/list"
         element={
-          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+          <ProtectedRoute allow={["admin", "Manager", "Assistant"]} redirectTo="/admin-login">
             <JobList />
           </ProtectedRoute>
         }
@@ -208,7 +208,7 @@ const router = createBrowserRouter(
       <Route
         path="/jobdetail/:id"
         element={
-          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+          <ProtectedRoute allow={["admin", "Manager", "Assistant"]} redirectTo="/admin-login">
             <JobDetail />
           </ProtectedRoute>
         }
@@ -217,7 +217,7 @@ const router = createBrowserRouter(
       <Route
         path="/admin/company"
         element={
-          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+          <ProtectedRoute allow={["admin", "Manager", "Assistant"]} redirectTo="/admin-login">
             <AdCompany />
           </ProtectedRoute>
         }
@@ -225,7 +225,7 @@ const router = createBrowserRouter(
       <Route
         path="/CompanyDetails/:id"
         element={
-          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+          <ProtectedRoute allow={["admin", "Manager", "Assistant"]} redirectTo="/admin-login">
             <CompanyDetail />
           </ProtectedRoute>
         }
@@ -233,7 +233,7 @@ const router = createBrowserRouter(
       <Route
         path="/admin/candidates"
         element={
-          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+          <ProtectedRoute allow={["admin", "Manager", "Assistant"]} redirectTo="/admin-login">
             <AdCandidates />
           </ProtectedRoute>
         }
@@ -241,7 +241,7 @@ const router = createBrowserRouter(
       <Route
         path="/admin/candidates/list"
         element={
-          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+          <ProtectedRoute allow={["admin", "Manager", "Assistant"]} redirectTo="/admin-login">
             <ApplicantList />
           </ProtectedRoute>
         }
@@ -249,7 +249,7 @@ const router = createBrowserRouter(
       <Route
         path="/ApplicantDetails/:id"
         element={
-          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+          <ProtectedRoute allow={["admin", "Manager", "Assistant"]} redirectTo="/admin-login">
             <ApplicantDetail />
           </ProtectedRoute>
         }
@@ -257,7 +257,7 @@ const router = createBrowserRouter(
       <Route
         path="/admin/employees"
         element={
-          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+          <ProtectedRoute allow={["admin", "Manager", "Assistant"]} redirectTo="/admin-login">
             <AdEmployee />
           </ProtectedRoute>
         }
@@ -265,7 +265,7 @@ const router = createBrowserRouter(
       <Route
         path="/admin/employees/list"
         element={
-          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+          <ProtectedRoute allow={["admin", "Manager", "Assistant"]} redirectTo="/admin-login">
             <EmployeeList />
           </ProtectedRoute>
         }
@@ -273,7 +273,7 @@ const router = createBrowserRouter(
       <Route
         path="/employeeDetails/:id"
         element={
-          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+          <ProtectedRoute allow={["admin", "Manager", "Assistant"]} redirectTo="/admin-login">
             <EmployeeDetail />
           </ProtectedRoute>
         }
@@ -281,7 +281,7 @@ const router = createBrowserRouter(
       <Route
         path="/admin/user-management"
         element={
-          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+          <ProtectedRoute allow={["admin", "Manager", "Assistant"]} redirectTo="/admin-login">
             <AdManagement />
           </ProtectedRoute>
         }
@@ -289,7 +289,7 @@ const router = createBrowserRouter(
       <Route
         path="/admin/blogs"
         element={
-          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+          <ProtectedRoute allow={["admin", "Manager", "Assistant"]} redirectTo="/admin-login">
             <AdBlogs />
           </ProtectedRoute>
         }
@@ -297,7 +297,7 @@ const router = createBrowserRouter(
       <Route
         path="/admin/blogs/new"
         element={
-          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+          <ProtectedRoute allow={["admin", "Manager", "Assistant"]} redirectTo="/admin-login">
             <AdBlogEditor />
           </ProtectedRoute>
         }
@@ -305,7 +305,7 @@ const router = createBrowserRouter(
       <Route
         path="/admin/blogs/edit/:id"
         element={
-          <ProtectedRoute allow={["admin"]} redirectTo="/admin-login">
+          <ProtectedRoute allow={["admin", "Manager", "Assistant"]} redirectTo="/admin-login">
             <AdBlogEditor />
           </ProtectedRoute>
         }
@@ -316,12 +316,15 @@ const router = createBrowserRouter(
 
 import { Provider } from "react-redux";
 import { store } from "./store/index.js";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     {/* <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/"> */}
     <Provider store={store}>
       <RouterProvider router={router} />
+      <ToastContainer position="top-right" autoClose={3500} pauseOnHover />
     </Provider>
     {/* </ClerkProvider> */}
   </React.StrictMode>

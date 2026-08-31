@@ -1,17 +1,14 @@
 import React, { useState } from "react";
 import Select from "react-select";
-import { NavLink, useNavigate } from "react-router-dom";
-import { IoIosSearch } from "react-icons/io";
+import { useNavigate } from "react-router-dom";
 import {
   EmpSideBar,
   ApplicantList,
   EmpHeader,
   EmpFooter,
-  Pagination,
 } from "../index.js";
 const EmpApplicants = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
   const handleSidebarToggle = () => {
@@ -30,13 +27,6 @@ const EmpApplicants = () => {
     { value: "oldest", label: "Oldest" },
     { value: "featured", label: "Featured" },
   ];
-  const handleSearchSubmit = (e) =>{
-    e.preventDefault();
-    if(searchQuery.trim()!== ""){
-      navigate(`/employer/applicants?search=${encodeURIComponent(searchQuery)}`);
-      setSearchQuery("");
-    }
-  };
 
   const handleFilterChange = (selectedOption) => {
     const filter = selectedOption.value;
@@ -74,19 +64,6 @@ const EmpApplicants = () => {
                 defaultValue={jobType.find((option) => option.value === "")}
                 onChange={handleFilterChange}
               />
-
-              <div className="action-search selectFull">
-                <input
-                  type="text"
-                  placeholder="Find by jobs"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <NavLink className="btn-search d-flex" onClick={handleSearchSubmit}>
-                  <IoIosSearch className="mx-3" />
-                </NavLink>
-               
-              </div>
             </div>
             <div className="d-flex align-items-center gap-3 selectFull">
               <label className="text-sorting d-none d-md-block ">Sort by</label>
@@ -103,9 +80,6 @@ const EmpApplicants = () => {
           </div>
           <div className=" d-grid">
           <ApplicantList/>
-          </div>
-          <div className="page-list">
-            <Pagination />
           </div>
         </div>
         <div className="page-footer align-self-end">

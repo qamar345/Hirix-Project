@@ -1,6 +1,7 @@
 const { conn_sql } = require("../../config/connection");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { passwordError } = require("../../utils/validatePassword");
 
 //job seeker login (works for both jobseeker and employee via single form)
 const userlogin = (req, res) => {
@@ -132,6 +133,12 @@ const showjobs = (req, res) => {
 const JobSeekerChangePassword = (req, res) => {
   const { id } = req.params;
   const { currentPass, newPass } = req.body.editPasswordData;
+
+  const pwError = passwordError(newPass);
+  if (pwError) {
+    return res.status(400).json({ msg: pwError });
+  }
+
   const checkPasswordQuery =
     "SELECT password FROM `user_accounts` WHERE id = ?";
 

@@ -16,6 +16,7 @@ import { letterBox } from "../assets/icons/index.js";
 import { NavLink } from "react-router-dom";
 import API from "../../api";
 import useSiteSettings from "../../useSiteSettings";
+import { showSuccess } from "../../utils/toast";
 
 // Map platform name -> icon component
 const PLATFORM_ICONS = {
@@ -50,7 +51,7 @@ const Footer = () => {
     e.preventDefault();
     API.post("/news-letter", { email })
       .then((res) => {
-        alert(res.data.msg);
+        showSuccess(res.data.msg);
         setEmail("");
       })
       .catch((err) => {

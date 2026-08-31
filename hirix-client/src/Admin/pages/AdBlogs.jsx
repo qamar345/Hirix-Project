@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AdSideBar, AdHeader, AdFooter } from "../index.js";
 import API from "../../api";
+import Loader from "../../components/Loader";
+import { showError } from "../../utils/toast";
 
 const STATUS_COLORS = {
   Published: { bg: "#dcfce7", color: "#16a34a" },
@@ -49,7 +51,7 @@ const AdBlogs = () => {
       });
       setBlogs((prev) => prev.filter((b) => b.id !== id));
     } catch (err) {
-      alert("Failed to delete blog post.");
+      showError("Failed to delete blog post.");
     }
   };
 
@@ -132,8 +134,8 @@ const AdBlogs = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: "center", padding: "40px", color: "#94a3b8" }}>
-                    Loading...
+                  <td colSpan={7}>
+                    <Loader label="Loading blog posts..." />
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (

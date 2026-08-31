@@ -122,12 +122,15 @@ const rateLimit = require("../middleware/rateLimit");
 // Throttle brute-forceable auth endpoints (login attempts, reset codes)
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: "Too many attempts, please try again in a few minutes." });
 const resetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 8, message: "Too many attempts, please try again in a few minutes." });
+// CV generation launches a headless browser per request - cap how often any
+// one caller can trigger that so it can't be used to exhaust server memory/CPU.
+const cvLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: "Too many CV downloads, please try again in a few minutes." });
 const {
   Getcompanies,
   Approvedcompany,
   Rejectcompany,
 } = require("../controller/combined/companies");
-const { AddManager } = require("../controller/admin/AddManagers");
+const { AddManager, ManagerLogin, GetManagerById, UpdateManagerProfile, ManagerChangePassword } = require("../controller/admin/AddManagers");
 const { Graph, CandidateGraph } = require("../controller/admin/Graph");
 const { Dashboard, dashData } = require("../controller/employee/DashboardData");
 const {
@@ -145,6 +148,7 @@ const {
   GetProfile,
   GetEducation,
   GetExperience,
+  GetAwards,
   GenerateCv,
 } = require("../controller/jobseeker/profileData");
 const {
@@ -169,6 +173,7 @@ const { Test } = require("../controller/test/test.controller");
 const router = express.Router();
 
 router.post("/admin-login", authLimiter, Adminlogin);
+router.post("/manager-login", authLimiter, ManagerLogin);
 
 router.put(
   "/admin-profile/:id",
@@ -181,33 +186,48 @@ router.put(
 
 router.get("/GetAdmin/:id", verifyToken, requireRole("admin"), GetAdmin);
 
-router.get("/get-data", verifyToken, requireRole("admin"), Getdata);
+// Manager/Assistant staff accounts get the same read/manage access as admin
+// on the general admin-panel endpoints below (per product decision - they
+// share the same /admin/* frontend shell). Endpoints that operate on the
+// `admin` table itself by id (profile, password change/reset) stay
+// admin-only, since a manager's id belongs to a different table
+// (`admin-account`) and would misbehave against these.
+const ADMIN_PANEL_ROLES = ["admin", "Manager", "Assistant"];
 
-router.get("/getusers", verifyToken, requireRole("admin"), Getusers);
+router.get("/get-data", verifyToken, requireRole(...ADMIN_PANEL_ROLES), Getdata);
 
-router.get("/DashboardData", verifyToken, requireRole("admin"), GetDashboard);
+router.get("/getusers", verifyToken, requireRole(...ADMIN_PANEL_ROLES), Getusers);
 
-router.get("/graph/:days", verifyToken, requireRole("admin"), Graph);
+router.get("/DashboardData", verifyToken, requireRole(...ADMIN_PANEL_ROLES), GetDashboard);
 
-router.get("/Candidategraph/:days", verifyToken, requireRole("admin"), CandidateGraph);
+router.get("/graph/:days", verifyToken, requireRole(...ADMIN_PANEL_ROLES), Graph);
+
+router.get("/Candidategraph/:days", verifyToken, requireRole(...ADMIN_PANEL_ROLES), CandidateGraph);
 
 // router.put("/approved-request/:id",verifyToken, request);
 
 // router.put("/rejected/:id",verifyToken, requestrejected);
 
-router.put("/active-employee/:id", verifyToken, requireRole("admin"), Active);
+router.put("/active-employee/:id", verifyToken, requireRole(...ADMIN_PANEL_ROLES), Active);
 
-router.put("/freezeusers/:id", verifyToken, requireRole("admin"), FreezeUsers);
+router.put("/freezeusers/:id", verifyToken, requireRole(...ADMIN_PANEL_ROLES), FreezeUsers);
 
-router.post("/freeze-employee/:id", verifyToken, requireRole("admin"), Freeze);
+router.post("/freeze-employee/:id", verifyToken, requireRole(...ADMIN_PANEL_ROLES), Freeze);
 
-router.get("/getManagers", verifyToken, requireRole("admin"), GetManagers);
+router.get("/getManagers", verifyToken, requireRole(...ADMIN_PANEL_ROLES), GetManagers);
 
-router.put("/activeManager/:id", verifyToken, requireRole("admin"), ActiveManagers);
+router.put("/activeManager/:id", verifyToken, requireRole(...ADMIN_PANEL_ROLES), ActiveManagers);
 
-router.put("/freezeManager/:id", verifyToken, requireRole("admin"), InactiveManagers);
+router.put("/freezeManager/:id", verifyToken, requireRole(...ADMIN_PANEL_ROLES), InactiveManagers);
 
-router.post("/addManager", verifyToken, requireRole("admin"), AddManager);
+router.post("/addManager", verifyToken, requireRole(...ADMIN_PANEL_ROLES), AddManager);
+
+// A manager's own Settings page - separate from /GetAdmin, /admin-profile,
+// /change-password above, which operate on the `admin` table specifically
+// and would 404/misbehave against a manager's admin-account id.
+router.get("/getManagerProfile/:id", verifyToken, requireRole(...ADMIN_PANEL_ROLES), requireSelf("id", ["admin"]), GetManagerById);
+router.put("/manager-profile/:id", verifyToken, requireRole(...ADMIN_PANEL_ROLES), requireSelf("id", ["admin"]), upload.single("image"), UpdateManagerProfile);
+router.put("/manager-change-password/:id", verifyToken, requireRole(...ADMIN_PANEL_ROLES), requireSelf("id", ["admin"]), ManagerChangePassword);
 
 router.put("/change-password/:id", verifyToken, requireRole("admin"), requireSelf("id"), AdminChangePassword);
 
@@ -217,7 +237,7 @@ router.post("/verify-emailForAdmin", verifyToken, requireRole("admin"), resetLim
 
 router.put("/forget-passwordForAdmin", verifyToken, requireRole("admin"), resetLimiter, forgetPasswordForAdmin);
 
-router.get("/GetAllProfileData/:id", verifyToken, requireRole("admin", "employee"), GetFullApplicantProfile);
+router.get("/GetAllProfileData/:id", verifyToken, requireRole(...ADMIN_PANEL_ROLES, "employee"), GetFullApplicantProfile);
 
 //......................................Combined........................................
 
@@ -232,14 +252,14 @@ router.get("/get-latest-jobs", GetLatestJobs);
 
 // Site Configurations Endpoints
 router.get("/site-settings", GetSiteSettings);
-router.put("/site-settings", verifyToken, requireRole("admin"), UpdateSiteSettings);
+router.put("/site-settings", verifyToken, requireRole(...ADMIN_PANEL_ROLES), UpdateSiteSettings);
 
 // Blog Engine Endpoints
 router.get("/get-blogs", GetBlogs);
 router.get("/get-blog/:slug", GetBlogBySlug);
-router.post("/add-blog", verifyToken, requireRole("admin"), AddBlog);
-router.put("/edit-blog/:id", verifyToken, requireRole("admin"), EditBlog);
-router.delete("/delete-blog/:id", verifyToken, requireRole("admin"), DeleteBlog);
+router.post("/add-blog", verifyToken, requireRole(...ADMIN_PANEL_ROLES), AddBlog);
+router.put("/edit-blog/:id", verifyToken, requireRole(...ADMIN_PANEL_ROLES), EditBlog);
+router.delete("/delete-blog/:id", verifyToken, requireRole(...ADMIN_PANEL_ROLES), DeleteBlog);
 
 router.get("/get-postsBYAdmin", GetpostsByAdmin);
 
@@ -247,13 +267,13 @@ router.get("/getTotal_jobs", GetTotalJobs);
 
 router.get("/get-post-by-id/:id", Getpostbyid);
 
-router.get("/getcompanies", verifyToken, requireRole("admin"), Getcompanies);
+router.get("/getcompanies", verifyToken, requireRole(...ADMIN_PANEL_ROLES), Getcompanies);
 
-router.put("/approvedCompany/:id", verifyToken, requireRole("admin"), Approvedcompany);
+router.put("/approvedCompany/:id", verifyToken, requireRole(...ADMIN_PANEL_ROLES), Approvedcompany);
 
-router.put("/rejectCompany/:id", verifyToken, requireRole("admin"), Rejectcompany);
+router.put("/rejectCompany/:id", verifyToken, requireRole(...ADMIN_PANEL_ROLES), Rejectcompany);
 
-router.get("/get-reviews", verifyToken, requireRole("admin"), Getreviews);
+router.get("/get-reviews", verifyToken, requireRole(...ADMIN_PANEL_ROLES), Getreviews);
 
 router.get("/filtersCountData", filtersCount);
 
@@ -420,6 +440,7 @@ router.post("/AddProject/:id", verifyToken, requireSelf("id"), Project);
 router.get("/get-candidate-projects/:id", verifyToken, requireSelf("id", ["admin", "employee"]), GetCandidateProjects);
 
 router.post("/AddAward/:id", verifyToken, requireSelf("id"), Award);
+router.get("/get-candidate-awards/:id", verifyToken, requireSelf("id", ["admin", "employee"]), GetAwards);
 
 router.get("/profile-status/:id", verifyToken, requireSelf("id"), getUserProfileStatus);
 
@@ -427,7 +448,7 @@ router.get("/GenerateAutoUserName", GenerateUserName);
 
 router.delete("/remove-skill/:id", verifyToken, RemoveCandidateSkills);
 
-router.get("/download-cv/:id", verifyToken, requireSelf("id", ["admin", "employee"]), GenerateCv);
+router.get("/download-cv/:id", cvLimiter, verifyToken, requireSelf("id", ["admin", "employee"]), GenerateCv);
 
 router.get("/test", Test);
 

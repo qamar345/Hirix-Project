@@ -19,7 +19,9 @@ const MyJobDetail = () => {
           }
         );
         setJob(res.data);
-      } catch (err) {}
+      } catch (err) {
+        console.error("Failed to load job details:", err);
+      }
     };
 
     fetchJob();
@@ -49,11 +51,13 @@ const MyJobDetail = () => {
               {"  "}
               {job.job_type} & {job.workplace_type}
             </div>
+            {job.salary !== "Unpaid" && (
             <div className="col-md-6 mb-3">
               <strong className="text-secondary">Salary:</strong>
               {"  "}
               {job.minimum_currency} - {job.maximum_currency} {job.Rate}
             </div>
+            )}
             <div className="col-md-6 mb-3">
               <strong className="text-secondary">Currency:</strong>
               {"  "}

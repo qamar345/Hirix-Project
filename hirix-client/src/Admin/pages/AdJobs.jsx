@@ -1,33 +1,20 @@
 import React, { useState } from "react";
 import Select from "react-select";
-import { NavLink, useNavigate } from "react-router-dom";
-import { IoIosSearch } from "react-icons/io";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 import {
   AdSideBar,
   JobList,
   AdHeader,
   AdFooter,
-  Pagination,
 } from "../index.js";
 
 const AdJobs = () => {
   const navigate = useNavigate();
-  const token = sessionStorage.getItem("token");
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
 
   const handleSidebarToggle = () => {
     setIsCollapsed(!isCollapsed);
-  };
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim() !== "") {
-      navigate(`/admin/jobs?search=${encodeURIComponent(searchQuery)}`);
-      setSearchQuery("");
-    }
   };
 
   const handleSortChange = (selectedOption) => {
@@ -80,30 +67,6 @@ const AdJobs = () => {
                 defaultValue={jobType.find((option) => option.value === "")}
                 onChange={handleFilterChange}
               />
-
-              <div className="action-search selectFull">
-                <input
-                  type="text"
-                  // name="jobs_search"
-                  placeholder="Search jobs title"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button
-                  onClick={handleSearchSubmit}
-                  className="btn-search d-flex"
-                  style={{ all: "unset", cursor: "pointer" }}
-                >
-                  <IoIosSearch className="mx-3" />
-                </button>
-
-                {/* <NavLink
-                  className="btn-search d-flex"
-                  to={`/search?query=${encodeURIComponent(searchQuery)}`}
-                >
-                  <IoIosSearch className="mx-3" />
-                </NavLink> */}
-              </div>
             </div>
             <div className="d-flex align-items-center gap-3 selectFull">
               <label className="text-sorting d-none d-md-block ">Sort by</label>
@@ -120,9 +83,6 @@ const AdJobs = () => {
           </div>
           <div className=" d-grid">
             <JobList />
-          </div>
-          <div className="page-list">
-            <Pagination />
           </div>
         </div>
         <div className="page-footer align-self-end">

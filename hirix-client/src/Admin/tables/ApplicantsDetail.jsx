@@ -140,7 +140,7 @@ const ApplicantDetail = () => {
               <strong className="text-secondary">Linkedin:</strong>
               {"  "}
               {(
-                <a href={details?.LinkedIn} target="_blank">
+                <a href={details?.LinkedIn} target="_blank" rel="noopener noreferrer">
                   {details?.LinkedIn}
                 </a>
               ) || "N/A"}
@@ -188,7 +188,7 @@ const ApplicantDetail = () => {
                     <p className="mb-1">
                       <strong>Link:</strong>{" "}
                       {(
-                        <a href={pro?.link} target="_blank">
+                        <a href={pro?.link} target="_blank" rel="noopener noreferrer">
                           {pro?.link}
                         </a>
                       ) || "N/A"}

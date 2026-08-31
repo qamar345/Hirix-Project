@@ -1,17 +1,14 @@
 import React, { useState } from "react";
 import Select from "react-select";
-import { NavLink, useNavigate } from "react-router-dom";
-import { IoIosSearch } from "react-icons/io";
+import { useNavigate } from "react-router-dom";
 import {
   AdSideBar,
   ApplicantList,
   AdHeader,
   AdFooter,
-  Pagination,
 } from "../index.js";
 const AdCandidates = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
   const handleSidebarToggle = () => {
@@ -32,14 +29,6 @@ const AdCandidates = () => {
     { value: "oldest", label: "Oldest" },
     { value: "featured", label: "Featured" },
   ];
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim() !== "") {
-      navigate(`/admin/candidates?search=${encodeURIComponent(searchQuery)}`);
-      setSearchQuery("");
-    }
-  };
 
   const handleFilterChange = (selectedOption) => {
     const filter = selectedOption.value;
@@ -72,23 +61,6 @@ const AdCandidates = () => {
                 defaultValue={jobType.find((option) => option.value === "")}
                 onChange={handleFilterChange}
               />
-
-              <div className="action-search selectFull">
-                  <input
-                    type="text"
-                    // name="jobs_search"
-                    placeholder="Find Candidates"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                  <button
-                    onClick={handleSearchSubmit}
-                    className="btn-search d-flex"
-                    style={{ all: "unset", cursor: "pointer" }}
-                  >
-                    <IoIosSearch className="mx-3" />
-                  </button>
-              </div>
             </div>
             <div className="d-flex align-items-center gap-3 selectFull">
               <label className="text-sorting d-none d-md-block ">Sort by</label>
@@ -105,9 +77,6 @@ const AdCandidates = () => {
           </div>
           <div className=" d-grid">
             <ApplicantList />
-          </div>
-          <div className="page-list">
-            <Pagination />
           </div>
         </div>
         <div className="page-footer align-self-end">

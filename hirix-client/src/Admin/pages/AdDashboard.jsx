@@ -77,7 +77,9 @@ const EmpDashboard = () => {
         ];
 
         setData(updatedData);
-      } catch (err) {}
+      } catch (err) {
+        console.error("Failed to load dashboard data:", err);
+      }
     };
 
     GetUsers();

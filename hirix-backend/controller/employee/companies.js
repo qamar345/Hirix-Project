@@ -179,14 +179,15 @@ const Editcompany = (req, res) => {
 //  For Select company (showing all his/her companies)
 const Selectcompany = (req, res) => {
   const page = parseInt(req.query.page) || 1;
-  const limit = 10;
+  const search = req.query.search || "";
+  const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 100);
   const offset = (page - 1) * limit;
   const { id } = req.params;
 
   // Pehle total count fetch karein
   const sql_count =
-    "SELECT COUNT(*) AS total FROM `companies` WHERE user_account_id = ? AND status_delete = 1 ";
-  conn_sql.query(sql_count, [id], (count_err, count_result) => {
+    "SELECT COUNT(*) AS total FROM `companies` WHERE user_account_id = ? AND status_delete = 1 AND name LIKE ?";
+  conn_sql.query(sql_count, [id, `%${search}%`], (count_err, count_result) => {
     if (count_err) {
       return res.json({ error: count_err });
     }
@@ -196,9 +197,9 @@ const Selectcompany = (req, res) => {
 
     // Ab actual companies ka data fetch karein
     const sql_get =
-      " SELECT c.*, (SELECT COUNT(*) FROM jobs j WHERE j.company_name = c.id AND j.status = 'open') AS active_jobs FROM companies c WHERE c.user_account_id = ? AND c.status_delete = 1  LIMIT ? OFFSET ?";
+      " SELECT c.*, (SELECT COUNT(*) FROM jobs j WHERE j.company_name = c.id AND j.status = 'open') AS active_jobs FROM companies c WHERE c.user_account_id = ? AND c.status_delete = 1 AND c.name LIKE ? LIMIT ? OFFSET ?";
 
-    conn_sql.query(sql_get, [id, limit, offset], (c_err, c_data) => {
+    conn_sql.query(sql_get, [id, `%${search}%`, limit, offset], (c_err, c_data) => {
       if (c_err) {
         return res.json({ error: c_err });
       }
@@ -206,6 +207,7 @@ const Selectcompany = (req, res) => {
       return res.json({
         data: c_data,
         meta: {
+          search,
           page,
           limit,
           totalData,

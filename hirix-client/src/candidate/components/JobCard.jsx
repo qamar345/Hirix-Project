@@ -6,6 +6,7 @@ import { FaRegHeart } from "react-icons/fa";
 import { urgent, featured } from "../assets/icons/index.js";
 import { Pagination } from "../index.js";
 import { he } from "date-fns/locale";
+import { showSuccess, showError } from "../../utils/toast";
 
 const JobCard = ({
   id,
@@ -17,6 +18,7 @@ const JobCard = ({
   city,
   minimum_currency,
   currency,
+  salary,
   expiry_date,
   isFeatured,
   isSelected,
@@ -56,7 +58,7 @@ const JobCard = ({
 
   const handleWishlist = async () => {
     if (!check) {
-      alert("Please Login First!");
+      showError("Please Login First!");
       navigate("/");
     } else {
       try {
@@ -75,12 +77,12 @@ const JobCard = ({
         );
 
         if (res.data.msg) {
-          alert(res.data.msg);
+          showSuccess(res.data.msg);
         } else {
-          alert("please try again.");
+          showError("please try again.");
         }
       } catch (error) {
-        alert("Error");
+        showError("Error");
       }
     }
   };
@@ -184,12 +186,14 @@ const JobCard = ({
               {city}
             </span>
 
-            <div className="label label-price">
-              {" "}
-              Starting from &nbsp;
-              {minimum_currency}
-              {currency.toUpperCase()}
-            </div>
+            {salary !== "Unpaid" && (
+              <div className="label label-price">
+                {" "}
+                Starting from &nbsp;
+                {minimum_currency}
+                {currency?.toUpperCase()}
+              </div>
+            )}
           </div>
           <div className="jobs-footer-right">
             <p className="days">

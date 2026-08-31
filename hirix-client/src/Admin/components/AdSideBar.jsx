@@ -1,4 +1,5 @@
 import React from "react";
+import { showSuccess } from "../../utils/toast";
 import {
   hirixText,
   dashboard,
@@ -19,7 +20,7 @@ const AdSideBar = ({ isCollapsed, handleSidebarToggle }) => {
   const navigate = useNavigate();
   const handleLogout = () => {
     sessionStorage.clear();
-    alert("LoggedOut Successfully");
+    showSuccess("LoggedOut Successfully");
     navigate("/admin-login");
   };
   return (

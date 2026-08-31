@@ -408,6 +408,7 @@ import "react-quill-new/dist/quill.snow.css";
 import { EmpFooter } from "../index.js";
 import API, { BASE_URL } from "../../api";
 import { useGetSpecificCompanyQuery, useEditCompanyMutation } from "../../store/employerApi";
+import { showSuccess, showError } from "../../utils/toast";
 
 const EmpEditCompany = () => {
   const navigate = useNavigate();
@@ -494,11 +495,11 @@ const EmpEditCompany = () => {
 
     try {
       const res = await editCompanyMutation({ id: editId, payload }).unwrap();
-      alert(res.msg || "Company updated successfully!");
+      showSuccess(res.msg || "Company updated successfully!");
       navigate(`/employer/company`);
     } catch (error) {
       console.error("Error updating company:", error);
-      alert("Failed to update company.");
+      showError("Failed to update company.");
     }
   };
 

@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import { showSuccess } from "../../utils/toast";
 import {
   hirixText,
   dashboard,
@@ -94,7 +95,7 @@ const AdSideMenu = () => {
                   link: "/",
                   logOut: () => {
                     sessionStorage.clear();
-                    alert("Logout Successfuly!!!");
+                    showSuccess("Logout Successfuly!!!");
                     // window.location.reload()
                   },
                 },
@@ -114,7 +115,7 @@ const AdSideMenu = () => {
                     </span>
                     <span
                       onClick={
-                        item.label === "Logout" ? () => item.logOut() : "#"
+                        item.label === "Logout" ? () => item.logOut() : undefined
                       }
                     >
                       {item.label}

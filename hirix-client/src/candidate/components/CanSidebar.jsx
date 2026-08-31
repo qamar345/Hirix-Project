@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { showSuccess } from "../../utils/toast";
 import {
   hirixText,
   dashboard,
@@ -12,33 +13,12 @@ import {
   setting,
   logout,
 } from "../assets/icons/index.js";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa";
-import ProgressBar from "react-bootstrap/ProgressBar";
 
 const CanSidebar = ({ isCollapsed, handleSidebarToggle }) => {
   const navigate = useNavigate();
-  const [now, setNow] = useState(sessionStorage.getItem("Percent") || 0);
-  const handleLogout = () => {
-    sessionStorage.clear();
-    setUser({ name: "", photoURL: "", role: "" }); // <-- reset user state
-    window.location.reload();
-    alert("LoggedOut Successfully");
-    navigate("/");
-  };
-  useEffect(() => {
-    const handlePercentUpdate = () => {
-      const updated = sessionStorage.getItem("Percent") || 0;
-      setNow(updated);
-    };
-
-    // 🔁 Listen for custom event
-    window.addEventListener("percentUpdated", handlePercentUpdate);
-
-    // Clean up
-    return () =>
-      window.removeEventListener("percentUpdated", handlePercentUpdate);
-  }, []);
+  const location = useLocation();
   return (
     <aside
       className={` ${isCollapsed ? "asideWrapperCollapsed" : "asideWrapper"}`}
@@ -119,52 +99,46 @@ const CanSidebar = ({ isCollapsed, handleSidebarToggle }) => {
               label: "Settings",
               link: "/candidate/settings",
             },
-            {
-              src: logout,
-              alt: "Logout",
-              label: "Logout",
-              logOut: () => {
-                sessionStorage.clear();
-                alert("Logout Successfully");
-                navigate("/");
-              },
-            },
           ].map((item, index) => (
-            <li className="nav-item" key={index}>
-              <NavLink
-                className="civi-icon-items"
-                onClick={item.label === "Logout" ? () => item.logOut() : null}
-                to={item.link}
-              >
+            <li
+              className={`nav-item ${
+                item.link && location.pathname.startsWith(item.link)
+                  ? "active"
+                  : ""
+              }`}
+              key={index}
+            >
+              <NavLink className="civi-icon-items" to={item.link}>
                 <span className="image">
                   <img src={item.src} alt={item.alt} />
                 </span>
-                {!isCollapsed && (
-                  <span
-                    onClick={
-                      item.label === "Logout" ? () => item.logOut() : null
-                    }
-                  >
-                    {item.label}
-                  </span>
-                )}
+                {!isCollapsed && <span>{item.label}</span>}
               </NavLink>
             </li>
           ))}
         </ul>
 
-        {!isCollapsed && (
-          <div className=" mt-5">
-            <div className="profile-strength-bar">
-              <span className="flex-grow-1">Profile Strength: </span>
-              <span> {Math.floor(now)} </span>
-              <span>%</span>
-            </div>
-            <div className="profile-progress">
-              <ProgressBar now={now} label={`${Math.floor(now)}%`} />
-            </div>
-          </div>
-        )}
+        {/* Pinned to the bottom, separate from the scrollable nav list
+            above, on both desktop and mobile. */}
+        <ul className="list-nav-dashboard sidebar-logout-list">
+          <li className="nav-item">
+            <a
+              className="civi-icon-items"
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                sessionStorage.clear();
+                showSuccess("Logout Successfully");
+                navigate("/");
+              }}
+            >
+              <span className="image">
+                <img src={logout} alt="Logout" />
+              </span>
+              {!isCollapsed && <span>Logout</span>}
+            </a>
+          </li>
+        </ul>
       </div>
     </aside>
   );

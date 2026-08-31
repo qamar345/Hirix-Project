@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from "react";
 import API, { BASE_URL } from "../../api";
-import { FaBars } from "react-icons/fa";
+import { FaBars, FaUserCircle } from "react-icons/fa";
 import { AdSideMenu } from "../index.js";
-import { employerImg } from "../assets/images/index.js";
 import { useNavigate } from "react-router-dom";
 const AdHeader = () => {
   const navigate = useNavigate();
   const check = sessionStorage.getItem("isLoggedIn");
   const name = sessionStorage.getItem("name");
+  const role = sessionStorage.getItem("role");
+  const displayName = name && name.trim() !== "" ? name : role || "Admin";
 
   const [imageAdmin, setImageAdmin] = useState(sessionStorage.getItem("image"));
+  const [imageBroken, setImageBroken] = useState(false);
 
   useEffect(() => {
     if (!check) navigate("/admin-login");
@@ -19,6 +21,7 @@ const AdHeader = () => {
     const updateImage = () => {
       const newImage = sessionStorage.getItem("image");
       setImageAdmin(newImage);
+      setImageBroken(false);
     };
 
     window.addEventListener("profileUpdated", updateImage);
@@ -52,16 +55,18 @@ const AdHeader = () => {
           <div className="right-header px-0 col-auto">
           {check && (
             <div className="profileImg">
-              <img
-                src={`${BASE_URL}${imageAdmin}`}
-                title="Admin"
-                alt="Admin"
-                className=""
-              />
-              {name && typeof name === "string" && name.trim() !== "" && name == null && (
-                <span className="d-none d-md-block">{name || "Admin"}</span>
-              
-              )} 
+              {imageAdmin && !imageBroken ? (
+                <img
+                  src={`${BASE_URL}${imageAdmin}`}
+                  title={displayName}
+                  alt={displayName}
+                  className=""
+                  onError={() => setImageBroken(true)}
+                />
+              ) : (
+                <FaUserCircle className="avatar-icon" title={displayName} />
+              )}
+              <span className="d-none d-md-block">{displayName}</span>
             </div>
            )}
           </div>

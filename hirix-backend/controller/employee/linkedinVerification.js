@@ -1,5 +1,50 @@
 const { conn_sql } = require("../../config/connection");
 const axios = require("axios");
+const crypto = require("crypto");
+
+// The OAuth "state" param is the only thing tying a LinkedIn callback back
+// to a request this server actually issued (CSRF protection for the flow).
+// It used to be a plain JSON blob compared against a static secret that
+// defaulted to a literal string ("state_secret") right here in source when
+// LINKEDIN_STATE_SECRET wasn't set - guessable/readable, and even when set,
+// a fixed shared secret compared with `!==` isn't a real per-request proof.
+// This signs {companyId, timestamp} with HMAC-SHA256, verifies with a
+// constant-time comparison, and expires after 10 minutes. Fails closed
+// (returns null) if the secret isn't configured, instead of a default.
+const STATE_TTL_MS = 10 * 60 * 1000;
+
+function signState(companyId) {
+  const secret = process.env.LINKEDIN_STATE_SECRET;
+  if (!secret) return null;
+  const timestamp = Date.now();
+  const sig = crypto.createHmac("sha256", secret).update(`${companyId}.${timestamp}`).digest("hex");
+  return Buffer.from(JSON.stringify({ companyId, timestamp, sig })).toString("base64url");
+}
+
+function verifyState(state) {
+  const secret = process.env.LINKEDIN_STATE_SECRET;
+  if (!secret || !state) return null;
+
+  let parsed;
+  try {
+    parsed = JSON.parse(Buffer.from(String(state), "base64url").toString("utf8"));
+  } catch {
+    return null;
+  }
+
+  const { companyId, timestamp, sig } = parsed || {};
+  if (!companyId || !timestamp || !sig) return null;
+
+  const expectedSig = crypto.createHmac("sha256", secret).update(`${companyId}.${timestamp}`).digest("hex");
+  const sigBuf = Buffer.from(String(sig), "hex");
+  const expectedBuf = Buffer.from(expectedSig, "hex");
+  if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
+    return null;
+  }
+  if (Date.now() - timestamp > STATE_TTL_MS) return null;
+
+  return companyId;
+}
 
 function escapeHtml(value) {
   if (value === null || value === undefined) return "";
@@ -35,11 +80,14 @@ const getLinkedInAuthURL = (req, res) => {
       const clientID = process.env.LINKEDIN_CLIENT_ID || "mock_id";
       const redirectURI = encodeURIComponent(process.env.LINKEDIN_REDIRECT_URI);
 
-      // Save company_id in state variable so we know which company to verify on callback
-      const state = encodeURIComponent(JSON.stringify({
-        companyId: company_id,
-        secret: process.env.LINKEDIN_STATE_SECRET || "state_secret"
-      }));
+      // Save company_id in a signed, expiring state so we know which
+      // company to verify on callback and that the callback really
+      // corresponds to a request this server issued.
+      const signedState = signState(company_id);
+      if (!signedState) {
+        return res.status(500).json({ error: "LinkedIn verification is not configured (missing LINKEDIN_STATE_SECRET)" });
+      }
+      const state = encodeURIComponent(signedState);
 
       const scope = "r_liteprofile r_emailaddress w_member_social"; // Standard scopes (use organizations lookup scope if approved by LinkedIn)
       const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientID}&redirect_uri=${redirectURI}&state=${state}&scope=${scope}`;
@@ -66,14 +114,12 @@ const handleLinkedInCallback = async (req, res) => {
   }
 
   try {
-    const stateData = JSON.parse(decodeURIComponent(state));
-    const expectedSecret = process.env.LINKEDIN_STATE_SECRET || "state_secret";
-
-    if (stateData.secret !== expectedSecret) {
-      return res.status(400).send("Invalid or tampered verification request.");
+    const verifiedCompanyId = verifyState(decodeURIComponent(state));
+    if (verifiedCompanyId === null) {
+      return res.status(400).send("Invalid, expired, or tampered verification request.");
     }
 
-    const companyId = parseInt(stateData.companyId, 10);
+    const companyId = parseInt(verifiedCompanyId, 10);
     if (!Number.isInteger(companyId) || companyId <= 0) {
       return res.status(400).send("Invalid company reference.");
     }

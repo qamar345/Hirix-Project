@@ -37,7 +37,7 @@ const { conn_sql } = require("../../config/connection");
 const Getapplicants = (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const search = req.query.search || "";
-  const limit = 10;
+  const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 100);
   const offset = (page - 1) * limit;
   const { id } = req.params;
 

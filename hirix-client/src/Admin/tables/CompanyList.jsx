@@ -1,37 +1,29 @@
 import React, { useEffect, useState } from "react";
 import Table from "react-bootstrap/Table";
-import Dropdown from "react-bootstrap/Dropdown";
-import { FaEllipsisH } from "react-icons/fa";
+import { FaCheckCircle, FaBan } from "react-icons/fa";
 import API, { BASE_URL } from "../../api";
 import { Pagination } from "../components/Pagination";
 import { Link } from "react-router-dom";
+import TableToolbar from "../../components/TableToolbar";
+import StatusBadge from "../../components/StatusBadge";
+import Loader from "../../components/Loader";
+import { showSuccess, showError } from "../../utils/toast";
 
-// Custom Toggle Component
-const CustomToggle = React.forwardRef(({ onClick }, ref) => (
-  <span
-    ref={ref}
-    onClick={(e) => {
-      e.preventDefault();
-      onClick(e);
-    }}
-    style={{ cursor: "pointer" }}
-  >
-    <FaEllipsisH />
-  </span>
-));
 const CompanyList = () => {
   const [companydata, setcompanydata] = useState([]);
   const [currentPage, settCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [entries, setEntries] = useState(10);
+  const [search, setSearch] = useState("");
+  const [brokenImages, setBrokenImages] = useState(new Set());
+  const [loading, setLoading] = useState(true);
   const token = sessionStorage.getItem("token");
 
-  const getcompanies = async (page) => {
-    // setLoading(true);
+  const getcompanies = async (page, limit, searchTerm) => {
+    setLoading(true);
     try {
       const res = await API.get("/getcompanies", {
-        params: {
-          page: page,
-        },
+        params: { page, limit, search: searchTerm },
         headers: {
           "x-access-token": token,
         },
@@ -39,8 +31,11 @@ const CompanyList = () => {
       setcompanydata(res.data.data);
       settCurrentPage(res.data.meta.page);
       setTotalPages(res.data.meta.totalPages);
-      // setLoading(false);
-    } catch (error) {}
+    } catch (error) {
+      console.error("Failed to load companies:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePageChange = (page) => {
@@ -48,21 +43,13 @@ const CompanyList = () => {
   };
 
   useEffect(() => {
-    getcompanies(currentPage);
-  }, [currentPage]);
-  // useEffect(() => {
-  //   const GetUsers = async () => {
-  //     await axios
-  //       .get("/getcompanies")
-  //       .then((res) => {
-  //         setcompanydata(res.data);
-  //       })
-  //       .catch((err) => {
-  //           //       });
-  //   };
+    getcompanies(currentPage, entries, search);
+  }, [currentPage, entries, search]);
 
-  //   GetUsers();
-  // }, []);
+  useEffect(() => {
+    settCurrentPage(1);
+  }, [entries, search]);
+
   const ApprovedCompany = async (id) => {
     await API
       .put(`/approvedCompany/${id}`, null, {
@@ -71,10 +58,12 @@ const CompanyList = () => {
         },
       })
       .then((res) => {
-        alert(res.data.msg);
-        window.location.reload();
+        showSuccess(res.data.msg);
+        getcompanies(currentPage, entries, search);
       })
-      .catch((err) => {});
+      .catch((err) => {
+        showError(err.response?.data?.msg || "Failed to approve company. Please try again.");
+      });
   };
   const RejectCompany = async (id) => {
     await API
@@ -84,210 +73,132 @@ const CompanyList = () => {
         },
       })
       .then((res) => {
-        alert(res.data.msg);
-        window.location.reload();
+        showSuccess(res.data.msg);
+        getcompanies(currentPage, entries, search);
       })
-      .catch((err) => {});
+      .catch((err) => {
+        showError(err.response?.data?.msg || "Failed to reject company. Please try again.");
+      });
   };
-  // const companies = [
-  //   {
-  //     name: "New",
-  //     img: null,
-  //     details: "",
-  //     status: "Pending",
-  //     category: "B2B SaaS",
-  //     activeJobs: 0,
-  //     editLink: "?company_id=15292",
-  //     deleteMessage: 'This is a "Demo" account so you not cant delete it',
-  //   },
-  //   {
-  //     name: "dfs",
-  //     img: "http://civi.uxper.co/wp-content/uploads/2024/10/Leaders.png",
-  //     details: "Aurora",
-  //     status: "Approved",
-  //     category: "B2B SaaS",
-  //     activeJobs: 0,
-  //     editLink: "?company_id=15279",
-  //     deleteMessage: 'This is a "Demo" account so you not cant delete it',
-  //   },
-  //   {
-  //     name: "Cirotechs",
-  //     img: null,
-  //     details: "",
-  //     status: "Rejected",
-  //     category: "Ecommerce",
-  //     activeJobs: 0,
-  //     editLink: "?company_id=14975",
-  //     deleteMessage: 'This is a "Demo" account so you not cant delete it',
-  //   },
-  // ];
 
   return (
-    <>
-      <Table hover responsive>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Status</th>
-            <th>Category</th>
-            <th>Active Jobs</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {companydata.length > 0 ? (
-            companydata.map((company, index) => {
-              return (
-                <>
-                  <tr key={index}>
-                    <td style={{ width: "200px" }}>
-                      <div className="d-flex align-items-center">
-                        <div className="me-3">
-                          {company.images ? (
-                            <img
-                              src={`${BASE_URL}${company.images}`}
-                              alt={company.name}
-                              style={{
-                                width: "50px",
-                                height: "40px",
-                                borderRadius: "50%",
-                              }}
-                            />
-                          ) : (
-                            <div
-                              style={{
-                                width: "50px",
-                                height: "40px",
-                                borderRadius: "50%",
-                                backgroundColor: "#ddd",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: "14px",
-                                color: "#555",
-                              }}
-                            >
-                              N/A
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <Link to={`/CompanyDetails/${company.id}`}>
-                            <h6>{company.name}</h6>
-                          </Link>
-                          <small>{company.E_mail}</small>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span
-                        // className={`label
-                        // ${company.status === "Pending" ? "label-pending" :  "label-open"}
-                        // `}
-                        className={`label ${
-                          company.status === "Pending"
-                            ? "label-pending"
-                            : company.status === "Rejected"
-                            ? "label-close"
-                            : "label-open"
-                        }`}
-                      >
-                        {company.status}
-                      </span>
-                    </td>
-                    <td>{company.categories}</td>
-                    <td>{company.active_jobs}</td>
-                    <td>
-                      <Dropdown>
-                        <Dropdown.Toggle as={CustomToggle} />
-                        <Dropdown.Menu>
-                          {company.status === "Pending" ? (
-                            <>
-                              <Dropdown.Item>
-                                <button
-                                  className="btn btn-light"
-                                  onClick={() => ApprovedCompany(company.id)}
-                                  style={{
-                                    display: "block",
-                                    width: "100%",
-                                    fontSize: "1.5rem",
-                                  }}
-                                >
-                                  Approve
-                                </button>
-                              </Dropdown.Item>
-                              <Dropdown.Item>
-                                <button
-                                  className="btn btn-light"
-                                  onClick={() => RejectCompany(company.id)}
-                                  style={{
-                                    display: "block",
-                                    width: "100%",
-                                    fontSize: "1.5rem",
-                                  }}
-                                >
-                                  Reject
-                                </button>
-                              </Dropdown.Item>
-                            </>
-                          ) : company.status === "Approved" ? (
-                            <>
-                              <Dropdown.Item>
-                                <button
-                                  className="btn btn-light"
-                                  onClick={() => RejectCompany(company.id)}
-                                  style={{
-                                    display: "block",
-                                    width: "100%",
-                                    fontSize: "1.5rem",
-                                  }}
-                                >
-                                  Reject
-                                </button>
-                              </Dropdown.Item>
-                              <Dropdown.Item></Dropdown.Item>
-                            </>
-                          ) : (
-                            <>
-                              <Dropdown.Item>
-                                <button
-                                  className="btn btn-light"
-                                  onClick={() => ApprovedCompany(company.id)}
-                                  style={{
-                                    display: "block",
-                                    width: "100%",
-                                    fontSize: "1.5rem",
-                                  }}
-                                >
-                                  Approve
-                                </button>
-                              </Dropdown.Item>
-                              <Dropdown.Item></Dropdown.Item>
-                            </>
-                          )}
-                        </Dropdown.Menu>
-                      </Dropdown>
-                    </td>
-                  </tr>
-                </>
-              );
-            })
-          ) : (
+    <div className="dt-wrapper">
+      <TableToolbar
+        entries={entries}
+        onEntriesChange={setEntries}
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search companies..."
+      />
+      <div className="table-responsive">
+        <Table hover responsive>
+          <thead>
             <tr>
-              <td colSpan="4" className="text-gray-500 text-center">
-                No data yet.
-              </td>
+              <th>Name</th>
+              <th>Status</th>
+              <th>Category</th>
+              <th>Active Jobs</th>
+              <th>Actions</th>
             </tr>
-          )}
-        </tbody>
-      </Table>
-
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={5}>
+                  <Loader label="Loading companies..." />
+                </td>
+              </tr>
+            ) : companydata.length > 0 ? (
+              companydata.map((company) => (
+                <tr key={company.id}>
+                  <td style={{ width: "220px" }}>
+                    <div className="d-flex align-items-center">
+                      <div className="me-3">
+                        {company.images && !brokenImages.has(company.id) ? (
+                          <img
+                            src={`${BASE_URL}${company.images}`}
+                            alt={company.name}
+                            style={{
+                              width: "40px",
+                              height: "40px",
+                              borderRadius: "50%",
+                              objectFit: "cover",
+                            }}
+                            onError={() =>
+                              setBrokenImages((prev) => new Set(prev).add(company.id))
+                            }
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: "40px",
+                              height: "40px",
+                              borderRadius: "50%",
+                              backgroundColor: "#eef0f4",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: "12px",
+                              color: "#7c8493",
+                            }}
+                          >
+                            N/A
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <Link to={`/CompanyDetails/${company.id}`}>
+                          <h6 style={{ color: "inherit", margin: 0 }}>{company.name}</h6>
+                        </Link>
+                        <small>{company.E_mail}</small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <StatusBadge status={company.status} />
+                  </td>
+                  <td>{company.categories}</td>
+                  <td>{company.active_jobs}</td>
+                  <td>
+                    <div className="dt-actions">
+                      {company.status !== "Approved" && (
+                        <button
+                          className="dt-icon-btn dt-icon-btn--success"
+                          title="Approve"
+                          onClick={() => ApprovedCompany(company.id)}
+                        >
+                          <FaCheckCircle />
+                        </button>
+                      )}
+                      {company.status !== "Rejected" && (
+                        <button
+                          className="dt-icon-btn dt-icon-btn--danger"
+                          title="Reject"
+                          onClick={() => RejectCompany(company.id)}
+                        >
+                          <FaBan />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={5} className="dt-empty">
+                  No data yet.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+      </div>
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
       />
-    </>
+    </div>
   );
 };
 

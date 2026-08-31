@@ -11,7 +11,14 @@ const columnsToAdd = [
   { name: "expiry_date", definition: "DATE NULL" },
   { name: "ApplyType", definition: "VARCHAR(100) NULL" },
   { name: "province", definition: "VARCHAR(255) NULL" },
-  { name: "city", definition: "VARCHAR(255) NULL" }
+  { name: "city", definition: "VARCHAR(255) NULL" },
+  // Internship-only detail fields (job_type = "Internship"). NULL for
+  // every other job type.
+  { name: "internship_type", definition: "VARCHAR(20) NULL" },
+  { name: "internship_purpose", definition: "VARCHAR(20) NULL" },
+  { name: "internship_duration", definition: "VARCHAR(10) NULL" },
+  { name: "internship_duration_unit", definition: "VARCHAR(10) NULL" },
+  { name: "internship_certificate", definition: "VARCHAR(5) NULL" }
 ];
 
 const companyColumnsToAdd = [
@@ -81,6 +88,23 @@ async function migrateSchema() {
     await queryPromise("ALTER TABLE `companies` MODIFY COLUMN `Contact` VARCHAR(20) NULL");
   }
 
+  // 2c. user_accounts.email had no DB-level uniqueness - signup only did a
+  // check-then-insert, so two concurrent signups with the same address could
+  // both succeed and leave two account rows sharing one email (breaking
+  // login/reset, which assume a single match). Add the missing unique key.
+  // If duplicate emails already exist from before this fix, the ALTER will
+  // fail with ER_DUP_ENTRY - that's surfaced via the startup log so the
+  // duplicates can be resolved manually rather than silently skipped.
+  const userAccountsIndexes = await queryPromise("SHOW INDEX FROM `user_accounts` WHERE Key_name = 'email'");
+  if (userAccountsIndexes.length === 0) {
+    console.log("Adding unique key on user_accounts.email...");
+    try {
+      await queryPromise("ALTER TABLE `user_accounts` ADD UNIQUE KEY `email` (`email`)");
+    } catch (err) {
+      console.error("Could not add unique key on user_accounts.email (likely duplicate emails already exist - resolve them manually):", err.message);
+    }
+  }
+
   // 3. Migrate VerifyEmail
   const verifyemailFields = await queryPromise("DESCRIBE `verifyemail`");
   const existingVerifyemailColumns = verifyemailFields.map(f => f.Field);
@@ -102,6 +126,37 @@ async function migrateSchema() {
   if (!existingVerifyemailColumns.includes("expires_at")) {
     console.log("Adding expires_at column to verifyemail...");
     await queryPromise("ALTER TABLE `verifyemail` ADD COLUMN `expires_at` DATETIME NULL");
+  }
+
+  // 3b. Admin-managed "Manager" sub-accounts. This table was previously
+  // targeted by AddManager/GetManagers/ActiveManagers/InactiveManagers but
+  // never actually created anywhere - those endpoints failed with an
+  // "unknown table" error, and there was no login route for a manager at
+  // all. Creating it here (with password + status) and adding a real login
+  // route makes the feature actually work end-to-end.
+  await queryPromise(`
+    CREATE TABLE IF NOT EXISTS \`admin-account\` (
+      \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+      \`FirstName\` VARCHAR(100) NOT NULL,
+      \`email\` VARCHAR(100) NOT NULL,
+      \`password\` VARCHAR(255) NOT NULL,
+      \`role\` VARCHAR(50) NOT NULL DEFAULT 'manager',
+      \`phone\` VARCHAR(20) DEFAULT NULL,
+      \`City\` VARCHAR(100) DEFAULT NULL,
+      \`province\` VARCHAR(100) DEFAULT NULL,
+      \`status\` VARCHAR(20) NOT NULL DEFAULT 'Active',
+      \`created_at\` DATETIME DEFAULT CURRENT_TIMESTAMP,
+      \`updated_at\` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      UNIQUE KEY \`email\` (\`email\`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  // 3c. Managers get the same "Settings" page as admin (profile photo +
+  // password), which needs an image column - admin-account didn't have one.
+  const adminAccountFields = await queryPromise("DESCRIBE \`admin-account\`");
+  if (!adminAccountFields.some(f => f.Field === "image")) {
+    console.log("Adding image column to admin-account...");
+    await queryPromise("ALTER TABLE \`admin-account\` ADD COLUMN \`image\` VARCHAR(255) DEFAULT NULL");
   }
 
   // 4. Migrate Companies Social Networks
@@ -227,6 +282,92 @@ async function migrateSchema() {
       await queryPromise("INSERT INTO `skillset` (`skills`) VALUES (?) ON DUPLICATE KEY UPDATE `skills` = `skills`", [skill]);
     }
   }
+
+  // 9. Candidate "Profile Settings" page (basic info / education / experience
+  // / projects / awards) reads and writes user_accounts.province,
+  // user_details' CurrentPosition/Category/etc columns, and 4 dedicated
+  // tables - none of which existed, so every load/save on that page 500'd.
+  const userAccountsFields2 = await queryPromise("DESCRIBE `user_accounts`");
+  if (!userAccountsFields2.some(f => f.Field === "province")) {
+    console.log("Adding province column to user_accounts...");
+    await queryPromise("ALTER TABLE `user_accounts` ADD COLUMN `province` VARCHAR(255) NULL");
+  }
+
+  const userDetailsFields = await queryPromise("DESCRIBE `user_details`");
+  const existingUserDetailsColumns = userDetailsFields.map(f => f.Field);
+  const userDetailsColumnsToAdd = [
+    { name: "CurrentPosition", definition: "VARCHAR(255) NULL" },
+    { name: "Category", definition: "VARCHAR(255) NULL" },
+    { name: "Description", definition: "TEXT NULL" },
+    { name: "DOP", definition: "DATE NULL" },
+    { name: "Age", definition: "VARCHAR(10) NULL" },
+    { name: "Gender", definition: "VARCHAR(20) NULL" },
+    { name: "Language", definition: "VARCHAR(255) NULL" },
+    { name: "Experience", definition: "VARCHAR(50) NULL" },
+    { name: "offer_salary", definition: "VARCHAR(50) NULL" },
+    { name: "Salary_type", definition: "VARCHAR(50) NULL" },
+    { name: "Currency", definition: "VARCHAR(20) NULL" },
+    { name: "LinkedIn", definition: "VARCHAR(255) NULL" },
+  ];
+  for (const col of userDetailsColumnsToAdd) {
+    if (!existingUserDetailsColumns.includes(col.name)) {
+      console.log(`Adding missing column to user_details: ${col.name}`);
+      await queryPromise(`ALTER TABLE \`user_details\` ADD COLUMN \`${col.name}\` ${col.definition}`);
+    }
+  }
+
+  await queryPromise(`
+    CREATE TABLE IF NOT EXISTS \`user_qualification\` (
+      \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+      \`user_id\` INT NOT NULL,
+      \`degree_title\` VARCHAR(255) DEFAULT NULL,
+      \`institute_name\` VARCHAR(255) DEFAULT NULL,
+      \`field_of_study\` VARCHAR(255) DEFAULT NULL,
+      \`start_year\` INT DEFAULT NULL,
+      \`end_year\` INT DEFAULT NULL,
+      \`created_at\` DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (\`user_id\`) REFERENCES \`user_accounts\` (\`id\`) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await queryPromise(`
+    CREATE TABLE IF NOT EXISTS \`user_experience\` (
+      \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+      \`user_id\` INT NOT NULL,
+      \`job_title\` VARCHAR(255) DEFAULT NULL,
+      \`company_name\` VARCHAR(255) DEFAULT NULL,
+      \`start_date\` INT DEFAULT NULL,
+      \`end_date\` INT DEFAULT NULL,
+      \`description\` TEXT DEFAULT NULL,
+      \`created_at\` DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (\`user_id\`) REFERENCES \`user_accounts\` (\`id\`) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await queryPromise(`
+    CREATE TABLE IF NOT EXISTS \`user_projects\` (
+      \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+      \`user_id\` INT NOT NULL,
+      \`title\` VARCHAR(255) DEFAULT NULL,
+      \`link\` VARCHAR(255) DEFAULT NULL,
+      \`description\` TEXT DEFAULT NULL,
+      \`created_at\` DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (\`user_id\`) REFERENCES \`user_accounts\` (\`id\`) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await queryPromise(`
+    CREATE TABLE IF NOT EXISTS \`user_awards\` (
+      \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+      \`user_id\` INT NOT NULL,
+      \`title\` VARCHAR(255) DEFAULT NULL,
+      \`description\` TEXT DEFAULT NULL,
+      \`awarded_by\` VARCHAR(255) DEFAULT NULL,
+      \`award_date\` DATE DEFAULT NULL,
+      \`created_at\` DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (\`user_id\`) REFERENCES \`user_accounts\` (\`id\`) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
 
   console.log("Migration complete!");
 }

@@ -12,6 +12,7 @@ import DOMPurify from "dompurify";
 import { EmpFooter } from "../index.js";
 import API, { BASE_URL } from "../../api";
 import { useAddCompanyMutation } from "../../store/employerApi";
+import { showSuccess, showError } from "../../utils/toast";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import DatePicker from "react-datepicker";
@@ -155,14 +156,14 @@ const AddCompany = () => {
     try {
       const res = await addCompanyMutation({ id, formData }).unwrap();
       if (res.msg && res.msg.includes("INSERTED")) {
-        alert("Company added successfully! Verification email has been sent to the official email.");
+        showSuccess("Company added successfully! Verification email has been sent to the official email.");
         navigate(`/employer/company`);
       } else {
-        alert(res.msg || "Failed to add company. Please verify information.");
+        showError(res.msg || "Failed to add company. Please verify information.");
       }
     } catch (error) {
       console.error(error);
-      alert("An error occurred during company creation.");
+      showError("An error occurred during company creation.");
     }
   };
 

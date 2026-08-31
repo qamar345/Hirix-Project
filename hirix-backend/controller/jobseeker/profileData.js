@@ -2,6 +2,36 @@ const { conn_sql } = require("../../config/connection");
 const { chromium } = require("playwright");
 const upload = require("../../middleware/upload");
 
+// Launching a fresh Chromium process per CV request (previous behavior) is
+// expensive - tens of MB and real CPU/startup time on every call - and with
+// no dedicated concurrency limit, a handful of overlapping requests could
+// exhaust memory on a small server. Keep one browser instance alive and
+// reuse it; each request still gets its own isolated context/page.
+let browserInstance = null;
+let browserLaunching = null;
+
+async function getSharedBrowser() {
+  if (browserInstance && browserInstance.isConnected()) return browserInstance;
+  if (browserLaunching) return browserLaunching;
+
+  browserLaunching = chromium
+    .launch({ headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"] })
+    .then((browser) => {
+      browser.on("disconnected", () => {
+        browserInstance = null;
+      });
+      browserInstance = browser;
+      browserLaunching = null;
+      return browser;
+    })
+    .catch((err) => {
+      browserLaunching = null;
+      throw err;
+    });
+
+  return browserLaunching;
+}
+
 // Minimal HTML-escaping for interpolating user-supplied text into the
 // server-rendered CV template (prevents stored/reflected script injection
 // into the Playwright-rendered page).
@@ -79,25 +109,47 @@ const ProfileBasicInfo = (req, res) => {
     }
 
     if (result.length > 0) {
-      const sql_updateProfile = `
+      // Only overwrite the stored image when a new file was actually
+      // uploaded - otherwise a plain "save the form" (no new photo picked)
+      // would blank out the existing photo every time.
+      const sql_updateProfile = imageUrl
+        ? `
           UPDATE user_accounts
           SET first_name = ?, last_name = ?, image = ?, email = ?, phone = ?, qualification = ?, province = ?, location = ?
           WHERE id = ?
+        `
+        : `
+          UPDATE user_accounts
+          SET first_name = ?, last_name = ?, email = ?, phone = ?, qualification = ?, province = ?, location = ?
+          WHERE id = ?
         `;
+
+      const updateParams = imageUrl
+        ? [
+            first_name,
+            last_name,
+            imageUrl,
+            email,
+            phone,
+            qualification,
+            province,
+            location,
+            id,
+          ]
+        : [
+            first_name,
+            last_name,
+            email,
+            phone,
+            qualification,
+            province,
+            location,
+            id,
+          ];
 
       conn_sql.query(
         sql_updateProfile,
-        [
-          first_name,
-          last_name,
-          imageUrl,
-          email,
-          phone,
-          qualification,
-          province,
-          location,
-          id,
-        ],
+        updateParams,
         (err, updateResult) => {
           if (err) {
             return res.json({ msg: "Error", err });
@@ -210,6 +262,16 @@ const ProfileBasicInfo = (req, res) => {
   });
 };
 
+// A bare year ("2018"), a full date ("2018-09-01"), or "Present"/blank
+// (still ongoing, or left unset) - the DB columns are nullable ints, so
+// anything that isn't a real parseable date becomes NULL instead of the
+// NaN that new Date(x).getFullYear() would silently produce.
+function parseYear(value) {
+  if (!value || value === "Present") return null;
+  const year = new Date(value).getFullYear();
+  return Number.isNaN(year) ? null : year;
+}
+
 // Add Education
 const Education = (req, res) => {
   const bodyData = { ...req.body };
@@ -238,8 +300,8 @@ const Education = (req, res) => {
         Title,
         Institute,
         Field,
-        new Date(From).getFullYear(),
-        new Date(To).getFullYear(),
+        parseYear(From),
+        parseYear(To),
       ],
       (err, detailsResult) => {
         if (err) {
@@ -296,8 +358,8 @@ const Experience = (req, res) => {
         id,
         Title,
         Company,
-        new Date(From).getFullYear(),
-        new Date(To).getFullYear(),
+        parseYear(From),
+        parseYear(To),
         Description,
       ],
       (err, detailsResult) => {
@@ -392,7 +454,7 @@ const Award = (req, res) => {
 
     conn_sql.query(
       sql_insertDetails,
-      [id, Title, Description, AwardedBy, date_awarded],
+      [id, Title, Description, AwardedBy, date_awarded || null],
       (err, detailsResult) => {
         if (err) {
           console.error("Insert error:", err);
@@ -404,6 +466,18 @@ const Award = (req, res) => {
           .json({ msg: "Award added", data: detailsResult });
       }
     );
+  });
+};
+
+const GetAwards = (req, res) => {
+  const { id } = req.params;
+  const sql = "SELECT * FROM `user_awards` WHERE `user_id` = ?";
+  conn_sql.query(sql, [id], (err, result) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
+    }
+    return res.json(result);
   });
 };
 
@@ -692,39 +766,45 @@ const GenerateCv = (req, res) => {
                 </html>
               `;
 
-              // Generate PDF
-              const browser = await chromium.launch({
-                headless: true,
-                args: ["--no-sandbox", "--disable-setuid-sandbox"],
-              });
+              // Generate PDF using the shared browser instance - only the
+              // per-request context/page is created and torn down here.
+              let context;
+              try {
+                const browser = await getSharedBrowser();
 
-              const context = await browser.newContext({
-                // Emulate print media to include backgrounds
-                // (Playwright applies printBackground automatically for pdf)
-                viewport: { width: 1200, height: 800 }, // optional
-                // This is a static resume document, not an interactive page -
-                // disabling JS closes off script-injection/SSRF vectors via
-                // profile text fields rendered into the template above.
-                javaScriptEnabled: false,
-              });
+                context = await browser.newContext({
+                  // Emulate print media to include backgrounds
+                  // (Playwright applies printBackground automatically for pdf)
+                  viewport: { width: 1200, height: 800 }, // optional
+                  // This is a static resume document, not an interactive page -
+                  // disabling JS closes off script-injection/SSRF vectors via
+                  // profile text fields rendered into the template above.
+                  javaScriptEnabled: false,
+                });
 
-              const page = await context.newPage();
-              await page.setContent(html, { waitUntil: "load" });
+                const page = await context.newPage();
+                await page.setContent(html, { waitUntil: "load" });
 
-              const pdfBuffer = await page.pdf({
-                format: "A4",
-                printBackground: true,
-              });
+                const pdfBuffer = await page.pdf({
+                  format: "A4",
+                  printBackground: true,
+                });
 
-              await browser.close();
-
-              res.setHeader("Content-Type", "application/pdf");
-              res.setHeader("Content-Length", pdfBuffer.length);
-              res.setHeader(
-                "Content-Disposition",
-                "inline; filename=resume.pdf"
-              );
-              res.send(pdfBuffer);
+                res.setHeader("Content-Type", "application/pdf");
+                res.setHeader("Content-Length", pdfBuffer.length);
+                res.setHeader(
+                  "Content-Disposition",
+                  "inline; filename=resume.pdf"
+                );
+                res.send(pdfBuffer);
+              } catch (pdfErr) {
+                console.error("CV generation error:", pdfErr);
+                if (!res.headersSent) {
+                  res.status(500).json({ msg: "Failed to generate CV" });
+                }
+              } finally {
+                if (context) await context.close();
+              }
             });
           });
         });
@@ -743,5 +823,6 @@ module.exports = {
   getUserProfileStatus,
   GetEducation,
   GetExperience,
+  GetAwards,
   GenerateCv,
 };

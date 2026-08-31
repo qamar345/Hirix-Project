@@ -10,6 +10,7 @@ import { EmpFooter } from "../index.js";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import API, { BASE_URL } from "../../api";
+import { showSuccess, showError } from "../../utils/toast";
 
 const EmpJobEdit = () => {
   const token = sessionStorage.getItem("token");
@@ -63,7 +64,9 @@ const EmpJobEdit = () => {
           value: company.id,
         }));
         setCompanyData(formattedCompanies);
-      } catch (err) {}
+      } catch (err) {
+        console.error("Failed to load companies:", err);
+      }
     };
 
     fetchCompany();
@@ -110,7 +113,7 @@ const EmpJobEdit = () => {
       })
       .catch((err) => {
         console.error("Failed to load job for editing", err);
-        alert("Could not load this job for editing. Please try again.");
+        showError("Could not load this job for editing. Please try again.");
       });
   }, [editId, token]);
 
@@ -154,11 +157,11 @@ const EmpJobEdit = () => {
           },
         }
       );
-      alert(res.data.msg);
+      showSuccess(res.data.msg);
       navigate(`/employer/jobs`);
     } catch (error) {
       console.error("Failed to update job", error);
-      alert("Something went wrong while saving this job. Please try again.");
+      showError("Something went wrong while saving this job. Please try again.");
     }
   };
 
@@ -184,6 +187,14 @@ const EmpJobEdit = () => {
     { value: "Starting", label: "Starting Amount" },
     { value: "Maximum", label: "Maximum Amount" },
     { value: "Negotiable", label: "Negotiable Price" },
+  ];
+
+  const rate = [
+    { value: "none", label: "None" },
+    { value: "hour", label: "Per Hour" },
+    { value: "day", label: "Per Day" },
+    { value: "week", label: "Per Week" },
+    { value: "month", label: "Per Month" },
   ];
   return (
     <div className="dashboardWrapper addCompany">

@@ -37,7 +37,9 @@ const EmpDashboard = () => {
           },
         });
         setData(res.data.data);
-      } catch (err) {}
+      } catch (err) {
+        console.error("Failed to load dashboard data:", err);
+      }
     };
 
     GetData();
@@ -55,7 +57,9 @@ const EmpDashboard = () => {
           }
         );
         setColData(res.data.data || []);
-      } catch (err) {}
+      } catch (err) {
+        console.error("Failed to load dashboard columns:", err);
+      }
     };
 
     Data();

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
 import Select from "react-select";
 import ReactQuill from "react-quill-new";
 import DOMPurify from "dompurify";
@@ -15,20 +16,16 @@ import {
   FaTimes,
   FaChevronUp,
   FaChevronDown,
-  FaCheckCircle,
 } from "react-icons/fa";
 import { CanFooter } from "../index.js";
-import { CircularProgressbarWithChildren } from "react-circular-progressbar";
-import "react-circular-progressbar/dist/styles.css";
-import "react-tooltip/dist/react-tooltip.css";
-import { Tooltip } from "react-tooltip";
 import API, { BASE_URL } from "../../api";
+import { showSuccess, showError } from "../../utils/toast";
+import Loader from "../../components/Loader";
 
 const CanProfile = () => {
   const token = sessionStorage.getItem("token");
   const navigate = useNavigate();
   const id = sessionStorage.getItem("id");
-  const [isPresent, setIsPresent] = useState(false);
 
   const check = sessionStorage.getItem("isLoggedIn");
   useEffect(() => {
@@ -36,6 +33,7 @@ const CanProfile = () => {
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("basicInfoTab");
   const [uploadedImage, setUploadedImage] = useState(null);
   const [firstName, setfirstName] = useState("");
@@ -57,24 +55,51 @@ const CanProfile = () => {
   const [Province, setProvince] = useState("");
   const [City, setCity] = useState("");
   const [linkedin, setlinkedIn] = useState("");
-  const [title, setTitle] = useState("");
-  const [EduInstitute, setEduInstitute] = useState("");
-  const [EduFrom, setEduFrom] = useState(null);
-  const [EduTo, setEduTo] = useState(null);
-  const [EduField, setEduField] = useState("");
   const [EduGrade, setEduGrade] = useState("");
-  const [jobtitle, setjobTitle] = useState("");
-  const [ExpCompany, setExpCompany] = useState("");
-  const [ExpFrom, setExpFrom] = useState("");
-  const [ExpTo, setExpTo] = useState("");
-  const [ExpDes, setExpDes] = useState("");
   const [selectedSkills, setSelectedSkills] = useState([]);
-  const [ProjectTitle, setProjectTitle] = useState("");
-  const [link, setLink] = useState("");
-  const [ProjectDes, setProjectDes] = useState("");
-  const [AwardTitle, setAwardTitle] = useState("");
-  const [dateAwarded, setdateAwarded] = useState(null);
-  const [AwardDes, setAwardDes] = useState("");
+
+  // Each of these sections supports multiple entries: an array of blank
+  // field-groups the user can add to ("Add another ...") and remove from,
+  // all published together in one Publish click.
+  const emptyEducation = () => ({
+    title: "",
+    field: "",
+    institute: "",
+    from: "",
+    to: "",
+    isPresent: false,
+  });
+  const [eduEntries, setEduEntries] = useState([emptyEducation()]);
+
+  const emptyExperience = () => ({
+    title: "",
+    company: "",
+    from: "",
+    to: "",
+    description: "",
+    isPresent: false,
+  });
+  const [expEntries, setExpEntries] = useState([emptyExperience()]);
+
+  const emptyProject = () => ({ title: "", link: "", description: "" });
+  const [projectEntries, setProjectEntries] = useState([emptyProject()]);
+
+  const emptyAward = () => ({
+    title: "",
+    awardedBy: "",
+    dateAwarded: "",
+    description: "",
+  });
+  const [awardEntries, setAwardEntries] = useState([emptyAward()]);
+
+  const updateEntry = (setter, index, field, value) => {
+    setter((prev) =>
+      prev.map((entry, i) => (i === index ? { ...entry, [field]: value } : entry))
+    );
+  };
+  const addEntry = (setter, factory) => setter((prev) => [...prev, factory()]);
+  const removeEntry = (setter, index) =>
+    setter((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== index) : prev));
   const [percentage, setPercentage] = useState(0);
   const [checkStatus, setCheckStatus] = useState({
     info: false,
@@ -90,19 +115,13 @@ const CanProfile = () => {
   const [CandidateExp, setCandidateExp] = useState([]);
   const [CandidateSkills, setCandidateSkills] = useState([]);
   const [CandidateProj, setCandidateProj] = useState([]);
-  const [awardedBy, setAwardedBy] = useState("");
+  const [CandidateAwards, setCandidateAwards] = useState([]);
 
   sessionStorage.setItem("Percent", percentage);
   const handleActiveTab = (tab) => {
     setActiveTab(tab);
   };
 
-  const handleQuillChange = (value) => {
-    setCompanyData((prevData) => ({
-      ...prevData,
-      description: value,
-    }));
-  };
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 150) {
@@ -174,9 +193,12 @@ const CanProfile = () => {
         setProvince(data.province);
         setCity(data.location);
         setlinkedIn(data.LinkedIn);
+        setPageLoading(false);
       })
       .catch((err) => {
         console.error(err);
+        showError("Failed to load your profile. Please refresh the page.");
+        setPageLoading(false);
       });
   }, []);
   const submit = async (e) => {
@@ -226,7 +248,7 @@ const CanProfile = () => {
       if (res.data.firstName) {
         sessionStorage.setItem("first_name", res.data.firstName);
       }
-      alert(res.data.msg);
+      showSuccess(res.data.msg);
       window.location.reload();
     } catch (error) {
       console.error(error);
@@ -235,72 +257,83 @@ const CanProfile = () => {
 
   const EduSubmit = async (e) => {
     e.preventDefault();
-    if (!EduFrom) {
-      alert("Please select the 'From' date. It is required.");
-      return; // Stop form submission
-    }
-    const formData = new FormData();
-
-    formData.append("Title", title?.trim());
-    formData.append("Institute", EduInstitute?.trim());
-    formData.append("Field", EduField?.trim());
-
-    formData.append("From", EduFrom);
-    if (isPresent) {
-      formData.append("To", "Present");
-    } else if (EduTo) {
-      formData.append("To", EduTo);
+    const missingFrom = eduEntries.findIndex((entry) => !entry.from);
+    if (missingFrom !== -1) {
+      showError(
+        `Please select the 'From' date for education entry #${missingFrom + 1}.`
+      );
+      return;
     }
 
     try {
-      const res = await API.post(
-        `/AddEducation/${id}`,
-        formData,
-        {
+      for (const entry of eduEntries) {
+        const formData = new FormData();
+        formData.append("Title", entry.title?.trim());
+        formData.append("Institute", entry.institute?.trim());
+        formData.append("Field", entry.field?.trim());
+        formData.append("From", entry.from);
+        if (entry.isPresent) {
+          formData.append("To", "Present");
+        } else if (entry.to) {
+          formData.append("To", entry.to);
+        }
+
+        await API.post(`/AddEducation/${id}`, formData, {
           headers: {
             "Content-Type": "multipart/form-data",
             "x-access-token": token,
           },
-        }
+        });
+      }
+      showSuccess(
+        eduEntries.length > 1
+          ? `${eduEntries.length} education entries added!`
+          : "Education added!"
       );
-      alert(res.data.msg);
       window.location.reload();
     } catch (error) {
       console.error(error);
+      showError("Failed to save education. Please try again.");
     }
   };
 
   const ExperienceSubmit = async (e) => {
     e.preventDefault();
 
-    if (!ExpFrom) {
-      alert("Please select the 'From' date. It is required.");
-      return; // Stop form submission
+    const missingFrom = expEntries.findIndex((entry) => !entry.from);
+    if (missingFrom !== -1) {
+      showError(
+        `Please select the 'From' date for experience entry #${missingFrom + 1}.`
+      );
+      return;
     }
 
-    const payload = {
-      Title: jobtitle?.trim(),
-      Company: ExpCompany?.trim(),
-      From: ExpFrom,
-      To: isPresent ? "Present" : ExpTo || "",
-      Description: ExpDes?.trim(),
-    };
-
     try {
-      const res = await API.post(
-        `/AddExperience/${id}`,
-        payload,
-        {
+      for (const entry of expEntries) {
+        const payload = {
+          Title: entry.title?.trim(),
+          Company: entry.company?.trim(),
+          From: entry.from,
+          To: entry.isPresent ? "Present" : entry.to || "",
+          Description: entry.description?.trim(),
+        };
+
+        await API.post(`/AddExperience/${id}`, payload, {
           headers: {
             "Content-Type": "application/json",
             "x-access-token": token,
           },
-        }
+        });
+      }
+      showSuccess(
+        expEntries.length > 1
+          ? `${expEntries.length} experience entries added!`
+          : "Experience added!"
       );
-      alert(res.data.msg);
       window.location.reload();
     } catch (error) {
       console.error(error);
+      showError("Failed to save experience. Please try again.");
     }
   };
 
@@ -322,7 +355,7 @@ const CanProfile = () => {
           },
         }
       );
-      alert(res.data.message);
+      showSuccess(res.data.message);
       window.location.reload();
     } catch (error) {
       console.error(error);
@@ -340,7 +373,7 @@ const CanProfile = () => {
           },
         }
       );
-      alert(res.data.msg);
+      showSuccess(res.data.msg);
       window.location.reload();
     } catch (error) {
       console.log(error);
@@ -350,57 +383,61 @@ const CanProfile = () => {
   const ProjectSubmit = async (e) => {
     e.preventDefault();
 
-    const payload = {
-      Title: ProjectTitle?.trim(),
-      Link: link?.trim(),
-      Description: ProjectDes?.trim(),
-    };
-
     try {
-      const res = await API.post(
-        `/AddProject/${id}`,
-        payload,
-        {
+      for (const entry of projectEntries) {
+        const payload = {
+          Title: entry.title?.trim(),
+          Link: entry.link?.trim(),
+          Description: entry.description?.trim(),
+        };
+
+        await API.post(`/AddProject/${id}`, payload, {
           headers: {
             "Content-Type": "application/json",
             "x-access-token": token,
           },
-        }
+        });
+      }
+      showSuccess(
+        projectEntries.length > 1
+          ? `${projectEntries.length} projects added!`
+          : "Project added!"
       );
-      alert(res.data.msg);
       window.location.reload();
     } catch (error) {
       console.error(error);
+      showError("Failed to save project. Please try again.");
     }
   };
 
   const AwardSubmit = async (e) => {
     e.preventDefault();
 
-    const payload = {
-      Title: AwardTitle?.trim(),
-      AwardedBy: awardedBy?.trim(),
-      date_awarded: dateAwarded,
-      Description: AwardDes?.trim(),
-    };
-
-    console.log(payload);
-
     try {
-      const res = await API.post(
-        `/AddAward/${id}`,
-        payload,
-        {
+      for (const entry of awardEntries) {
+        const payload = {
+          Title: entry.title?.trim(),
+          AwardedBy: entry.awardedBy?.trim(),
+          date_awarded: entry.dateAwarded,
+          Description: entry.description?.trim(),
+        };
+
+        await API.post(`/AddAward/${id}`, payload, {
           headers: {
             "Content-Type": "application/json",
             "x-access-token": token,
           },
-        }
+        });
+      }
+      showSuccess(
+        awardEntries.length > 1
+          ? `${awardEntries.length} awards added!`
+          : "Award added!"
       );
-      alert(res.data.msg);
       window.location.reload();
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      showError("Failed to save award. Please try again.");
     }
   };
 
@@ -491,11 +528,28 @@ const CanProfile = () => {
       }
     };
 
+    const GetCandidateAwards = async () => {
+      try {
+        const res = await API.get(
+          `/get-candidate-awards/${id}`,
+          {
+            headers: {
+              "x-access-token": token,
+            },
+          }
+        );
+        setCandidateAwards(Array.isArray(res.data) ? res.data : []);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
     GetEducation();
     GetExperience();
     GetDBSkills();
     CandidateSkills();
     GetCandidateProjects();
+    GetCandidateAwards();
   }, []);
 
   useEffect(() => {
@@ -534,7 +588,9 @@ const CanProfile = () => {
         setPercentage(newPercentage);
         sessionStorage.setItem("Percent", newPercentage);
         window.dispatchEvent(new Event("percentUpdated"));
-      } catch (error) {}
+      } catch (error) {
+        console.error("Failed to load profile completion status:", error);
+      }
     };
 
     fetchProfileData();
@@ -643,14 +699,6 @@ const CanProfile = () => {
   //   awards: true,
   // });
 
-  const listItems = [
-    { id: "info", label: "Basic Info" },
-    { id: "education", label: "Education" },
-    { id: "experience", label: "Experience" },
-    { id: "skills", label: "Skills" },
-    { id: "projects", label: "Projects" },
-    { id: "awards", label: "Awards" },
-  ];
   useEffect(() => {
     if (dop) {
       const today = new Date();
@@ -673,7 +721,9 @@ const CanProfile = () => {
           <h4 className="heading">Profile Settings</h4>
         </div>
 
-        <div className="tab-dashboard">
+        {pageLoading && <Loader label="Loading your profile..." />}
+
+        <div className="tab-dashboard" style={pageLoading ? { display: "none" } : undefined}>
           <div className="d-grid">
             <ul className="tab-list candidate-profile-tab overflow-x-auto">
               <li
@@ -843,11 +893,10 @@ const CanProfile = () => {
                     <div className="entryGroup col-md-6">
                       <label htmlFor="candidate_phone">Phone number</label>
 
-                      <input
-                        type="number"
+                      <PhoneInput
                         className="candidate-phone"
                         value={phone}
-                        onChange={(e) => setphone(e.target.value)}
+                        onChange={setphone}
                         defaultCountry="PK"
                       />
                     </div>
@@ -1115,154 +1164,131 @@ const CanProfile = () => {
                 <div className="education-info block-from">
                   <h6 className="block-heading">Education</h6>
                   <div className="sub-head mb-5">
-                    We recommend at least one education entry.
+                    {CandidateEdu.length > 0 ? (
+                      <ul className="saved-entries-list">
+                        {CandidateEdu.map((res) => (
+                          <li key={res.id}>
+                            <strong>{res.degree_title}</strong>
+                            {res.field_of_study ? ` — ${res.field_of_study}` : ""}
+                            {res.institute_name && <div>{res.institute_name}</div>}
+                            <div>
+                              {res.start_year || "?"} -{" "}
+                              {res.end_year || "Present"}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      "We recommend at least one education entry."
+                    )}
                   </div>
 
                   <div className="info-wrapper">
-                    <div className="row">
-                      {/* <div className="col-md-12 d-flex gap-2 mb-2 border-bottom pb-3 mb-5">
-                          <FaTimes />
-                          <h6 className="education flex-grow-1">
-                            Education <span>1</span>
-                          </h6>
-                          <FaChevronUp className="" />
-                        </div> */}
-                      <div className="entryGroup col-md-6">
-                        <label>Title</label>
-                        <input
-                          type="text"
-                          name="title"
-                          placeholder="Title Ex: Bachelor/Mastes/Phd"
-                          value={
-                            title
-                              ? title
-                              : CandidateEdu.map((rs) => rs.degree_title)
-                          }
-                          onChange={(e) => setTitle(e.target.value)}
-                          className="point-mark point-active"
-                        />
-                      </div>
-                      <div className="entryGroup col-md-6">
-                        <label>Field of Study</label>
-                        <input
-                          type="text"
-                          name="field"
-                          placeholder="Field Ex: Computer Science"
-                          value={
-                            EduField
-                              ? EduField
-                              : CandidateEdu.map((rs) => rs.field_of_study)
-                          }
-                          onChange={(e) => setEduField(e.target.value)}
-                          className="point-mark point-active"
-                        />
-                      </div>
-
-                      <div className="entryGroup col-md-12">
-                        <label>Institute Name</label>
-                        <input
-                          type="text"
-                          name="institute"
-                          placeholder="Institute Ex: Riphah International University"
-                          value={
-                            EduInstitute
-                              ? EduInstitute
-                              : CandidateEdu.map((rs) => rs.institute_name)
-                          }
-                          onChange={(e) => setEduInstitute(e.target.value)}
-                          className="point-mark point-active"
-                        />
-                      </div>
-                      <div className="entryGroup col-md-12">
-                        <input
-                          type="checkbox"
-                          className="custom-checkbox input-control point-mark point-active"
-                          name="candidate_education_check[]"
-                          defaultValue="present"
-                          checked={isPresent}
-                          onChange={() => setIsPresent(!isPresent)}
-                        />
-                        <label className="label-present ms-3">
-                          Choose at the present time
-                        </label>
-                      </div>
-                      <div className="entryGroup col-md-6">
-                        <label>
-                          From <span style={{ color: "red" }}>*</span>
-                        </label>
-                        <br></br>
-                        <input
-                          type={EduFrom ? "date" : "text"}
-                          value={
-                            EduFrom
-                              ? EduFrom
-                              : CandidateEdu.map((rs) => rs.start_year)
-                          }
-                          onChange={(e) => setEduFrom(e.target.value)}
-                          placeholder="From"
-                        />
-                        {/* <DatePicker
-                          selected={EduFrom}
-                          onChange={(date) => setEduFrom(date.getFullYear())}
-                          dateFormat="yyyy-MM-dd"
-                          className="datepicker point-mark point-active"
-                          placeholderText="Starting Date"
-                          id="fromId"
-                          maxDate={new Date()} // 👈 Prevents selection of future dates
-                          showYearDropdown
-                          scrollableYearDropdown
-                        /> */}
-                      </div>
-                      <div className="entryGroup col-md-6 present-to">
-                        <label>To</label>
-                        <br></br>
-                        <input
-                          type={EduTo ? "date" : "text"}
-                          value={
-                            EduTo
-                              ? EduTo
-                              : CandidateEdu.map((rs) => rs.end_year)
-                          }
-                          onChange={(e) => setEduTo(e.target.value)}
-                          placeholder="To"
-                        />
-                        {/* <DatePicker
-                          selected={EduTo}
-                          onChange={(date) => setEduTo(date.getFullYear())}
-                          dateFormat="yyyy-MM-dd"
-                          className="datepicker point-mark point-active"
-                          placeholderText="Ending Date"
-                          id="toId"
-                        /> */}
-                      </div>
-                      {/* <div className="entryGroup col-md-12">
-                          <label>Description</label>
-                          <textarea
-                            name="candidate_education_description"
-                            cols={30}
-                            placeholder="Short description"
-                            rows={7}
+                    {eduEntries.map((entry, index) => (
+                      <div className="row" key={index}>
+                        {index > 0 && (
+                          <div className="col-md-12 d-flex gap-2 mb-2 border-bottom pb-3 mb-3">
+                            <h6 className="education flex-grow-1">
+                              Education <span>{index + 1}</span>
+                            </h6>
+                            <FaTimes
+                              style={{ cursor: "pointer" }}
+                              onClick={() => removeEntry(setEduEntries, index)}
+                            />
+                          </div>
+                        )}
+                        <div className="entryGroup col-md-6">
+                          <label>Title</label>
+                          <input
+                            type="text"
+                            name="title"
+                            placeholder="Title Ex: Bachelor/Mastes/Phd"
+                            value={entry.title}
+                            onChange={(e) =>
+                              updateEntry(setEduEntries, index, "title", e.target.value)
+                            }
                             className="point-mark point-active"
                           />
-                        </div> */}
-                      {/* <div className="entryGroup col-md-12">
-                        <label htmlFor="candidate_des">Description</label>
-                        <ReactQuill
-                          value={EduDes}
-                          onChange={setEduDes}
-                          placeholder="Enter Job Details..."
-                        />
-                      </div> */}
-                    </div>
+                        </div>
+                        <div className="entryGroup col-md-6">
+                          <label>Field of Study</label>
+                          <input
+                            type="text"
+                            name="field"
+                            placeholder="Field Ex: Computer Science"
+                            value={entry.field}
+                            onChange={(e) =>
+                              updateEntry(setEduEntries, index, "field", e.target.value)
+                            }
+                            className="point-mark point-active"
+                          />
+                        </div>
 
-                    <Link
+                        <div className="entryGroup col-md-12">
+                          <label>Institute Name</label>
+                          <input
+                            type="text"
+                            name="institute"
+                            placeholder="Institute Ex: Riphah International University"
+                            value={entry.institute}
+                            onChange={(e) =>
+                              updateEntry(setEduEntries, index, "institute", e.target.value)
+                            }
+                            className="point-mark point-active"
+                          />
+                        </div>
+                        <div className="entryGroup col-md-12">
+                          <input
+                            type="checkbox"
+                            className="custom-checkbox input-control point-mark point-active"
+                            name="candidate_education_check[]"
+                            defaultValue="present"
+                            checked={entry.isPresent}
+                            onChange={() =>
+                              updateEntry(setEduEntries, index, "isPresent", !entry.isPresent)
+                            }
+                          />
+                          <label className="label-present ms-3">
+                            Choose at the present time
+                          </label>
+                        </div>
+                        <div className="entryGroup col-md-6">
+                          <label>
+                            From <span style={{ color: "red" }}>*</span>
+                          </label>
+                          <br></br>
+                          <input
+                            type={entry.from ? "date" : "text"}
+                            value={entry.from}
+                            onChange={(e) =>
+                              updateEntry(setEduEntries, index, "from", e.target.value)
+                            }
+                            placeholder="From"
+                          />
+                        </div>
+                        <div className="entryGroup col-md-6 present-to">
+                          <label>To</label>
+                          <br></br>
+                          <input
+                            type={entry.to ? "date" : "text"}
+                            value={entry.to}
+                            onChange={(e) =>
+                              updateEntry(setEduEntries, index, "to", e.target.value)
+                            }
+                            placeholder="To"
+                          />
+                        </div>
+                      </div>
+                    ))}
+
+                    <button
                       type="button"
                       className="btn-more mb-3"
-                      to="/candidate/add-education"
+                      onClick={() => addEntry(setEduEntries, emptyEducation)}
                     >
                       <FaChevronDown className="me-3 mb-1" />
                       Add another education
-                    </Link>
+                    </button>
                   </div>
                 </div>
                 {/* Control Buttons */}
@@ -1298,128 +1324,124 @@ const CanProfile = () => {
                 <div className="experience-info block-from">
                   <h6 className="block-heading">Experience</h6>
                   <div className="sub-head mb-5">
-                    We recommend at least one experience entry.
+                    {CandidateExp.length > 0 ? (
+                      <ul className="saved-entries-list">
+                        {CandidateExp.map((res) => (
+                          <li key={res.id}>
+                            <strong>{res.job_title}</strong>
+                            {res.company_name ? ` — ${res.company_name}` : ""}
+                            <div>
+                              {res.start_date || "?"} -{" "}
+                              {res.end_date || "Present"}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      "We recommend at least one experience entry."
+                    )}
                   </div>
                   <div className="info-wrapper">
-                    <div className="row">
-                      {/* <div className="col-md-12 d-flex gap-2 mb-2 border-bottom pb-3 mb-5">
-                          <FaTimes />
-                          <h6 className="education flex-grow-1">
-                            Experience <span>1</span>
-                          </h6>
-                          <FaChevronUp className="" />
-                        </div> */}
-                      <div className="entryGroup col-md-6">
-                        <label>Job Title</label>
-                        <input
-                          type="text"
-                          name="candidate_experience_job"
-                          placeholder="Enter Job Title"
-                          value={
-                            jobtitle
-                              ? jobtitle
-                              : CandidateExp.map((rs) => rs.job_title)
-                          }
-                          onChange={(e) => setjobTitle(e.target.value)}
-                          className="point-mark point-active"
-                        />
-                      </div>
-                      <div className="entryGroup col-md-6">
-                        <label>Company</label>
-                        <input
-                          type="text"
-                          name="candidate_experience_company"
-                          placeholder="Enter Company"
-                          value={
-                            ExpCompany
-                              ? ExpCompany
-                              : CandidateExp.map((rs) => rs.company_name)
-                          }
-                          onChange={(e) => setExpCompany(e.target.value)}
-                          className="point-mark point-active"
-                        />
-                      </div>
-                      <div className="entryGroup col-md-12">
-                        <input
-                          type="checkbox"
-                          className="custom-checkbox input-control point-mark point-active"
-                          name="candidate_experience_check"
-                          defaultValue="present"
-                          checked={isPresent}
-                          onChange={() => setIsPresent(!isPresent)}
-                        />
-                        <label className="label-present ms-3">
-                          Choose at the present time
-                        </label>
-                      </div>
-                      <div className="entryGroup col-md-6">
-                        <label>
-                          From <span style={{ color: "red" }}>*</span>
-                        </label>
-                        <br></br>
-                        <input
-                          type={ExpFrom ? "date" : "text"}
-                          onChange={(e) => {
-                            setExpFrom(e.target.value);
-                          }}
-                          value={
-                            ExpFrom
-                              ? ExpFrom
-                              : CandidateExp.map((rs) => rs.start_date)
-                          }
-                        />
-                        {/* <DatePicker
-                          selected={ExpFrom}
-                          onChange={(date) => setExpFrom(date)}
-                          dateFormat="yyyy-MM-dd"
-                          className="datepicker point-mark point-active"
-                          placeholderText="Start Date"
-                          id="fromId"
-                          maxDate={new Date()}
-                          showYearDropdown
-                          scrollableYearDropdown
-                        /> */}
-                      </div>
-                      <div className="entryGroup col-md-6 present-to">
-                        <label>To</label>
-                        <br></br>
-                        <input
-                          type={ExpTo ? "date" : "text"}
-                          onChange={(e) => {
-                            setExpTo(e.target.value);
-                          }}
-                          value={
-                            ExpTo
-                              ? ExpTo
-                              : CandidateExp.map((rs) => rs.end_date)
-                          }
-                        />
-                      </div>
-                      <div className="entryGroup col-md-12">
-                        <label htmlFor="candidate_des">Description</label>
-
-                        {ExpDes ? (
-                          <>
-                            <ReactQuill
-                              value={ExpDes}
-                              onChange={setExpDes}
-                              placeholder="Enter Experience Details..."
+                    {expEntries.map((entry, index) => (
+                      <div className="row" key={index}>
+                        {index > 0 && (
+                          <div className="col-md-12 d-flex gap-2 mb-2 border-bottom pb-3 mb-3">
+                            <h6 className="education flex-grow-1">
+                              Experience <span>{index + 1}</span>
+                            </h6>
+                            <FaTimes
+                              style={{ cursor: "pointer" }}
+                              onClick={() => removeEntry(setExpEntries, index)}
                             />
-                          </>
-                        ) : (
-                          <p
-                            dangerouslySetInnerHTML={{
-                              __html: DOMPurify.sanitize(CandidateExp.map((rs) => rs.description).join("")),
-                            }}
-                          ></p>
+                          </div>
                         )}
-                      </div>
-                    </div>
+                        <div className="entryGroup col-md-6">
+                          <label>Job Title</label>
+                          <input
+                            type="text"
+                            name="candidate_experience_job"
+                            placeholder="Enter Job Title"
+                            value={entry.title}
+                            onChange={(e) =>
+                              updateEntry(setExpEntries, index, "title", e.target.value)
+                            }
+                            className="point-mark point-active"
+                          />
+                        </div>
+                        <div className="entryGroup col-md-6">
+                          <label>Company</label>
+                          <input
+                            type="text"
+                            name="candidate_experience_company"
+                            placeholder="Enter Company"
+                            value={entry.company}
+                            onChange={(e) =>
+                              updateEntry(setExpEntries, index, "company", e.target.value)
+                            }
+                            className="point-mark point-active"
+                          />
+                        </div>
+                        <div className="entryGroup col-md-12">
+                          <input
+                            type="checkbox"
+                            className="custom-checkbox input-control point-mark point-active"
+                            name="candidate_experience_check"
+                            defaultValue="present"
+                            checked={entry.isPresent}
+                            onChange={() =>
+                              updateEntry(setExpEntries, index, "isPresent", !entry.isPresent)
+                            }
+                          />
+                          <label className="label-present ms-3">
+                            Choose at the present time
+                          </label>
+                        </div>
+                        <div className="entryGroup col-md-6">
+                          <label>
+                            From <span style={{ color: "red" }}>*</span>
+                          </label>
+                          <br></br>
+                          <input
+                            type={entry.from ? "date" : "text"}
+                            onChange={(e) =>
+                              updateEntry(setExpEntries, index, "from", e.target.value)
+                            }
+                            value={entry.from}
+                          />
+                        </div>
+                        <div className="entryGroup col-md-6 present-to">
+                          <label>To</label>
+                          <br></br>
+                          <input
+                            type={entry.to ? "date" : "text"}
+                            onChange={(e) =>
+                              updateEntry(setExpEntries, index, "to", e.target.value)
+                            }
+                            value={entry.to}
+                          />
+                        </div>
+                        <div className="entryGroup col-md-12">
+                          <label htmlFor="candidate_des">Description</label>
 
-                    <Link type="button" className="btn-more mb-3">
+                          <ReactQuill
+                            value={entry.description}
+                            onChange={(value) =>
+                              updateEntry(setExpEntries, index, "description", value)
+                            }
+                            placeholder="Enter Experience Details..."
+                          />
+                        </div>
+                      </div>
+                    ))}
+
+                    <button
+                      type="button"
+                      className="btn-more mb-3"
+                      onClick={() => addEntry(setExpEntries, emptyExperience)}
+                    >
                       <FaChevronDown className="me-3 mb-1" />
                       Add another experience
-                    </Link>
+                    </button>
                   </div>
                 </div>
                 {/* Control Buttons */}
@@ -1544,7 +1566,7 @@ const CanProfile = () => {
                         <div>
                           <h4>Title: {res.title}</h4>
                           Link:{" "}
-                          <a href={res.link} target="_blank">
+                          <a href={res.link} target="_blank" rel="noopener noreferrer">
                             Visit
                           </a>{" "}
                           <br />
@@ -1561,42 +1583,65 @@ const CanProfile = () => {
                     )}
                   </div>
                   <div className="info-wrapper">
-                    <div className="row">
-                      <div className="entryGroup col-md-6">
-                        <label>Title</label>
-                        <input
-                          type="text"
-                          name="candidate_project_title"
-                          placeholder="Name of project"
-                          value={ProjectTitle}
-                          onChange={(e) => setProjectTitle(e.target.value)}
-                          className="point-mark point-active"
-                        />
+                    {projectEntries.map((entry, index) => (
+                      <div className="row" key={index}>
+                        {index > 0 && (
+                          <div className="col-md-12 d-flex gap-2 mb-2 border-bottom pb-3 mb-3">
+                            <h6 className="education flex-grow-1">
+                              Project <span>{index + 1}</span>
+                            </h6>
+                            <FaTimes
+                              style={{ cursor: "pointer" }}
+                              onClick={() => removeEntry(setProjectEntries, index)}
+                            />
+                          </div>
+                        )}
+                        <div className="entryGroup col-md-6">
+                          <label>Title</label>
+                          <input
+                            type="text"
+                            name="candidate_project_title"
+                            placeholder="Name of project"
+                            value={entry.title}
+                            onChange={(e) =>
+                              updateEntry(setProjectEntries, index, "title", e.target.value)
+                            }
+                            className="point-mark point-active"
+                          />
+                        </div>
+                        <div className="entryGroup col-md-6">
+                          <label>Link</label>
+                          <input
+                            type="url"
+                            name="candidate_project_link"
+                            placeholder="https://yourlink"
+                            value={entry.link}
+                            onChange={(e) =>
+                              updateEntry(setProjectEntries, index, "link", e.target.value)
+                            }
+                            className="point-mark point-active"
+                          />
+                        </div>
+                        <div className="entryGroup col-md-12">
+                          <label htmlFor="candidate_des">Description</label>
+                          <ReactQuill
+                            value={entry.description}
+                            onChange={(value) =>
+                              updateEntry(setProjectEntries, index, "description", value)
+                            }
+                            placeholder="Enter Experience Details..."
+                          />
+                        </div>
                       </div>
-                      <div className="entryGroup col-md-6">
-                        <label>Link</label>
-                        <input
-                          type="url"
-                          name="candidate_project_link"
-                          placeholder="https://yourlink"
-                          value={link}
-                          onChange={(e) => setLink(e.target.value)}
-                          className="point-mark point-active"
-                        />
-                      </div>
-                      <div className="entryGroup col-md-12">
-                        <label htmlFor="candidate_des">Description</label>
-                        <ReactQuill
-                          value={ProjectDes}
-                          onChange={setProjectDes}
-                          placeholder="Enter Experience Details..."
-                        />
-                      </div>
-                    </div>
-                    <Link type="button" className="btn-more mb-3">
+                    ))}
+                    <button
+                      type="button"
+                      className="btn-more mb-3"
+                      onClick={() => addEntry(setProjectEntries, emptyProject)}
+                    >
                       <FaChevronDown className="me-3 mb-1" />
                       Add another project
-                    </Link>
+                    </button>
                   </div>
                 </div>
                 <div className="control-btn">
@@ -1631,60 +1676,97 @@ const CanProfile = () => {
                 <div className="awards-info block-from">
                   <h6 className="block-heading">Awards</h6>
                   <div className="sub-head mb-5">
-                    We recommend at least one award entry
+                    {CandidateAwards.length > 0 ? (
+                      <ul className="saved-entries-list">
+                        {CandidateAwards.map((res) => (
+                          <li key={res.id}>
+                            <strong>{res.title}</strong>
+                            {res.awarded_by ? ` — ${res.awarded_by}` : ""}
+                            {res.award_date && res.award_date !== "0000-00-00" && (
+                              <div>
+                                {new Date(res.award_date)
+                                  .toISOString()
+                                  .split("T")[0]}
+                              </div>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      "We recommend at least one award entry"
+                    )}
                   </div>
                   <div className="info-wrapper">
-                    <div className="row">
-                      {/* <div className="col-md-12 d-flex gap-2 mb-2 border-bottom pb-3 mb-5">
-                          <FaTimes />
-                          <h6 className="education flex-grow-1">
-                            Award <span>1</span>
-                          </h6>
-                          <FaChevronUp className="" />
-                        </div> */}
-                      <div className="entryGroup col-md-4">
-                        <label>Title</label>
-                        <input
-                          type="text"
-                          name="candidate_award_title"
-                          placeholder="Name of Award"
-                          value={AwardTitle}
-                          onChange={(e) => setAwardTitle(e.target.value)}
-                          className="point-mark point-active"
-                        />
-                      </div>
-                      <div className="entryGroup col-md-4">
-                        <label>Awarded By</label>
-                        <input
-                          type="text"
-                          name="candidate_award_title"
-                          placeholder="Ex: Cisco/IEEE/Google/MircoSoft"
-                          value={awardedBy}
-                          onChange={(e) => setAwardedBy(e.target.value)}
-                          className="point-mark point-active"
-                        />
-                      </div>
-                      <div className="entryGroup col-md-4">
-                        <label>Date Awarded</label>
+                    {awardEntries.map((entry, index) => (
+                      <div className="row" key={index}>
+                        {index > 0 && (
+                          <div className="col-md-12 d-flex gap-2 mb-2 border-bottom pb-3 mb-3">
+                            <h6 className="education flex-grow-1">
+                              Award <span>{index + 1}</span>
+                            </h6>
+                            <FaTimes
+                              style={{ cursor: "pointer" }}
+                              onClick={() => removeEntry(setAwardEntries, index)}
+                            />
+                          </div>
+                        )}
+                        <div className="entryGroup col-md-4">
+                          <label>Title</label>
+                          <input
+                            type="text"
+                            name="candidate_award_title"
+                            placeholder="Name of Award"
+                            value={entry.title}
+                            onChange={(e) =>
+                              updateEntry(setAwardEntries, index, "title", e.target.value)
+                            }
+                            className="point-mark point-active"
+                          />
+                        </div>
+                        <div className="entryGroup col-md-4">
+                          <label>Awarded By</label>
+                          <input
+                            type="text"
+                            name="candidate_award_title"
+                            placeholder="Ex: Cisco/IEEE/Google/MircoSoft"
+                            value={entry.awardedBy}
+                            onChange={(e) =>
+                              updateEntry(setAwardEntries, index, "awardedBy", e.target.value)
+                            }
+                            className="point-mark point-active"
+                          />
+                        </div>
+                        <div className="entryGroup col-md-4">
+                          <label>Date Awarded</label>
 
-                        <input
-                          type="date"
-                          onChange={(e) => setdateAwarded(e.target.value)}
-                        />
+                          <input
+                            type="date"
+                            value={entry.dateAwarded}
+                            onChange={(e) =>
+                              updateEntry(setAwardEntries, index, "dateAwarded", e.target.value)
+                            }
+                          />
+                        </div>
+                        <div className="entryGroup col-md-12">
+                          <label htmlFor="candidate_des">Description</label>
+                          <ReactQuill
+                            value={entry.description}
+                            onChange={(value) =>
+                              updateEntry(setAwardEntries, index, "description", value)
+                            }
+                            placeholder="Enter Experience Details..."
+                          />
+                        </div>
                       </div>
-                      <div className="entryGroup col-md-12">
-                        <label htmlFor="candidate_des">Description</label>
-                        <ReactQuill
-                          value={AwardDes}
-                          onChange={setAwardDes}
-                          placeholder="Enter Experience Details..."
-                        />
-                      </div>
-                    </div>
-                    <Link type="button" className="btn-more mb-3">
+                    ))}
+                    <button
+                      type="button"
+                      className="btn-more mb-3"
+                      onClick={() => addEntry(setAwardEntries, emptyAward)}
+                    >
                       <FaChevronDown className="me-3 mb-1" />
                       Add another award
-                    </Link>
+                    </button>
                   </div>
                 </div>
                 <div className="control-btn">
@@ -1703,68 +1785,6 @@ const CanProfile = () => {
                 </div>
               </form>
             </div>
-            {/* Download Profile as Cv */}
-            {/* Strength */}
-            <form
-              className={`candidate-profile-form form-dashboard  col-lg-8 col-md-7  ${
-                isScrolled ? "companyData" : ""
-              }`}
-            >
-              <div className="candidate-profile-strength col-lg-4 col-md-5 d-none d-md-block">
-                <div
-                  className="preview-section"
-                  data-tooltip-id="progressTooltip"
-                >
-                  <div className="progress-index">
-                    <CircularProgressbarWithChildren
-                      className="progressIcon"
-                      value={Math.floor(percentage)}
-                      maxValue={100}
-                      strokeWidth={2}
-                      styles={{ path: { strokeLinecap: "butt" } }}
-                    >
-                      <h1>
-                        <span>{Math.floor(percentage)}</span>
-                        <span>%</span>
-                      </h1>
-                      <div>Profile Strength</div>
-                    </CircularProgressbarWithChildren>
-                  </div>
-                  <Tooltip
-                    id="progressTooltip"
-                    place="bottom"
-                    // content="Hello world! I'm a Tooltip"
-                  >
-                    <ul className="profile-list-check">
-                      {listItems.map((item) => (
-                        <li
-                          key={item.id}
-                          className="profile-check-item"
-                          onClick={() => toggleCheck(item.id)} // Toggle state on click
-                        >
-                          <FaCheckCircle
-                            className="progressCheck"
-                            style={{
-                              color: checkStatus[item.id]
-                                ? "var(--civi-color-accent)"
-                                : "gray",
-                              backgroundColor: "white",
-                              borderRadius: "50%",
-                              padding: "0",
-                            }}
-                          />
-                          <span>
-                            {checkStatus[item.id]
-                              ? `${item.label} has enough information`
-                              : `${item.label} not enough information`}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </Tooltip>
-                </div>
-              </div>
-            </form>
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@ import "react-quill-new/dist/quill.snow.css";
 import PhoneInput from "react-phone-number-input";
 import { AdFooter } from "../index.js";
 import API, { BASE_URL } from "../../api";
+import { showSuccess, showError } from "../../utils/toast";
 
 const AddManager = () => {
   const check = sessionStorage.getItem("isLoggedIn");
@@ -81,11 +82,30 @@ const AddManager = () => {
           },
         })
         .then((res) => {
-          alert(res.data.msg);
+          // The backend generates a random password when none is supplied
+          // here (this form has no password field) and returns it exactly
+          // once - this is the only chance to hand it to the new manager,
+          // since there's no email delivery or reset flow wired up for
+          // this account type yet.
+          if (res.data.generatedPassword) {
+            // Autoclose disabled - this one-time password won't be shown
+            // again, so the admin needs time to read/copy it before it
+            // dismisses.
+            showSuccess(
+              `${res.data.msg} Temporary password: ${res.data.generatedPassword} - share this with ${FirstName} now, it will not be shown again.`,
+              { autoClose: false }
+            );
+          } else {
+            showSuccess(res.data.msg);
+          }
           navigate(`/admin/user-management`);
         })
-        .catch((err) => {});
+        .catch((err) => {
+          showError(err.response?.data?.msg || "Failed to add manager. Please try again.");
+        });
     } catch (error) {
+      console.error("Failed to add manager:", error);
+      showError("Failed to add manager. Please try again.");
     } finally {
       setIsLoading(false);
     }

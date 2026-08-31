@@ -8,10 +8,10 @@ import { MdOutlineLocationOn } from "react-icons/md";
 import { differenceInDays } from "date-fns";
 import DOMPurify from "dompurify";
 import API, { BASE_URL } from "../../api";
+import { showSuccess, showError, showInfo } from "../../utils/toast";
 
 const JobPost = ({ job, fromShare }) => {
   const token = sessionStorage.getItem("token");
-  const showJob = localStorage.getItem("test");
   // logo,
   // title,
   // author,
@@ -52,7 +52,9 @@ const JobPost = ({ job, fromShare }) => {
         });
         const jobIds = res.data.map((item) => item.job_id);
         setWishlistJobs(jobIds);
-      } catch (error) {}
+      } catch (error) {
+        console.error("Failed to load wishlist:", error);
+      }
     };
 
     fetchWishlist();
@@ -80,6 +82,7 @@ const JobPost = ({ job, fromShare }) => {
     minimum_currency,
     currency,
     Rate,
+    salary,
     career_level,
     qualification,
     Experience,
@@ -97,7 +100,7 @@ const JobPost = ({ job, fromShare }) => {
 
   const handleApply = async () => {
     if (!check) {
-      alert("Please Login First!");
+      showError("Please Login First!");
       navigate("/");
     } else {
       try {
@@ -110,17 +113,20 @@ const JobPost = ({ job, fromShare }) => {
         });
 
         if (res.data.msg) {
-          alert(res.data.msg);
+          showSuccess(res.data.msg);
         } else {
-          alert("Failed to apply, please try again.");
+          showError("Failed to apply, please try again.");
         }
-      } catch (error) {}
+      } catch (error) {
+        console.error("Failed to apply for job:", error);
+        showError(error.response?.data?.msg || "Failed to apply, please try again.");
+      }
     }
   };
 
   const handleWishlist = async () => {
     if (!check) {
-      alert("Please Login First!");
+      showError("Please Login First!");
       navigate("/");
       return;
     }
@@ -137,15 +143,15 @@ const JobPost = ({ job, fromShare }) => {
       const message = res.data.msg;
 
       if (message === "Job added to wishlist") {
-        alert(message);
+        showSuccess(message);
         setWishlistJobs(res.data.wishlist);
       } else if (message === "Job already in wishlist") {
-        alert(message);
+        showInfo(message);
       } else {
-        alert("Something went wrong. Please try again.");
+        showError("Something went wrong. Please try again.");
       }
     } catch (error) {
-      alert("An error occurred while adding to wishlist.");
+      showError("An error occurred while adding to wishlist.");
     }
   };
 
@@ -156,12 +162,13 @@ const JobPost = ({ job, fromShare }) => {
     navigator.clipboard
       .writeText(shareURL)
       .then(() => {
-        alert("Link copied to clipboard!");
+        showSuccess("Link copied to clipboard!");
       })
-      .catch((err) => {});
+      .catch((err) => {
+        console.error("Failed to copy link:", err);
+        showError("Couldn't copy the link. Please copy it manually.");
+      });
   };
-
-  console.log(title);
 
   return (
     <div id="1" className="jobDetailWrapper">
@@ -328,7 +335,7 @@ const JobPost = ({ job, fromShare }) => {
                         e.preventDefault();
 
                         if (!check) {
-                          alert("Please Login First!");
+                          showError("Please Login First!");
                           navigate("/");
                           return;
                         }
@@ -379,7 +386,7 @@ const JobPost = ({ job, fromShare }) => {
                     className={`civi-button civi-button-apply civi_form_apply_jobs`}
                     onClick={(e) => {
                       e.preventDefault();
-                      alert("Login first!!!");
+                      showError("Login first!!!");
                     }}
                   >
                     Apply Now
@@ -517,6 +524,7 @@ const JobPost = ({ job, fromShare }) => {
                         </p>
                       </div>
                     </li>
+                    {salary !== "Unpaid" && (
                     <li className="list-item salary col-12 col-sm-6 col-md-4">
                       <div className="icon-jobs">
                         <svg
@@ -536,10 +544,11 @@ const JobPost = ({ job, fromShare }) => {
                         <p className="title-info">Offered salary</p>
                         <p className="details-info salary-info">
                           Min: {minimum_currency}
-                          {currency.toUpperCase()} / {Rate}
+                          {currency?.toUpperCase()} / {Rate}
                         </p>
                       </div>
                     </li>
+                    )}
                     <li className="list-item col-12 col-sm-6 col-md-4">
                       <div className="icon-jobs">
                         <svg
@@ -1000,7 +1009,7 @@ const JobPost = ({ job, fromShare }) => {
                 e.preventDefault();
 
                 if (!check) {
-                  alert("Please Login First!");
+                  showError("Please Login First!");
                   navigate("/");
                   return;
                 }

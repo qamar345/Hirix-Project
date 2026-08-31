@@ -7,6 +7,7 @@ import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
 import { EmpFooter } from "../index.js";
 import API, { BASE_URL } from "../../api";
+import { showSuccess, showError } from "../../utils/toast";
 
 const EmpSettings = () => {
   const token = sessionStorage.getItem("token");
@@ -81,7 +82,9 @@ const EmpSettings = () => {
         });
         setUserData(res.data[0]);
         setEditUserData(res.data[0]);
-      } catch (error) {}
+      } catch (error) {
+        console.error("Failed to load employer profile:", error);
+      }
     };
     GetData();
   }, []);
@@ -129,8 +132,11 @@ const EmpSettings = () => {
       sessionStorage.setItem("image", updatedData.image);
       sessionStorage.setItem("first_name", updatedData.first_name);
       window.dispatchEvent(new Event("profileUpdated"));
-      alert(res.data.message);
-    } catch (error) {}
+      showSuccess(res.data.message);
+    } catch (error) {
+      console.error("Failed to update profile:", error);
+      showError(error.response?.data?.message || "Failed to update profile. Please try again.");
+    }
   };
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
@@ -140,12 +146,12 @@ const EmpSettings = () => {
       !editPasswordData.newPass ||
       !editPasswordData.confirmPass
     ) {
-      alert("All fields are required.");
+      showError("All fields are required.");
       return;
     }
 
     if (editPasswordData.newPass !== editPasswordData.confirmPass) {
-      alert("New password and confirm password do not match.");
+      showError("New password and confirm password do not match.");
       return;
     }
     try {
@@ -161,10 +167,10 @@ const EmpSettings = () => {
         }
       );
 
-      alert(response.data.msg);
+      showSuccess(response.data.msg);
       setEditPasswordData({ currentPass: "", newPass: "", confirmPass: "" });
     } catch (error) {
-      alert("Error updating password: ", error);
+      showError(error.response?.data?.msg || "Error updating password.");
     }
   };
   return (

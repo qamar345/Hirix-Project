@@ -1,5 +1,6 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
+import { showSuccess } from "../../utils/toast";
 import {
   hirixText,
   dashboard,
@@ -101,7 +102,7 @@ const EmpSideMenu = () => {
                   label: "Logout",
                   logOut: () => {
                     sessionStorage.clear();
-                    alert("Logout Successfuly");
+                    showSuccess("Logout Successfuly");
                   },
                 },
               ].map((item, index) => (

@@ -29,7 +29,9 @@ const ApplicantDetail = () => {
           }
         );
         setApplicant(res.data);
-      } catch (err) {}
+      } catch (err) {
+        console.error("Failed to load applicant details:", err);
+      }
     };
 
     fetchJob();

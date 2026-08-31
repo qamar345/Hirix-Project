@@ -26,7 +26,9 @@ function VisitChart({ days }) {
           },
         });
         setGraph(res.data);
-      } catch (error) {}
+      } catch (error) {
+        console.error("Failed to load visit graph:", error);
+      }
     };
 
     fetchDataGraph();

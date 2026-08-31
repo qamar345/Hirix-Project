@@ -40,7 +40,9 @@ const HomePage = () => {
       try {
         const res = await API.get("/getTotal_jobs");
         setTotalJobs(res.data.TotalJobs);
-      } catch (error) {}
+      } catch (error) {
+        console.error("Failed to load total jobs count:", error);
+      }
     };
     getJobCount();
   }, []);

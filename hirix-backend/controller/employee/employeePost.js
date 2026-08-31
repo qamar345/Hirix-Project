@@ -53,10 +53,19 @@ const PostJob = (req, res) => {
     ApplyType,
     province,
     city,
+    internship_type,
+    internship_purpose,
+    internship_duration,
+    internship_duration_unit,
+    internship_certificate,
   } = req.body;
   let skillsString = Array.isArray(required_skills)
     ? required_skills.join(",")
     : required_skills;
+  // Internship-only fields only make sense for that job type - store NULL
+  // for every other type instead of trusting whatever the client happened
+  // to send.
+  const isInternship = job_type === "Internship";
   const sql_getpost =
     "SELECT user_account_id FROM companies WHERE user_account_id = ?";
   conn_sql.query(sql_getpost, [id], (err, result) => {
@@ -67,7 +76,7 @@ const PostJob = (req, res) => {
       console.log(id);
       if (result.length > 0) {
         const sqlpost =
-          "INSERT INTO `jobs` (`employee_id`,`title`,`job_category`, `job_subcategory`, `description`, `job_type`,`workplace_type` ,`career_level`, `Experience`, `qualification`,`available_seats`, `gender`,`currency`, `minimum_currency`, `maximum_currency`,`Rate`,`Email`,`Url`,`Phone`,`company_name`,`required_skills`,`expiry_date`,`salary`,`ApplyType`,`province`,`city`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+          "INSERT INTO `jobs` (`employee_id`,`title`,`job_category`, `job_subcategory`, `description`, `job_type`,`workplace_type` ,`career_level`, `Experience`, `qualification`,`available_seats`, `gender`,`currency`, `minimum_currency`, `maximum_currency`,`Rate`,`Email`,`Url`,`Phone`,`company_name`,`required_skills`,`expiry_date`,`salary`,`ApplyType`,`province`,`city`,`internship_type`,`internship_purpose`,`internship_duration`,`internship_duration_unit`,`internship_certificate`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         conn_sql.query(
           sqlpost,
@@ -98,7 +107,11 @@ const PostJob = (req, res) => {
             ApplyType,
             province,
             city,
-            // location,
+            isInternship ? internship_type : null,
+            isInternship ? internship_purpose : null,
+            isInternship ? internship_duration : null,
+            isInternship ? internship_duration_unit : null,
+            isInternship ? internship_certificate : null,
           ],
           (err, result) => {
             if (err) {
@@ -149,10 +162,16 @@ const draftJob = (req, res) => {
     ApplyType,
     province,
     city,
+    internship_type,
+    internship_purpose,
+    internship_duration,
+    internship_duration_unit,
+    internship_certificate,
   } = req.body;
   let skillsString = Array.isArray(required_skills)
     ? required_skills.join(",")
     : required_skills;
+  const isInternship = job_type === "Internship";
   const sql_getpost =
     "SELECT user_account_id FROM companies WHERE user_account_id = ?";
   conn_sql.query(sql_getpost, [id], (err, result) => {
@@ -163,7 +182,7 @@ const draftJob = (req, res) => {
       console.log(id);
       if (result.length > 0) {
         const sqlpost =
-          "INSERT INTO `jobs` (`employee_id`,`title`,`job_category`, `job_subcategory`, `description`, `job_type`,`workplace_type` ,`career_level`, `Experience`, `qualification`,`available_seats`, `gender`,`currency`, `minimum_currency`, `maximum_currency`,`Rate`,`Email`,`Url`,`Phone`,`company_name`,`required_skills`,`expiry_date`,`salary`,`ApplyType`,`province`,`city`,`status`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Draft')";
+          "INSERT INTO `jobs` (`employee_id`,`title`,`job_category`, `job_subcategory`, `description`, `job_type`,`workplace_type` ,`career_level`, `Experience`, `qualification`,`available_seats`, `gender`,`currency`, `minimum_currency`, `maximum_currency`,`Rate`,`Email`,`Url`,`Phone`,`company_name`,`required_skills`,`expiry_date`,`salary`,`ApplyType`,`province`,`city`,`internship_type`,`internship_purpose`,`internship_duration`,`internship_duration_unit`,`internship_certificate`,`status`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,'Draft')";
 
         conn_sql.query(
           sqlpost,
@@ -194,7 +213,11 @@ const draftJob = (req, res) => {
             ApplyType,
             province,
             city,
-            // location,
+            isInternship ? internship_type : null,
+            isInternship ? internship_purpose : null,
+            isInternship ? internship_duration : null,
+            isInternship ? internship_duration_unit : null,
+            isInternship ? internship_certificate : null,
           ],
           (err, result) => {
             if (err) {
@@ -223,8 +246,10 @@ const editposts = (req, res) => {
   const {
     title,
     job_category,
+    job_subcategory,
     description,
     job_type,
+    workplace_type,
     career_level,
     Experience,
     qualification,
@@ -243,18 +268,27 @@ const editposts = (req, res) => {
     ApplyType,
     province,
     city,
+    internship_type,
+    internship_purpose,
+    internship_duration,
+    internship_duration_unit,
+    internship_certificate,
   } = req.body;
+
+  const isInternship = job_type === "Internship";
 
   withJobOwnership(req, res, () => {
     const sqleditpost =
-      "UPDATE `jobs` SET `title`=? ,`job_category`=? ,`description`=? ,`job_type`=? ,`career_level`=? , `Experience` =? , `qualification` =? ,`available_seats` =? ,`gender` = ? , `currency` =? , `minimum_currency`= ? , `maximum_currency`=? ,`Rate`=?,`Email`=?, `Url`=?, `Phone`=?, `company_name`=? , `salary`=? ,`required_skills`=? ,`ApplyType`=?, `province`=?, `city`=?  WHERE id=?";
+      "UPDATE `jobs` SET `title`=? ,`job_category`=? ,`job_subcategory`=? ,`description`=? ,`job_type`=? ,`workplace_type`=? ,`career_level`=? , `Experience` =? , `qualification` =? ,`available_seats` =? ,`gender` = ? , `currency` =? , `minimum_currency`= ? , `maximum_currency`=? ,`Rate`=?,`Email`=?, `Url`=?, `Phone`=?, `company_name`=? , `salary`=? ,`required_skills`=? ,`ApplyType`=?, `province`=?, `city`=?, `internship_type`=?, `internship_purpose`=?, `internship_duration`=?, `internship_duration_unit`=?, `internship_certificate`=?  WHERE id=?";
     conn_sql.query(
       sqleditpost,
       [
         title,
         job_category,
+        job_subcategory,
         description,
         job_type,
+        workplace_type,
         career_level,
         Experience,
         qualification,
@@ -273,6 +307,11 @@ const editposts = (req, res) => {
         ApplyType,
         province,
         city,
+        isInternship ? internship_type : null,
+        isInternship ? internship_purpose : null,
+        isInternship ? internship_duration : null,
+        isInternship ? internship_duration_unit : null,
+        isInternship ? internship_certificate : null,
         id,
       ],
       (err, result) => {
@@ -432,7 +471,7 @@ const GetJob = (req, res) => {
 const Gethisposts = (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const search = req.query.search || "";
-  const limit = 10;
+  const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 100);
   const offset = (page - 1) * limit;
   const { id } = req.params;
   // const sql_get = "SELECT * FROM `jobs` WHERE `employee_id` = ? AND `title` LIKE ?  LIMIT ? OFFSET ?";
@@ -470,8 +509,10 @@ const SelectCompanies = (req, res) => {
   const query_select =
     "SELECT id, name FROM `companies` WHERE `user_account_id` =? AND `status`= 'Approved'";
   conn_sql.query(query_select, [id], (err, result) => {
-    if (err) throw err;
-    else {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ msg: "Database error" });
+    } else {
       return res.json(result);
     }
   });

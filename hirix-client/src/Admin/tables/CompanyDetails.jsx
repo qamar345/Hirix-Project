@@ -19,7 +19,9 @@ const CompanyDetail = () => {
           }
         );
         setCompanies(res.data[0]);
-      } catch (err) {}
+      } catch (err) {
+        console.error("Failed to load company details:", err);
+      }
     };
 
     fetchJob();

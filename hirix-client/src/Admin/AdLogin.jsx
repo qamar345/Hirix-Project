@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import Modal from "react-bootstrap/Modal";
 import { FaTimes, FaRegEye } from "react-icons/fa";
 import API, { BASE_URL } from "../api";
+import { showError } from "../utils/toast";
 const AdLogin = ({ ...props }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,9 +36,28 @@ const AdLogin = ({ ...props }) => {
         sessionStorage.setItem("role", res.data.admin.role || "admin");
         sessionStorage.setItem("isLoggedIn", res.data.loginStatus);
         navigate("/admin/dashboard");
-      } else {
-        //
-        alert("Invalid Email or Password");
+        return;
+      }
+
+      // Not an admin account - this same form also covers Manager/Assistant
+      // staff accounts (added via Admin > Add Manager), which live in a
+      // separate table with their own login endpoint. Try that before
+      // giving up, so one login form works for both.
+      try {
+        const managerRes = await API.post("/manager-login", payload);
+        if (managerRes.data.loginStatus) {
+          sessionStorage.setItem("id", managerRes.data.manager.id);
+          sessionStorage.setItem("name", managerRes.data.manager.FirstName);
+          sessionStorage.setItem("image", managerRes.data.manager.image || "");
+          sessionStorage.setItem("token", managerRes.data.token);
+          sessionStorage.setItem("role", managerRes.data.manager.role);
+          sessionStorage.setItem("isLoggedIn", managerRes.data.loginStatus);
+          navigate("/admin/dashboard");
+          return;
+        }
+        showError(managerRes.data.message || "Invalid Email or Password");
+      } catch {
+        showError("Invalid Email or Password");
       }
     } catch (error) {
       setError(error.message); // Show error message

@@ -1,10 +1,17 @@
 const { conn_sql } = require("../../config/connection");
 
+// Shared "Show N entries" parsing - defaults to 10, capped at 100 so a
+// crafted request can't force an unbounded row scan.
+function parseLimit(req) {
+  const requested = parseInt(req.query.limit) || 10;
+  return Math.min(Math.max(requested, 1), 100);
+}
+
 // get all employees data
 const Getdata = (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const search = req.query.search || "";
-  const limit = 10;
+  const limit = parseLimit(req);
   const offset = (page - 1) * limit;
   const sql_get = "SELECT * FROM `user_accounts` WHERE role = 'employee' AND username LIKE ? LIMIT ? OFFSET ?";
   conn_sql.query(sql_get, [`%${search}%`, limit, offset], (err, result) => {
@@ -37,7 +44,7 @@ const Getdata = (req, res) => {
 const Getusers = (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const search = req.query.search || "";
-  const limit = 10;
+  const limit = parseLimit(req);
   const offset = (page - 1) * limit;
 
   const sql_get = "SELECT * FROM `user_accounts` WHERE role ='jobseeker' AND username LIKE ?  LIMIT ? OFFSET ?";
@@ -83,23 +90,25 @@ const GetDashboard = (req, res) => {
 // get all managers data
 const GetManagers = (req, res) => {
   const page = parseInt(req.query.page) || 1;
-  const limit = 10;
+  const search = req.query.search || "";
+  const limit = parseLimit(req);
   const offset = (page - 1) * limit;
-  const sql_get = "SELECT * FROM `admin-account` WHERE role !='admin' LIMIT ? OFFSET ?";
-  conn_sql.query(sql_get,[limit, offset], (err, result) => {
+  const sql_get = "SELECT `id`, `FirstName`, `email`, `role`, `phone`, `City`, `province`, `status`, `created_at` FROM `admin-account` WHERE role !='admin' AND FirstName LIKE ? LIMIT ? OFFSET ?";
+  conn_sql.query(sql_get,[`%${search}%`, limit, offset], (err, result) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ msg: "Database error" });
     } else  {
-      const sql = "SELECT COUNT(*) as count FROM `admin-account` WHERE role != 'admin'";
+      const sql = "SELECT COUNT(*) as count FROM `admin-account` WHERE role != 'admin' AND FirstName LIKE ?";
 
-      conn_sql.query(sql, (c_err, c_data) => {
+      conn_sql.query(sql, [`%${search}%`], (c_err, c_data) => {
         const totalData = c_data[0].count;
         const totalPages = Math.ceil(totalData / limit);
 
         return res.json({
           data: result,
           meta: {
+            search,
             page,
             limit,
             totalData,

@@ -1,12 +1,13 @@
 const { conn_sql } = require("../../config/connection");
 const { VerifyEmail, SendForgotPasswordEmail, SendContactFormEmail } = require("../../mailer/mailer-controller");
 const bcrypt = require("bcryptjs");
+const { passwordError } = require("../../utils/validatePassword");
 
 // get All job posts
 const GetpostsByAdmin = (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const search = req.query.search || "";
-  const limit = 10;
+  const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 100);
   const offset = (page - 1) * limit;
   const sql_get =
     "SELECT jobs.*, (SELECT COUNT(*) FROM applicants WHERE applicants.job_id = jobs.id) AS applicant_count FROM jobs WHERE title LIKE ? LIMIT ? OFFSET ?";
@@ -378,6 +379,12 @@ const SendCodeForAdmin = (req, res) => {
 //Forget Password (For Admin)
 const forgetPasswordForAdmin = (req, res) => {
   const { email, token, password } = req.body;
+
+  const pwError = passwordError(password);
+  if (pwError) {
+    return res.status(400).json({ message: pwError });
+  }
+
   const sql_user = "SELECT * FROM `admin` WHERE email = ?";
   conn_sql.query(sql_user, [email], (err, result) => {
     if (err) {
@@ -433,6 +440,11 @@ const forgetPasswordForAdmin = (req, res) => {
 
 const forgetPassword = (req, res) => {
   const { email, token, password } = req.body;
+
+  const pwError = passwordError(password);
+  if (pwError) {
+    return res.status(400).json({ message: pwError });
+  }
 
   const sql_user = "SELECT * FROM `user_accounts` WHERE email = ?";
   conn_sql.query(sql_user, [email], (err, userResult) => {

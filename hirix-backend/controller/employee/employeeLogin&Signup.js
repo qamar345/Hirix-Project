@@ -5,10 +5,8 @@ const jwt = require("jsonwebtoken");
 
 const upload = require("../../middleware/upload");
 
-const {
-  SendAccountCreatedEmail,
-} = require("../../mailer/AccountRegisteration");
-const { VerifyEmail } = require("../../mailer/mailer-controller");
+const { SendAccountCreatedEmail, VerifyEmail } = require("../../mailer/mailer-controller");
+const { passwordError } = require("../../utils/validatePassword");
 const path = require("path");
 
 //Employee registeration
@@ -20,6 +18,11 @@ const employeesignup = (req, res) => {
   const role = ALLOWED_SIGNUP_ROLES.includes(req.body.role)
     ? req.body.role
     : "jobseeker";
+
+  const pwError = passwordError(password);
+  if (pwError) {
+    return res.status(400).json({ msg: pwError });
+  }
 
   const confirmEmail =
     "SELECT `isVerified` FROM `verifyemail` WHERE `email` = ?";
@@ -36,9 +39,16 @@ const employeesignup = (req, res) => {
 
     if (isVerified) {
       bcrypt.hash(password, 10, function (err, hash) {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ msg: "Error hashing password" });
+        }
         const sql_check = "SELECT * FROM `user_accounts` WHERE email = ?";
         conn_sql.query(sql_check, [email], (err, result) => {
-          if (err) throw err;
+          if (err) {
+            console.error(err);
+            return res.status(500).json({ msg: "Database error" });
+          }
           if (result.length > 0) {
             return res.json({ msg: "Email Already Exists!" });
           } else {
@@ -48,11 +58,21 @@ const employeesignup = (req, res) => {
               sql_signup,
               [first_name, last_name, username, email, hash, role, phone],
               (err, result) => {
-                if (err) throw err;
-                else {
+                if (err) {
+                  console.error(err);
+                  // A concurrent signup can race past the SELECT check above -
+                  // the DB-level unique key on email is the real guard, so a
+                  // duplicate-key error here just means someone else won the race.
+                  if (err.code === "ER_DUP_ENTRY") {
+                    return res.json({ msg: "Email Already Exists!" });
+                  }
+                  return res.status(500).json({ msg: "Database error" });
+                } else {
                   // console.log(result);
                   console.log("Email going to:", email);
-                  SendAccountCreatedEmail(email);
+                  SendAccountCreatedEmail(email).catch((mailErr) => {
+                    console.error("Failed to send welcome email:", mailErr.message || mailErr);
+                  });
                   return res.json({ msg: "Registered Successfully!", result });
                 }
               }
@@ -77,7 +97,10 @@ const employeelogin = (req, res) => {
   console.log(email, password);
 
   conn_sql.query(sql, [email], (err, data) => {
-    if (err) throw err;
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ isloggedin: false, msg: "Database error" });
+    }
 
     if (data.length > 0) {
       let user = data[0];
@@ -176,6 +199,11 @@ const EmployeeProfile = (req, res) => {
 const EmployeeChangePassword = (req, res) => {
   const { id } = req.params;
   const { currentPass, newPass } = req.body.editPasswordData;
+
+  const pwError = passwordError(newPass);
+  if (pwError) {
+    return res.status(400).json({ msg: pwError });
+  }
 
   const checkPasswordQuery =
     "SELECT password FROM `user_accounts` WHERE id = ?";

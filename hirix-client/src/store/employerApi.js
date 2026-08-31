@@ -96,9 +96,9 @@ export const employerApi = createApi({
       providesTags: ["EmpCompanies"],
     }),
     selectCompany: builder.query({
-      query: ({ id, page }) => ({
+      query: ({ id, page, limit, search }) => ({
         url: `/select-company/${id}`,
-        params: { page },
+        params: { page, limit, search },
       }),
       providesTags: ["EmpCompanies"],
     }),

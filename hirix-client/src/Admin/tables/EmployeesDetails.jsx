@@ -21,7 +21,9 @@ const EmployeeDetail = () => {
         );
         setEmployees(res.data.employee);
         setCompanies(res.data.companies);
-      } catch (err) {}
+      } catch (err) {
+        console.error("Failed to load employee details:", err);
+      }
     };
 
     fetchJob();

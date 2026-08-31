@@ -14,6 +14,7 @@ import {
 } from "react-icons/fa";
 import API, { BASE_URL } from "../api";
 import { useNavigate } from "react-router-dom";
+import { showSuccess, showError } from "../utils/toast";
 
 // import { useSignUp } from "@clerk/clerk-react";
 
@@ -60,8 +61,6 @@ const Login = ({ ...props }) => {
       // Single unified login endpoint - backend determines role from DB
       const res = await API.post("/user-login", { email, password });
 
-      console.log(res);
-
       const { isloggedin, msg, data, token } = res.data;
 
       if (isloggedin && data) {
@@ -79,14 +78,14 @@ const Login = ({ ...props }) => {
         } else if (data.role === "jobseeker") {
           navigate("/candidate/dashboard");
         } else {
-          alert("Unknown role: " + data.role);
+          showError("Unknown role: " + data.role);
         }
       } else {
-        alert(msg || "Login failed.");
+        showError(msg || "Login failed.");
       }
     } catch (error) {
       setError(error.message);
-      alert("Login error: " + error.message);
+      showError("Login error: " + error.message);
     } finally {
       setLoading(false);
     }
@@ -96,7 +95,7 @@ const Login = ({ ...props }) => {
     e.preventDefault();
 
     if (!email) {
-      alert("Please enter email first!!!");
+      showError("Please enter email first!!!");
     } else {
       try {
         const res = await API.post(
@@ -104,10 +103,11 @@ const Login = ({ ...props }) => {
           { email }
         );
         setLoader("Checking...");
-        alert(res.data.msg);
+        showSuccess(res.data.msg);
         setIsPolling(true); // Start polling
       } catch (error) {
-        console.log(error);
+        console.error(error);
+        showError(error.response?.data?.msg || "Failed to send verification email. Please try again.");
       }
     }
   };
@@ -166,13 +166,13 @@ const Login = ({ ...props }) => {
     e.preventDefault();
 
     if (!isVerified) {
-      alert("Please verify your email before submitting.");
+      showError("Please verify your email before submitting.");
       return;
     }
 
     // Just check if role is set before proceeding
     if (!role) {
-      alert("Please select a role before submitting.");
+      showError("Please select a role before submitting.");
       return;
     }
 
@@ -186,18 +186,16 @@ const Login = ({ ...props }) => {
       role: role, // ✅ role will now have the correct value if selected earlier
     };
 
-    console.log(payload);
-
     try {
       const res = await API.post(
         "/employee-signup",
         payload
       );
-      alert(res.data.msg);
+      showSuccess(res.data.msg);
       window.location.reload();
     } catch (error) {
-      console.log(error);
-      alert(error.response?.data?.msg || "Signup failed. Please check the details and try again.");
+      console.error(error);
+      showError(error.response?.data?.msg || "Signup failed. Please check the details and try again.");
     }
   };
 
@@ -214,10 +212,10 @@ const Login = ({ ...props }) => {
       });
 
       if (response.status === 200) {
-        alert("Verification email sent! Please check your inbox.");
+        showSuccess("Verification email sent! Please check your inbox.");
         setShow(false);
       } else {
-        alert("Failed to send verification email.");
+        showError("Failed to send verification email.");
       }
     } catch (error) {
       setResetError("Error: " + (error.response?.data?.msg || error.message));
@@ -247,10 +245,10 @@ const Login = ({ ...props }) => {
       );
 
       if (response.status === 200) {
-        alert("Account Recovered! Please login Again.");
+        showSuccess("Account Recovered! Please login Again.");
         window.location.reload();
       } else {
-        alert("Failed to verify");
+        showError("Failed to verify");
       }
     } catch (error) {
       setResetError("Error: " + (error.response?.data?.msg || error.message));
@@ -273,9 +271,6 @@ const Login = ({ ...props }) => {
     }
   }, [FirstName, LastName]);
 
-  useEffect(() => {
-    console.log("Role selected:", role);
-  }, [role]);
 
   return (
     <Modal {...props} centered>

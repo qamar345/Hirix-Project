@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { RiUploadLine } from "react-icons/ri";
 import { IoCloseSharp } from "react-icons/io5";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -7,8 +7,10 @@ import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
 import { CanFooter } from "../index.js";
 import API, { BASE_URL } from "../../api";
+import { showSuccess, showError } from "../../utils/toast";
 
 const CanSettings = () => {
+  const navigate = useNavigate();
   const token = sessionStorage.getItem("token");
   const check = sessionStorage.getItem("isLoggedIn");
   useEffect(() => {
@@ -79,12 +81,12 @@ const CanSettings = () => {
       !editPasswordData.newPass ||
       !editPasswordData.confirmPass
     ) {
-      alert("All fields are required.");
+      showError("All fields are required.");
       return;
     }
 
     if (editPasswordData.newPass !== editPasswordData.confirmPass) {
-      alert("New password and confirm password do not match.");
+      showError("New password and confirm password do not match.");
       return;
     }
     try {
@@ -100,10 +102,10 @@ const CanSettings = () => {
         }
       );
 
-      alert(response.data.msg);
+      showSuccess(response.data.msg);
       setEditPasswordData({ currentPass: "", newPass: "", confirmPass: "" });
     } catch (error) {
-      alert("Error updating password: ", error);
+      showError(error.response?.data?.msg || "Error updating password.");
     }
   };
 

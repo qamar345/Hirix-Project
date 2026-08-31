@@ -1,5 +1,6 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { showSuccess } from "../../utils/toast";
 import {
   hirixText,
   dashboard,
@@ -14,6 +15,7 @@ import {
   logout,
 } from "../assets/icons/index.js";
 const CanSideMenu = () => {
+  const navigate = useNavigate();
   // const handleLinkClick = () => {
   //   const offcanvasElement = document.querySelector(".offcanvas");
   //   const bootstrapOffcanvas =
@@ -99,43 +101,44 @@ const CanSideMenu = () => {
                   label: "Settings",
                   link: "/candidate/settings",
                 },
-                {
-                  src: logout,
-                  alt: "Logout",
-                  label: "Logout",
-                  link: "/",
-                  logOut: () => {
-                    sessionStorage.clear();
-                    alert("Logout Successfully");
-                    navigate("/");
-                  },
-                },
               ].map((item, index) => (
                 <li
                   className="nav-item"
                   key={index}
                   data-bs-dismiss="offcanvas"
                 >
-                  <NavLink
-                    className="canvas-item"
-                    to={item.link}
-                    // onClick={handleLinkClick}
-                  >
+                  <NavLink className="canvas-item" to={item.link}>
                     <span className="canvas-image">
                       <img src={item.src} alt={item.alt} />
                     </span>
-                    <span
-                      onClick={
-                        item.label === "Logout" ? () => item.logOut() : null
-                      }
-                    >
-                      {item.label}
-                    </span>
+                    <span>{item.label}</span>
                   </NavLink>
                 </li>
               ))}
             </ul>
           </div>
+
+          {/* Pinned to the bottom of the mobile menu, separate from the
+              scrollable nav list above. */}
+          <ul className="d-flex flex-column gap-4 sidebar-logout-list">
+            <li className="nav-item" data-bs-dismiss="offcanvas">
+              <a
+                className="canvas-item"
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  sessionStorage.clear();
+                  showSuccess("Logout Successfully");
+                  navigate("/");
+                }}
+              >
+                <span className="canvas-image">
+                  <img src={logout} alt="Logout" />
+                </span>
+                <span>Logout</span>
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
     </div>

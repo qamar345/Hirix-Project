@@ -10,6 +10,7 @@ import { EmpFooter } from "../index.js";
 import PhoneInput from "react-phone-number-input";
 import API, { BASE_URL } from "../../api";
 import { useGetCompaniesForEmpQuery } from "../../store/employerApi";
+import { showSuccess, showError } from "../../utils/toast";
 
 const PostJob = () => {
   const token = sessionStorage.getItem("token");
@@ -48,6 +49,18 @@ const PostJob = () => {
   const [Company, setCompany] = useState("");
   const [Province, setProvince] = useState("");
   const [City, setCity] = useState("");
+  // Internship-only details - only meaningful (and only submitted) when
+  // jobtype === "Internship".
+  const [internshipType, setInternshipType] = useState("");
+  const [internshipPurpose, setInternshipPurpose] = useState("");
+  const [internshipDuration, setInternshipDuration] = useState("");
+  const [internshipDurationUnit, setInternshipDurationUnit] = useState("");
+  const [internshipCertificate, setInternshipCertificate] = useState("");
+  // Unpaid internships have no salary to configure - the whole Salary
+  // section is hidden for them, and the submit payload below sends fixed
+  // placeholder values instead of whatever (empty) state those hidden
+  // fields are holding.
+  const isUnpaidInternship = jobtype === "Internship" && internshipType === "Unpaid";
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const { data: companiesList, refetch: refetchCompanies } = useGetCompaniesForEmpQuery(id);
@@ -135,6 +148,14 @@ const PostJob = () => {
     if (!Company) {
       newErrors.company = "Please select a Company";
     }
+    if (jobtype === "Internship") {
+      if (!internshipType) {
+        newErrors.internshipType = "Please select Paid or Unpaid";
+      }
+      if (!internshipPurpose) {
+        newErrors.internshipPurpose = "Please select the internship's purpose";
+      }
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -159,17 +180,25 @@ const PostJob = () => {
       available_seats: quantity?.trim(),
       gender: Gender?.trim(),
       expiry_date: expirydate,
-      salary: Salary?.trim(),
-      currency: curr?.trim(),
-      minimum_currency: minValue?.trim(),
-      maximum_currency: maxValue?.trim(),
-      Rate: rateType?.trim(),
+      // Unpaid internships never collect the salary fields above (the
+      // whole section is hidden), so send fixed placeholders instead of
+      // whatever empty state those inputs are holding.
+      salary: isUnpaidInternship ? "Unpaid" : Salary?.trim(),
+      currency: isUnpaidInternship ? "pkr" : curr?.trim(),
+      minimum_currency: isUnpaidInternship ? "0" : minValue?.trim(),
+      maximum_currency: isUnpaidInternship ? "0" : maxValue?.trim(),
+      Rate: isUnpaidInternship ? "none" : rateType?.trim(),
       Url: url?.trim(),
       Phone: phone?.trim(),
       ApplyType: appliedType?.trim(),
       company_name: Company,
       city: City?.trim(),
       province: Province?.trim(),
+      internship_type: internshipType,
+      internship_purpose: internshipPurpose,
+      internship_duration: internshipDuration?.trim(),
+      internship_duration_unit: internshipDurationUnit,
+      internship_certificate: internshipCertificate,
     };
 
     setSubmitting(true);
@@ -179,11 +208,11 @@ const PostJob = () => {
           "x-access-token": token,
         },
       });
-      alert(res.data.msg);
+      showSuccess(res.data.msg);
       navigate(`/employer/jobs`);
     } catch (error) {
       console.error("Failed to post job", error);
-      alert("Something went wrong while posting this job. Please try again.");
+      showError("Something went wrong while posting this job. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -217,17 +246,25 @@ const PostJob = () => {
       available_seats: quantity?.trim(),
       gender: Gender?.trim(),
       expiry_date: expirydate,
-      salary: Salary?.trim(),
-      currency: curr?.trim(),
-      minimum_currency: minValue?.trim(),
-      maximum_currency: maxValue?.trim(),
-      Rate: rateType?.trim(),
+      // Unpaid internships never collect the salary fields above (the
+      // whole section is hidden), so send fixed placeholders instead of
+      // whatever empty state those inputs are holding.
+      salary: isUnpaidInternship ? "Unpaid" : Salary?.trim(),
+      currency: isUnpaidInternship ? "pkr" : curr?.trim(),
+      minimum_currency: isUnpaidInternship ? "0" : minValue?.trim(),
+      maximum_currency: isUnpaidInternship ? "0" : maxValue?.trim(),
+      Rate: isUnpaidInternship ? "none" : rateType?.trim(),
       Url: url?.trim(),
       Phone: phone?.trim(),
       ApplyType: appliedType?.trim(),
       company_name: Company,
       city: City?.trim(),
       province: Province?.trim(),
+      internship_type: internshipType,
+      internship_purpose: internshipPurpose,
+      internship_duration: internshipDuration?.trim(),
+      internship_duration_unit: internshipDurationUnit,
+      internship_certificate: internshipCertificate,
     };
 
     try {
@@ -238,10 +275,13 @@ const PostJob = () => {
           },
         })
         .then((res) => {
-          alert(res.data.msg);
+          showSuccess(res.data.msg);
           navigate(`/employer/jobs`);
         });
-    } catch (error) {}
+    } catch (error) {
+      console.error("Failed to post job:", error);
+      showError(error.response?.data?.msg || "Failed to post job. Please try again.");
+    }
 
     // try {
     //   await axios
@@ -292,6 +332,26 @@ const PostJob = () => {
     { value: "Onsite", label: "On-site" },
     { value: "Remote", label: "Remote" },
     { value: "Hybrid", label: "Hybird" },
+  ];
+
+  const internshipTypeOptions = [
+    { value: "Paid", label: "Paid" },
+    { value: "Unpaid", label: "Unpaid" },
+  ];
+
+  const internshipPurposeOptions = [
+    { value: "Learning", label: "Learning" },
+    { value: "Experience", label: "Experience" },
+  ];
+
+  const internshipDurationUnitOptions = [
+    { value: "Weeks", label: "Weeks" },
+    { value: "Months", label: "Months" },
+  ];
+
+  const internshipCertificateOptions = [
+    { value: "Yes", label: "Yes" },
+    { value: "No", label: "No" },
   ];
 
   // const [skills, setSkills] = useState([])
@@ -556,6 +616,91 @@ const PostJob = () => {
                         {errors.jobtype && <span style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.jobtype}</span>}
                       </div>
 
+                      {jobtype === "Internship" && (
+                        <>
+                          <div className="entryGroup col-lg-3">
+                            <label>
+                              Compensation <sup>*</sup>
+                            </label>
+                            <Select
+                              options={internshipTypeOptions}
+                              styles={customStyles}
+                              className="border p-1 rounded-2"
+                              value={internshipTypeOptions.find(
+                                (option) => option.value === internshipType || null
+                              )}
+                              onChange={(selectedOption) =>
+                                setInternshipType(selectedOption ? selectedOption.value : "")
+                              }
+                            />
+                            {errors.internshipType && <span style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.internshipType}</span>}
+                          </div>
+
+                          <div className="entryGroup col-lg-3">
+                            <label>
+                              Purpose <sup>*</sup>
+                            </label>
+                            <Select
+                              options={internshipPurposeOptions}
+                              styles={customStyles}
+                              className="border p-1 rounded-2"
+                              value={internshipPurposeOptions.find(
+                                (option) => option.value === internshipPurpose || null
+                              )}
+                              onChange={(selectedOption) =>
+                                setInternshipPurpose(selectedOption ? selectedOption.value : "")
+                              }
+                            />
+                            {errors.internshipPurpose && <span style={{ color: '#ff4d4f', fontSize: '12px', marginTop: '4px', display: 'block' }}>{errors.internshipPurpose}</span>}
+                          </div>
+
+                          <div className="entryGroup col-lg-3">
+                            <label>Duration</label>
+                            <div className="d-flex gap-2">
+                              <input
+                                type="number"
+                                min="1"
+                                name="internshipDuration"
+                                placeholder="e.g. 3"
+                                value={internshipDuration}
+                                onChange={(e) => setInternshipDuration(e.target.value)}
+                                style={{ flex: 1 }}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="entryGroup col-lg-3">
+                            <label>Duration unit</label>
+                            <Select
+                              options={internshipDurationUnitOptions}
+                              styles={customStyles}
+                              className="border p-1 rounded-2"
+                              value={internshipDurationUnitOptions.find(
+                                (option) => option.value === internshipDurationUnit || null
+                              )}
+                              onChange={(selectedOption) =>
+                                setInternshipDurationUnit(selectedOption ? selectedOption.value : "")
+                              }
+                            />
+                          </div>
+
+                          <div className="entryGroup col-lg-3">
+                            <label>Certificate provided</label>
+                            <Select
+                              options={internshipCertificateOptions}
+                              styles={customStyles}
+                              className="border p-1 rounded-2"
+                              value={internshipCertificateOptions.find(
+                                (option) => option.value === internshipCertificate || null
+                              )}
+                              onChange={(selectedOption) =>
+                                setInternshipCertificate(selectedOption ? selectedOption.value : "")
+                              }
+                            />
+                          </div>
+                        </>
+                      )}
+
                       <div className="entryGroup col-lg-6">
                         <label>
                           WorkPlace type <sup>*</sup>
@@ -727,6 +872,7 @@ const PostJob = () => {
                     </div>
                   </div>
 
+                  {!isUnpaidInternship && (
                   <div className="block-from mt12">
                     <h6 className="block-heading">Salary</h6>
 
@@ -891,6 +1037,7 @@ const PostJob = () => {
                       {Salary === "Negotiable" && null}
                     </div>
                   </div>
+                  )}
 
                   <div className="block-from mt12">
                     <h6 className="block-heading">Job apply type</h6>

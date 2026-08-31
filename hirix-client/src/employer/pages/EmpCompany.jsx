@@ -6,7 +6,6 @@ import {
   CompanyList,
   EmpHeader,
   EmpFooter,
-  Pagination,
 } from "../index.js";
 const EmpCompany = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -35,9 +34,6 @@ const EmpCompany = () => {
 
           <div className=" d-grid">
             <CompanyList />
-          </div>
-          <div className="page-list">
-            <Pagination />
           </div>
 
           <NavLink to="/employer/add-company" className="civi-button mt-3">

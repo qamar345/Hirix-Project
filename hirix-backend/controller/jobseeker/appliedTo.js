@@ -23,6 +23,9 @@ function withApplicationOwnership(req, res, onOwned) {
 const appliedTo = (req, res) => {
   const { id } = req.params;
   const { type, search } = req.query || {};
+  const page = parseInt(req.query.page) || 1;
+  const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 100);
+  const offset = (page - 1) * limit;
 
   let statusCondition = "";
   let countCondition = "";
@@ -51,33 +54,56 @@ const appliedTo = (req, res) => {
   WHERE applicants.job_seeker_id = ?
     ${statusCondition}
     ${searchCondition}
+  LIMIT ? OFFSET ?
 `;
 
   conn_sql.query(
     sql_applied,
-    queryParams,
+    [...queryParams, limit, offset],
     (err, result) => {
       if (err) {
         return res.status(500).json({ error: err.message });
       }
 
-      const totalCountQuery = `
-      SELECT COUNT(*) AS total_applications
-      FROM applicants 
-      WHERE job_seeker_id = ? 
-         ${countCondition}
+      const filteredCountQuery = `
+      SELECT COUNT(*) AS count
+      FROM jobs
+      JOIN applicants ON jobs.id = applicants.job_id
+      WHERE applicants.job_seeker_id = ?
+        ${statusCondition}
+        ${searchCondition}
     `;
 
-      conn_sql.query(totalCountQuery, [id], (err, countResult) => {
+      conn_sql.query(filteredCountQuery, queryParams, (err, filteredCountResult) => {
         if (err) {
           return res.status(500).json({ error: err.message });
         }
 
-        const totalApplications = countResult[0] ? countResult[0].total_applications : 0;
+        const totalPages = Math.ceil((filteredCountResult[0]?.count || 0) / limit);
 
-        return res.json({
-          jobs: result,
-          TotalApplications: totalApplications,
+        const totalCountQuery = `
+        SELECT COUNT(*) AS total_applications
+        FROM applicants
+        WHERE job_seeker_id = ?
+           ${countCondition}
+      `;
+
+        conn_sql.query(totalCountQuery, [id], (err, countResult) => {
+          if (err) {
+            return res.status(500).json({ error: err.message });
+          }
+
+          const totalApplications = countResult[0] ? countResult[0].total_applications : 0;
+
+          return res.json({
+            jobs: result,
+            TotalApplications: totalApplications,
+            meta: {
+              page,
+              limit,
+              totalPages,
+            },
+          });
         });
       });
     }
@@ -284,29 +310,40 @@ const AddToWishlist = (req, res) => {
 const Addskillset = async (req, res) => {
   const { id } = req.params;
   const { skills } = req.body;
-  let error = "";
 
   if (!Array.isArray(skills) || skills.length === 0) {
     return res.status(400).json({ message: "Skills are required." });
   }
 
-  console.log(skills);
-
   const insertSkillQuery =
     "INSERT INTO `jobseeker_skills`(`job_seeker_id`, `skillset_id`) VALUES (?, ?)";
-  for (let s_id of skills) {
-    conn_sql.query(insertSkillQuery, [id, s_id], (err, insertResult) => {
-      if (err) {
-        error = err;
-      }
-    });
+
+  // conn_sql.query is async - firing all inserts in a loop and checking an
+  // outer variable right after the loop always read it before any query had
+  // actually resolved, so this endpoint reported "success" even when every
+  // insert failed. Wait for every insert to actually settle first.
+  const results = await Promise.allSettled(
+    skills.map(
+      (s_id) =>
+        new Promise((resolve, reject) => {
+          conn_sql.query(insertSkillQuery, [id, s_id], (err, insertResult) => {
+            if (err) reject(err);
+            else resolve(insertResult);
+          });
+        })
+    )
+  );
+
+  const failed = results.filter((r) => r.status === "rejected");
+  if (failed.length > 0) {
+    console.error("Addskillset: failed to insert some skills:", failed.map((f) => f.reason && f.reason.message));
+    if (failed.length === results.length) {
+      return res.status(500).json({ message: "Failed to add skills." });
+    }
+    return res.status(207).json({ message: `${results.length - failed.length} of ${results.length} skills added; some failed.` });
   }
 
-  if (error) {
-    return res.json(`Error inserting skill "${skills}"`);
-  } else {
-    return res.json({ message: "Skills added successfuly" });
-  }
+  return res.json({ message: "Skills added successfuly" });
 };
 // if (!skills){
 //   return res.json({message: 'skills are compulsory to be mentioned.'});
